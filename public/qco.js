@@ -383,11 +383,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // }
 
     try {
-      await fetch("/api/index", {
+      const response =await fetch("/api/index", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submittedData),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      else{        
+        console.log("提交成功:", data);        
+      }
 
       resetForm();
     } catch (error) {
