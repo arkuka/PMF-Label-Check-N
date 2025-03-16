@@ -363,7 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const submittedData = {
       productName,
       barcodes: headers.slice(1).map((header) => fields[header.toLowerCase()] || ""),
-      timestamp: (new Date(now.getTime() + offset * 60 * 60 * 1000)).toISOString(),
+      timestamp: new Date().toLocaleString("en-US", { timeZone: "Australia/Sydney" }),
     };
 
     try {
