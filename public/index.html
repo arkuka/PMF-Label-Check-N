@@ -1,77 +1,53 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>简单计数器</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 50px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            margin: 10px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .counter {
-            font-size: 24px;
-            margin: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QC Scanner App</title>
+  <link rel="stylesheet" href="style.css"> <!-- 引入样式文件 -->
 </head>
 <body>
-    <h1>计数器</h1>
-    <p>当前计数: <span id="count">0</span></p>
-    <button onclick="increment()">增加</button>
+  
+  <div class="container">
+    <header class="header">
+      <img src="https://www.pmfresh.com.au/wp-content/themes/pmfresh/images/logo.png" alt="PMFresh Logo" class="logo">
+      <h1>Production Line Label Check</h1>
+    </header>
 
-    <script>
-        async function fetchCount() {
-            try {
-                console.log("正在获取计数...");
-                const response = await fetch('/api/index');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                document.getElementById('count').textContent = data.count;
-                console.log("计数获取成功:", data);
-            } catch (error) {
-                console.error('获取计数失败:', error);
-            }
-        }
+    <div class="form-container">
+      <div class="form-group">
+        <label id="productNameLabel"></label>
+        <select id="productNameSelect">
+          <option value="">Select Product</option>
+        </select>
+      </div>
 
-        async function increment() {
-            try {
-                console.log("正在增加计数...");
-                const response = await fetch('/api/index', { 
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                console.log("计数增加成功:", data);
-                document.getElementById('count').textContent = data.count;
-            } catch (error) {
-                console.error('增加计数失败:', error);
-            }
-        }
+      <div id="inputFields"></div>
 
-        // 页面加载时获取初始计数
-        document.addEventListener('DOMContentLoaded', fetchCount);
-    </script>
+      <div id="buttons" class="form-group">
+        <button id="submitButton" class="submit-button">Submit</button>
+        <button id="resetButton" class="reset-button">Reset</button>
+      </div>
+    </div>
+
+    <div id="modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <!-- 图片区域 -->
+        <img id="modalImage" src="" alt="Modal Image" style="display: none; max-width: 100%; height: auto; margin-bottom: 20px;">
+        <!-- 消息区域 -->
+        <h2 id="modalMessage"></h2>
+        <!-- 按钮区域 -->
+        <button id="modalConfirmButton" class="modal-button yes" style="display: none;">Yes</button>
+        <button id="modalCancelButton" class="modal-button cancel" style="display: none;">No</button>
+        <button id="modalOkButton" class="modal-button ok" style="display: none;">OK</button>
+      </div>
+    </div>
+
+
+    
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+  <script src="qco.js"></script> <!-- 引入 JavaScript 文件 -->
 </body>
 </html>
