@@ -17,11 +17,15 @@ module.exports = (req, res) => {
   }
 
   if (req.method === "POST") {
-    count++
+
+    const submittedData = req.body;
+
+    console.log(`Server received post request: ${JSON.stringify(submittedData)}`);
+
     return res.status(200).json({ count })
   }
 
-  console.log("AK: Server received a request with an unsupported method")
+  console.log('ak: server receoved a request with method:', req.method)
 
   return res.status(405).json({ error: "Method not allowed" })
 }

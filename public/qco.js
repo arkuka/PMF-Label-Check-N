@@ -364,35 +364,35 @@ document.addEventListener("DOMContentLoaded", () => {
       timestamp: new Date().toISOString(),
     };
 
-    try {
-        console.log("正在增加计数...");
-        const response = await fetch('/api/index', { 
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log("计数增加成功:", data);
-        document.getElementById('count').textContent = data.count;
-    } catch (error) {
-        console.error('增加计数失败:', error);
-    }
-
     // try {
-    //   await fetch("/api/index", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify(submittedData),
-    //   });
-
-    //   resetForm();
+    //     console.log("正在增加计数...");
+    //     const response = await fetch('/api/index', { 
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json'
+    //         }
+    //     });
+    //     if (!response.ok) {
+    //         throw new Error(`HTTP error! status: ${response.status}`);
+    //     }
+    //     const data = await response.json();
+    //     console.log("计数增加成功:", data);
+    //     document.getElementById('count').textContent = data.count;
     // } catch (error) {
-    //   console.error("Error submitting data:", error);
+    //     console.error('增加计数失败:', error);
     // }
+
+    try {
+      await fetch("/api/index", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submittedData),
+      });
+
+      resetForm();
+    } catch (error) {
+      console.error("Error submitting data:", error);
+    }
   });
 
   // 初始化
