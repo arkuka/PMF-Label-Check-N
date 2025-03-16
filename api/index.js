@@ -1,44 +1,43 @@
-// Simple in-memory counter
-// let count = 0
+let count = 0
 
-// module.exports = (req, res) => {
-//   // Set CORS headers
-//   res.setHeader("Access-Control-Allow-Origin", "*")
-//   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type")
+module.exports = (req, res) => {
+  // Set CORS headers
+  res.setHeader("Access-Control-Allow-Origin", "*")
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type")
 
-//   // Handle OPTIONS request (for CORS preflight)
-//   if (req.method === "OPTIONS") {
-//     return res.status(200).end()
-//   }
+  // Handle OPTIONS request (for CORS preflight)
+  if (req.method === "OPTIONS") {
+    return res.status(200).end()
+  }
 
-//   if (req.method === "GET") {
-//     return res.status(200).json({ count })
-//   }
+  if (req.method === "GET") {
+    return res.status(200).json({ count })
+  }
 
-//   if (req.method === "POST") {
-//     // count++
-//     // return res.status(200).json({ count })
+  if (req.method === "POST") {
+    // count++
+    // return res.status(200).json({ count })
 
-//     const submittedData = req.body;
+    const submittedData = req.body;
 
-//     console.log(`Server received post request:${submittedData}`);
+    console.log(`Server received post request:${submittedData}`);
 
-//   }
+  }
 
-//   return res.status(405).json({ error: "Method not allowed" })
-// }
+  return res.status(405).json({ error: "Method not allowed" })
+}
 
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
 
-const express = require('express');
+// const express = require('express');
 // const fs = require('fs');
 // const path = require('path');
 // const XLSX = require('xlsx');
-const app = express();
-const port = 3000;
+// const app = express();
+// const port = 3000;
 
 // // 中间件，用于解析 JSON 请求体
 // app.use(express.json());
@@ -61,10 +60,10 @@ const port = 3000;
 // initializeExcelFile();
 
 // 处理 POST 请求
-app.post('/submit', (req, res) => {
-  const submittedData = req.body;
+// app.post('/submit', (req, res) => {
+//   const submittedData = req.body;
 
-  console.log(`Server received post request:${submittedData}`);
+//   console.log(`Server received post request:${submittedData}`);
 
   // // 读取现有的 Excel 文件
   // const workbook = XLSX.readFile(excelFilePath);
@@ -82,10 +81,10 @@ app.post('/submit', (req, res) => {
   // XLSX.writeFile(workbook, excelFilePath);
 
   // 返回成功响应
-  res.status(200).json({ message: 'Data submitted successfully!' });
-});
+//   res.status(200).json({ message: 'Data submitted successfully!' });
+// });
 
-// 启动服务器
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+// // 启动服务器
+// app.listen(port, () => {
+//   console.log(`Server is running on http://localhost:${port}`);
+// });
