@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
       //   body: JSON.stringify(submittedData),
       // });
 
-      const response =await fetch("/api/blob-save", {
+      const response =await fetch("/api/index", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submittedData),
@@ -384,6 +384,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       else{        
         console.log("提交成功");        
+      }
+
+
+      const response2 =await fetch("/api/blob-save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submittedData),
+      });
+
+      if (!response2.ok) {
+        throw new Error(`HTTP error! status: ${response2.status}`);
+      }
+      else{        
+        console.log("提交成功2");        
       }
 
       resetForm();
