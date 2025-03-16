@@ -1,6 +1,7 @@
 import { put, list, del } from "@vercel/blob"
 
 export default async function handler(req, res) {
+  console.log('ak: server receoved a request with method:', req.method)
   if (req.method === "POST") {
     try {
       const data = req.body
