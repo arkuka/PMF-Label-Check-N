@@ -19,9 +19,11 @@ module.exports = (req, res) => {
     // count++
     // return res.status(200).json({ count })
 
+    console.log(`Server received post request -001`);
+
     const submittedData = req.body;
 
-    console.log(`Server received post request:${submittedData}`);
+    console.log(`Server received post request:${submittedData} -002`);
 
   }
 
