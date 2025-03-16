@@ -25,9 +25,9 @@ module.exports = (req, res) => {
 
     console.log(`Server received post request:${submittedData} -002`);
 
-    
-    
-    console.log(`Server received a request:${req.method}`);
+  }
+
+  console.log(`Server received a request ${req.method}`);
 
   return res.status(405).json({ error: "Method not allowed yet!" })
 }
