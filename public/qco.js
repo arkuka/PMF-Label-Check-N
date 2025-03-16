@@ -365,7 +365,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     try {
-      await fetch("/submit", {
+      await fetch("/index", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submittedData),
