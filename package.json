@@ -1,0 +1,10 @@
+{
+  "name": "simple-vercel-app",
+  "version": "1.0.0",
+  "dependencies": {},
+  "scripts": {
+    "build": "echo 'No build step needed'",
+    "start": "node api/counter.js"
+  }
+}
+
