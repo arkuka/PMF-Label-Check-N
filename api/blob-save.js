@@ -15,6 +15,7 @@ export default async function handler(req, res) {
       // 保存到 Vercel Blob
       const blob = await put(fileName, jsonData, {
         contentType: "application/json",
+        access: "public", // 添加这一行
       })
 
       return res.status(200).json({
