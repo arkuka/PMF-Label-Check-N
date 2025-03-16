@@ -357,30 +357,14 @@ document.addEventListener("DOMContentLoaded", () => {
   submitButton.addEventListener("click", async () => {
     if (!productName || !configData) return;
 
+    const offset = 11; // 东11区的偏移量
+
     const productRow = configData.find((row) => row[0] === productName);
     const submittedData = {
       productName,
       barcodes: headers.slice(1).map((header) => fields[header.toLowerCase()] || ""),
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(now.getTime() + offset * 60 * 60 * 1000)
     };
-
-    // try {
-    //     console.log("正在增加计数...");
-    //     const response = await fetch('/api/index', { 
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json'
-    //         }
-    //     });
-    //     if (!response.ok) {
-    //         throw new Error(`HTTP error! status: ${response.status}`);
-    //     }
-    //     const data = await response.json();
-    //     console.log("计数增加成功:", data);
-    //     document.getElementById('count').textContent = data.count;
-    // } catch (error) {
-    //     console.error('增加计数失败:', error);
-    // }
 
     try {
       const response =await fetch("/api/index", {
