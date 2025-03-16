@@ -393,7 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       else{        
-        console.log("提交成功:", data);        
+        console.log("提交成功");        
       }
 
       resetForm();
