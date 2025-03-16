@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
       //   body: JSON.stringify(submittedData),
       // });
 
-      const response =await fetch("/api/index", {
+      const response =await fetch("/api/blob-save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submittedData),
