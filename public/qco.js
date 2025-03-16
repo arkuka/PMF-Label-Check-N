@@ -383,7 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       else{        
-        console.log("提交成功");        
+        console.log("提交成功-信息存储成功, response.url=", response.url);
       }
 
 
