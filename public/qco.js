@@ -367,7 +367,13 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     try {
-      const response =await fetch("/api/bolb-save", {
+      // const response =await fetch("/api/bolb-save", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(submittedData),
+      // });
+
+      const response =await fetch("/api/index", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submittedData),
