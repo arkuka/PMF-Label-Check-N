@@ -1,10 +1,12 @@
 {
   "name": "pmf-label-check",
   "version": "1.0.0",
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.21.2",
+    "xlsx": "^0.18.5"
+  },
   "scripts": {
     "build": "echo 'No build step needed'",
     "start": "node api/index.js"
   }
 }
-
