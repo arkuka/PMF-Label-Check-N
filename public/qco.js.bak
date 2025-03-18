@@ -23,46 +23,14 @@ let currentField = "";  // 用于记录当前输入的字段
 const validateScan = (field, scannedCode) => {
     if (!configData || !productName) return;
   
-    const productRow = configData.find((row) => row[0] === productName);
-    if (!productRow) return;
-  
-    const fieldIndex = headers.indexOf(field);
-    const correctCode = productRow[fieldIndex];
-  
-    // 检查 scannedCode 的前五位是否为 '01193'
-    let processedScannedCode = scannedCode.trim();
-    if (processedScannedCode.startsWith('01193')) {
-        processedScannedCode = processedScannedCode.slice(2); // 去掉前两位 '01'
-    }
-  
-    const isMatch = processedScannedCode === correctCode.trim();
-    checkSubmitAvailability(isMatch);
-};
-
-// 提取 allFieldsValid 为独立函数
-const allFieldsValid = () => {
-  if (!productName || !configData) return false;
-
   const productRow = configData.find((row) => row[0] === productName);
-  if (!productRow) return false;
-
-  return headers.slice(1).every((field) => {
-    const fieldIndex = headers.indexOf(field);
-    if (isFieldDisabled(field)) return true;
-
-    const fieldValue = fields[field.toLowerCase()] || "";
-    const correctCode = productRow[fieldIndex];
-
-    // 检查 fieldValue 的前五位是否为 '01193'
-    let processedScannedCode = fieldValue.trim();
-    if (processedScannedCode.startsWith('01193')) {
-      processedScannedCode = processedScannedCode.slice(2); // 去掉前两位 '01'
-    }
-
-    return processedScannedCode.trim() === correctCode;
-  });
+  if (!productRow) return;
+  
+  const fieldIndex = headers.indexOf(field);
+  const correctCode = productRow[fieldIndex];
+  const isMatch = scannedCode.trim() === correctCode;  
+  checkSubmitAvailability(isMatch);
 };
-
 
 const checkSubmitAvailability = (isMatch) => {
   if (!productName || !configData || !isMatch) {
@@ -78,8 +46,18 @@ const checkSubmitAvailability = (isMatch) => {
     return;
   }
 
-  isSubmitEnabled = allFieldsValid(); // 调用独立的 allFieldsValid 函数
-  submitButton.disabled = !isSubmitEnabled;
+  const allFieldsValid = headers.slice(1).every((field) => {
+    const fieldIndex = headers.indexOf(field);
+    if (isFieldDisabled(field)) return true;
+
+    const fieldValue = fields[field.toLowerCase()] || "";
+    const correctCode = productRow[fieldIndex];
+    
+    return fieldValue.trim() === correctCode;
+  });
+
+  isSubmitEnabled = allFieldsValid;  
+  submitButton.disabled = !isSubmitEnabled;  
 };
 
 const isFieldDisabled = (field) => {
@@ -356,9 +334,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     renderInputFields();
-
-    isSubmitEnabled = allFieldsValid(); // 调用独立的 allFieldsValid 函数
-    submitButton.disabled = !isSubmitEnabled;
   });
 
   // 模态取消按钮
