@@ -2,20 +2,42 @@ import { put, list, del } from "@vercel/blob"
 
 export default async function handler(req, res) {
   console.log('ak: server receoved a request with method:', req.method)
+  
+  // 获取当前日期作为文件名（格式：YYYYMMDD）
+  const getDateFileName = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}${month}${day}.json`;
+  }
+
   if (req.method === "POST") {
     try {
       const data = req.body
+      const fileName = getDateFileName()
 
-      // 生成文件名
-      const fileName = `data-${Date.now()}.json`
+      // 尝试获取现有文件内容
+      let existingData = [];
+      try {
+        const existingBlob = await get(fileName);
+        if (existingBlob) {
+          const text = await existingBlob.text();
+          existingData = JSON.parse(text);
+        }
+      } catch (e) {
+        // 如果文件不存在，则 existingData 保持为空数组
+        console.log('No existing file found, creating new one');
+      }
 
-      // 将数据转换为 JSON 字符串
-      const jsonData = JSON.stringify(data, null, 2)
+      // 将新数据追加到现有数据中
+      existingData.push(data);
+      const jsonData = JSON.stringify(existingData, null, 2);
 
       // 保存到 Vercel Blob
       const blob = await put(fileName, jsonData, {
         contentType: "application/json",
-        access: "public", // 添加这一行
+        access: "public",
       })
 
       console.log("数据保存成功: blob.url=", blob.url)
@@ -86,4 +108,3 @@ export default async function handler(req, res) {
     message: "方法不允许",
   })
 }
-
