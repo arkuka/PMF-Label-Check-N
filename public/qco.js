@@ -542,9 +542,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // 如果验证通过，提交数据
     const productRow = configData.find((row) => row[0] === productName);
     const submittedData = {
+      timestamp: new Date().toLocaleString("en-US", { timeZone: "Australia/Sydney" }),
       productName,
       barcodes: headers.slice(1).map((header) => fields[header.toLowerCase()] || ""),
-      timestamp: new Date().toLocaleString("en-US", { timeZone: "Australia/Sydney" }),
       lineNumber,
       palletNumber,
       boxCount,
