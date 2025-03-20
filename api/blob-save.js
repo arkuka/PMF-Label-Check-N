@@ -9,15 +9,17 @@ const getDatePrefix = () => {
   return `${year}${month}${day}`;
 };
 
-// 查找以某日期开头的最新的文件
-const findLatestFileByDate = async (datePrefix) => {
+// 查找或确定当天的唯一文件
+const getDailyFileName = async (datePrefix) => {
   const { blobs } = await list();
   const matchingFiles = blobs.filter(blob => blob.pathname.startsWith(datePrefix));
   
-  if (matchingFiles.length === 0) return null;
-  
-  // 按 uploadedAt 排序，获取最新文件
-  return matchingFiles.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))[0];
+  if (matchingFiles.length > 0) {
+    // 始终使用最早创建的文件作为当天的唯一文件
+    return matchingFiles.sort((a, b) => new Date(a.uploadedAt) - new Date(b.uploadedAt))[0].pathname;
+  }
+  // 如果没有文件，返回基础文件名（Vercel 会添加后缀）
+  return `${datePrefix}.json`;
 };
 
 export default async function handler(req, res) {
@@ -26,22 +28,19 @@ export default async function handler(req, res) {
       const data = req.body;
       const datePrefix = getDatePrefix();
 
-      // 查找当天最新的文件
-      const latestFile = await findLatestFileByDate(datePrefix);
-      let fileName = latestFile ? latestFile.pathname : `${datePrefix}.json`;
+      // 获取或确定当天的唯一文件名
+      let fileName = await getDailyFileName(datePrefix);
       let existingData = [];
 
-      // 如果存在文件，读取其内容
-      if (latestFile) {
-        try {
-          const existingBlob = await get(fileName);
-          if (existingBlob) {
-            const text = await existingBlob.text();
-            existingData = JSON.parse(text);
-          }
-        } catch (e) {
-          console.log(`无法读取文件 ${fileName}，将创建新文件`);
+      // 如果文件已存在，读取其内容
+      try {
+        const existingBlob = await get(fileName);
+        if (existingBlob) {
+          const text = await existingBlob.text();
+          existingData = JSON.parse(text);
         }
+      } catch (e) {
+        console.log(`无法读取文件 ${fileName}，将创建新文件`);
       }
 
       // 如果 existingData 不是数组，初始化为数组
@@ -58,7 +57,7 @@ export default async function handler(req, res) {
       // 将更新后的数据转换为 JSON 字符串
       const jsonData = JSON.stringify(existingData, null, 2);
 
-      // 保存到 Vercel Blob（如果文件已存在，会覆盖）
+      // 更新文件内容
       const blob = await put(fileName, jsonData, {
         contentType: "application/json",
         access: "public",
@@ -90,9 +89,10 @@ export default async function handler(req, res) {
         });
       }
 
-      // 查找以指定日期开头的最新的文件
-      const latestFile = await findLatestFileByDate(dateParam);
-      if (!latestFile) {
+      const fileName = await getDailyFileName(dateParam);
+      const blob = await get(fileName);
+
+      if (!blob) {
         return res.status(200).json({
           success: true,
           data: [],
@@ -100,14 +100,13 @@ export default async function handler(req, res) {
         });
       }
 
-      const blob = await get(latestFile.pathname);
       const text = await blob.text();
       const data = JSON.parse(text);
 
       return res.status(200).json({
         success: true,
         data: data,
-        fileName: latestFile.pathname,
+        fileName: fileName,
       });
     } catch (error) {
       console.error("获取数据失败:", error);
