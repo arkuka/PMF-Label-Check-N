@@ -1,116 +1,182 @@
 /* styles.css */
+#versionInfo {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
 .container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-  
-  .header {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .logo {
-    max-width: 150px;
-  }
-  
-  .form-container {
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .form-group {
-    margin-bottom: 15px;
-  }
-  
-  label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-  }
-  
-  input, select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .input-wrapper {
-    display: flex;
-    align-items: center;
-  }
-  
-  .submit-button, .reset-button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .submit-button:disabled, .reset-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-  
-  .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-  }
-  
-  .modal-button {
-    margin: 5px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .modal-button.cancel {
-    background-color: #f44336;
-    color: white;
-  }
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
 
-  .modal-button.yes, .modal-button.ok{
-      background-color:#4CAF50;
-      color: white;
-  }
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
 
-    #modalImage {
-      max-width: 500px; /* 限制图片的最大宽度 */
-      max-height: 500px; /* 限制图片的最大高度 */
-      width: auto; /* 保持图片的原始宽度 */
-      height: auto; /* 保持图片的原始高度 */
-      object-fit: contain; /* 保持图片的宽高比 */
-      margin-bottom: 20px; /* 图片与下方内容的间距 */
-      border-radius: 10px; /* 可选：圆角效果 */
-      display: none; /* 默认隐藏 */
-    }
+.logo {
+  max-width: 150px;
+}
 
-    .modal-content {
-      background-color: white;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 400px; /* 限制模态窗口的最大宽度 */
-      width: 100%;
-      text-align: center;
-      overflow: auto; /* 如果内容过多，允许滚动 */
-    }
+.form-container {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input, select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.submit-button, .reset-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submit-button:disabled, .reset-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 400px; /* 限制模态窗口的最大宽度 */
+  width: 100%;
+  overflow: auto; /* 如果内容过多，允许滚动 */
+}
+
+.modal-button {
+  margin: 5px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.modal-button.cancel {
+  background-color: #f44336;
+  color: white;
+}
+
+.modal-button.yes, .modal-button.ok {
+  background-color: #4CAF50;
+  color: white;
+}
+
+#modalImage {
+  max-width: 500px; /* 限制图片的最大宽度 */
+  max-height: 500px; /* 限制图片的最大高度 */
+  width: auto; /* 保持图片的原始宽度 */
+  height: auto; /* 保持图片的原始高度 */
+  object-fit: contain; /* 保持图片的宽高比 */
+  margin-bottom: 20px; /* 图片与下方内容的间距 */
+  border-radius: 10px; /* 可选：圆角效果 */
+  display: none; /* 默认隐藏 */
+}
+
+/* modal2 样式 */
+#modal2 {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none; /* 默认隐藏 */
+  justify-content: center; /* 水平居中 */
+  align-items: center; /* 垂直居中 */
+  z-index: 1000; /* 确保层级足够高 */
+}
+
+#modal2 .modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 400px; /* 固定最大宽度 */
+  width: 90%; /* 响应式宽度，但不超过 max-width */
+  margin: 0 auto; /* 左右自动居中，确保两侧 margin 相等 */
+  text-align: center;
+  overflow: auto; /* 如果内容过多，允许滚动 */
+  box-sizing: border-box; /* 确保 padding 不影响宽度计算 */
+}
+
+#modal2 .input-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+#modal2 .input-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+#modal2 .input-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box; /* 确保 padding 不影响宽度 */
+}
+
+#modal2 .modal-button {
+  margin: 5px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#modal2 .modal-button.submit {
+  background-color: #4CAF50;
+  color: white;
+}
+
+#modal2 .modal-button.cancel {
+  background-color: #f44336;
+  color: white;
+}

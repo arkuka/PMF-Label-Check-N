@@ -7,7 +7,9 @@ let fields = {
   bottomLabel: "",
   boxLabel: "",
   palletLabel: "",
+  watermark: "",
 };
+let shelfLifeDays = 0; // 保质期天数
 let headers = [];
 let productNames = [];
 let productNameLabel = "";
@@ -18,6 +20,7 @@ let possibleProduct = "";
 let barcode = "";
 let scannedBarcode = "";
 let currentField = "";  // 用于记录当前输入的字段
+let sannedHCode = ""
 
 // 全局函数
 const validateScan = (field, scannedCode) => {
@@ -28,12 +31,8 @@ const validateScan = (field, scannedCode) => {
   
     const fieldIndex = headers.indexOf(field);
     const correctCode = productRow[fieldIndex];
-  
-    // 检查 scannedCode 的前五位是否为 '01193'
-    let processedScannedCode = scannedCode.trim();
-    if (processedScannedCode.startsWith('01193')) {
-        processedScannedCode = processedScannedCode.slice(2); // 去掉前两位 '01'
-    }
+
+    const processedScannedCode = processScannedCode(scannedCode, fieldIndex);
   
     const isMatch = processedScannedCode === correctCode.trim();
     checkSubmitAvailability(isMatch);
@@ -53,13 +52,9 @@ const allFieldsValid = () => {
     const fieldValue = fields[field.toLowerCase()] || "";
     const correctCode = productRow[fieldIndex];
 
-    // 检查 fieldValue 的前五位是否为 '01193'
-    let processedScannedCode = fieldValue.trim();
-    if (processedScannedCode.startsWith('01193')) {
-      processedScannedCode = processedScannedCode.slice(2); // 去掉前两位 '01'
-    }
-
-    return processedScannedCode.trim() === correctCode;
+    const processedScannedCode = processScannedCode(fieldValue, fieldIndex);
+    
+    return processedScannedCode === correctCode;
   });
 };
 
@@ -90,29 +85,70 @@ const isFieldDisabled = (field) => {
   return !productRow || !productRow[fieldIndex];
 };
 
+// 针对两种特殊情况，对输入的信息进行处理
+const processScannedCode = (fieldValue, fieldOrIndex) => {
+  let processedScannedCode = fieldValue.trim();
+
+  // 判断传入的是 fieldIndex（数字）还是 field（字符串）
+  if (
+    (typeof fieldOrIndex === "number" && fieldOrIndex == 4) ||
+    (typeof fieldOrIndex === "string" && fieldOrIndex == "carton label")
+  ) {
+    // 检查 scannedCode 的前五位是否为 '01193'
+    if (processedScannedCode.startsWith('01193')) {
+      processedScannedCode = processedScannedCode.slice(2); // 去掉前两位 '01'
+      console.log("processedScannedCode =", processedScannedCode);
+    }
+  } else if (
+    (typeof fieldOrIndex === "number" && fieldOrIndex == 5) ||
+    (typeof fieldOrIndex === "string" && fieldOrIndex == "pallet label")
+  ) {
+    // 检查是否包含 "---"
+    const [codePart, hCodePart] = processedScannedCode.split("---");
+    processedScannedCode = codePart.trim(); // 只保留 "---" 前面的部分
+    console.log("processedScannedCode =", processedScannedCode);
+
+    // 将 "---" 后面的部分存储到全局变量 scannedHCode
+    if (hCodePart !== undefined) {
+      window.scannedHCode = hCodePart.trim();
+      console.log("scannedHCode =", window.scannedHCode);
+    }
+  }
+
+  return processedScannedCode;
+};
+
+// 获取输入框背景颜色
 const getInputBackgroundColor = (field) => {
   if (!configData || !productName) return "#FFFFFF";
 
   const fieldValue = fields[field] || "";
   const productRow = configData.find((row) => row[0] === productName);
-  const fieldIndex = headers.findIndex((header) => header.toLowerCase() === field);
+  const fieldIndex = headers.findIndex((header) => header.toLowerCase() === field.toLowerCase());
 
   if (fieldIndex === -1 || !productRow || !productRow[fieldIndex]) return "#DDDDDD";
   if (fieldValue === "") return "#F0B9B9";
 
   const correctCode = productRow[fieldIndex];
-  return fieldValue === correctCode ? "#d3f8d3" : "#F0B9B9";
+  const processedScannedCode = processScannedCode(fieldValue, fieldIndex);
+
+  return processedScannedCode === correctCode ? "#d3f8d3" : "#F0B9B9";
 };
 
+// 获取字段图标
 const getFieldIcon = (field) => {
   const fieldValue = fields[field] || "";
   if (fieldValue === "") return "";
 
   const productRow = configData.find((row) => row[0] === productName);
-  const fieldIndex = headers.findIndex((header) => header.toLowerCase() === field);
+  const fieldIndex = headers.findIndex((header) => header.toLowerCase() === field.toLowerCase());
   const correctCode = productRow ? productRow[fieldIndex] : "";
 
-  return fieldValue === correctCode ? '<span style="color: green">✅</span>' : '<span style="color: red">❌</span>';
+  const processedScannedCode = processScannedCode(fieldValue, fieldIndex);
+
+  return processedScannedCode === correctCode
+    ? '<span style="color: green">✅</span>'
+    : '<span style="color: red">❌</span>';
 };
 
 const renderInputFields = () => {
@@ -146,7 +182,10 @@ const updateFieldAvailability = (selectedProductName) => {
     bottomLabel: productRow[headers.indexOf("bottomLabel")] ? fields.bottomLabel : "",
     boxLabel: productRow[headers.indexOf("boxLabel")] ? fields.boxLabel : "",
     palletLabel: productRow[headers.indexOf("palletLabel")] ? fields.palletLabel : "",
+    waterMark: productRow[headers.indexOf("waterMark")] ? fields.waterMark : "",
   };
+
+  shelfLifeDays = productRow[7] || 0;  // shelfLifeDays 为第 8 列
 };
 
 const resetForm = () => {
@@ -157,7 +196,13 @@ const resetForm = () => {
     bottomLabel: "",
     boxLabel: "",
     palletLabel: "",
+    waterMark: "",
   };
+
+  shelfLifeDays = 0; // 保质期天数
+  scannedHCode = ""
+  scannedBarcode = ""
+
   isSubmitEnabled = false;
   renderInputFields();  
   submitButton.disabled = !isSubmitEnabled;
@@ -218,14 +263,24 @@ const showModalWithButtons = (message, showConfirmCancel = true, imageUrl = "") 
 
 // 全局 handleInputChange 函数
 const handleInputChange = (field, value, event) => {
+     value = value.toUpperCase()
+     value = value.trim()
     if (event.key === "Enter") {
-      fields[field] = value;
+      
+      let processedScannedCode = value.trim();
+
+      console.log("handleInputChange(); field=",field)
+      console.log("handleInputChange(); value=",value)
+
+      processedScannedCode = processScannedCode(value, field);
+      
+      fields[field] = processedScannedCode;
     
       if (!productName && value.trim() !== "") {
         // 查找是否有匹配的产品字段信息
           const matchingProduct = configData.find((row) => {
           const fieldIndex = headers.indexOf(field); // 获取当前字段的索引
-          return row[fieldIndex] === value.trim(); // 检查当前字段的值是否匹配
+          return row[fieldIndex] === processedScannedCode; // 检查当前字段的值是否匹配
         });
     
         if (matchingProduct && !prompted) {
@@ -233,8 +288,8 @@ const handleInputChange = (field, value, event) => {
           possibleProduct = matchingProduct[0];
           prompted = true;
           showModal = true;
-          scannedBarcode = value.trim(); // 保存条码信息
-          barcode = value;
+          scannedBarcode = processedScannedCode; // 保存条码信息
+          barcode = processedScannedCode;
           //modalMessage.textContent = `Do you want to start processing product: ${possibleProduct}?`;
           //modal.style.display = "flex";
           showModalWithButtons(`Do you want to start processing product: ${possibleProduct}?`, true, "");
@@ -245,10 +300,10 @@ const handleInputChange = (field, value, event) => {
         }
       } else {
         // 如果 productName 已存在，则验证扫描信息
-        validateScan(field, value);
+        validateScan(field, processedScannedCode);
       }
 
-    //validateScan(field, value);
+    //  validateScan(field, value);
     
     renderInputFields();
 
@@ -256,29 +311,29 @@ const handleInputChange = (field, value, event) => {
     currentField = field;
 
     // 设置焦点到下一个可用的输入框
-    const currentInput = event.target;
-    console.log("handleInputChange, currentInput=", currentInput);
+    // const currentInput = event.target;
+    // console.log("handleInputChange, currentInput=", currentInput);
 
     // 确保选择器匹配所有输入框
-    const allInputs = Array.from(document.querySelectorAll("#inputFields input[type='text']:not([disabled])"));
+    // const allInputs = Array.from(document.querySelectorAll("#inputFields input[type='text']:not([disabled])"));
 
-    for (let ci = 0; ci < allInputs.length; ci++) {
-      if (currentInput.id === allInputs[ci].id) {
-          currentIndex = ci;
-          break;
-      }
-    }
+    // for (let ci = 0; ci < allInputs.length; ci++) {
+    //    if (currentInput.id === allInputs[ci].id) {
+    //      currentIndex = ci;
+    //      break;
+    //    }
+    //  }
 
-    if (currentIndex !== -1) {
-      const nextAvailableTextFieldIndex = currentIndex + 1;
-      console.log("handleInputChange, nextAvailableTextFieldIndex=", nextAvailableTextFieldIndex);
+    // if (currentIndex !== -1) {
+    //      const nextAvailableTextFieldIndex = currentIndex + 1;
+    //      console.log("handleInputChange, nextAvailableTextFieldIndex=", nextAvailableTextFieldIndex);
 
-      if (nextAvailableTextFieldIndex < allInputs.length) {
-        allInputs[nextAvailableTextFieldIndex].focus();
-      }
-    } else {
-      console.error("Current input not found in allInputs array.");
-    }
+    //      if (nextAvailableTextFieldIndex < allInputs.length) {
+    //          allInputs[nextAvailableTextFieldIndex].focus();
+    //        }
+    //  } else {
+    //      console.error("Current input not found in allInputs array.");
+    //  }
   }
 };
 
@@ -286,6 +341,16 @@ document.getElementById('resetButton').addEventListener('click', function() {
   // 重置表单逻辑
   resetForm()
 });
+
+const resetModal2Inputs = () => {
+  document.getElementById("lineNumber").value = "";
+  document.getElementById("palletNumber").value = "";
+  document.getElementById("boxCount").value = "";
+  document.getElementById("hcode").value = "";
+  document.getElementById("ubd").value = "";
+  const modal2Message = document.getElementById("modal2Message");
+  if (modal2Message) modal2Message.style.display = "none"; // 同时隐藏提示信息
+};
 
 // DOMContentLoaded 事件
 document.addEventListener("DOMContentLoaded", () => {
@@ -307,32 +372,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 加载 Excel 文件
   const loadExcelFile = async () => {
-    try {
-      const response = await fetch("public/label_library.xlsx");
-      const arrayBuffer = await response.arrayBuffer();
+      try {
+        const response = await fetch("/label_library.xlsx");
+        const arrayBuffer = await response.arrayBuffer();
 
-      const workbook = XLSX.read(arrayBuffer, { type: "array" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        const workbook = XLSX.read(arrayBuffer, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-      const stringData = data.map((row) => row.map((cell) => String(cell).trim()));
+        const stringData = data.map((row) => row.map((cell) => String(cell).trim()));
 
-      console.log('loadExcelFile');
-      configData = stringData;
+        console.log('loadExcelFile');
+        configData = stringData;
 
-      headers = stringData[0];
-      productNames = stringData.slice(1).map((row) => row[0]);
-      productNameLabel = stringData[0][0];
+        headers = stringData[0];
+        productNames = stringData.slice(1).map((row) => row[0]);
+        productNameLabel = stringData[0][0];
 
-      // 更新 UI
-      document.getElementById("productNameLabel").textContent = productNameLabel;
-      productNameSelect.innerHTML = `<option value="">Select Product</option>` +
+        // 更新 UI
+        document.getElementById("productNameLabel").textContent = productNameLabel;
+        productNameSelect.innerHTML = `<option value="">Select Product</option>` +
         productNames.map((name) => `<option value="${name}">${name}</option>`).join("");
 
-      renderInputFields();
-    } catch (error) {
-      console.error("Failed to load or parse the Excel file:", error);
-    }
+        renderInputFields();
+
+        // 读取第二个工作表（版本信息）
+        const sheet2 = workbook.Sheets[workbook.SheetNames[1]];
+        const versionData = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
+        const versionInfo = versionData[1][0]; // 获取第二行第一列的值（A2）
+    
+        // 显示版本号
+        const versionInfoElement = document.getElementById("versionInfo");
+        if (versionInfoElement) {
+          versionInfoElement.textContent = "ver:"+versionInfo;        
+        }
+      } catch (error) {
+        console.error("Failed to load or parse the Excel file:", error);
+      }
   };
 
   // 模态确认按钮
@@ -349,9 +425,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 更新下拉框中的选中值
     const productSelect = document.getElementById("productNameSelect");  // 假设下拉框的 id 是 "productName"
-    console.log('productSelect=',productSelect)
     if (productSelect) {
-      console.log('productSelect.Value=',productName)
       productSelect.value = productName;  // 设置选中值
     }
     
@@ -378,17 +452,104 @@ document.addEventListener("DOMContentLoaded", () => {
     resetForm();
   });
 
-  // 提交按钮
-  submitButton.addEventListener("click", async () => {
+  // 获取 Close 按钮
+  const modal2CloseButton = document.getElementById("modal2CloseButton");
+
+  // 添加点击事件
+  modal2CloseButton.addEventListener("click", () => {
+    const modal2 = document.getElementById("modal2");
+    modal2.style.display = "none"; // 隐藏 modal2
+    resetModal2Inputs(); // 重置 modal2 中的输入框
+  });
+
+  // 提交按钮点击事件
+  submitButton.addEventListener("click", () => { // 主页面中的submit按钮
     if (!productName || !configData) return;
 
-    const offset = 11; // 东11区的偏移量
+    // 显示 modal2 模态窗口
+    const modal2 = document.getElementById("modal2");
+    modal2.style.display = "flex";
+  });
 
+  // modal2中的提交按钮点击事件
+  const modalSubmitButton = document.getElementById("modalSubmitButton");
+
+  modalSubmitButton.addEventListener("click", async () => {
+    const lineNumber = document.getElementById("lineNumber").value;
+    const palletNumber = document.getElementById("palletNumber").value;
+    const boxCount = document.getElementById("boxCount").value;
+    const hcode = document.getElementById("hcode").value;
+    const ubd = document.getElementById("ubd").value;
+
+    // 获取 modal2 的消息区域
+    const modal2Message = document.getElementById("modal2Message");
+
+    // 检查所有字段是否已填写
+    if (!lineNumber || !palletNumber || !boxCount || !hcode || !ubd) {      
+      modal2Message.textContent = "Please fill in all fields.";
+      modal2Message.style.display = "block";
+      return;
+    }
+    
+    if (scannedHCode !== hcode.toUpperCase()) {
+      modal2Message.textContent = "Label hcode does not match the hcode on the pallet label. Please double check it!";
+      modal2Message.style.display = "block";
+      return;
+    }
+    
+    // 验证 HCODE 格式
+    const hcodeRegex = /^H\d{4}$/; // H 开头，后跟 4 位数字
+    if (!hcodeRegex.test(hcode)) {
+      modal2Message.textContent = "Invalid HCODE format. Please enter in the format HDDMM (e.g., H1903).";
+      modal2Message.style.display = "block";
+      return;
+    }
+
+    // 验证 UBD 格式
+    const ubdRegex = /^\d{2} [A-Z]{3}$/; // DD MMM 格式
+    if (!ubdRegex.test(ubd)) {
+      modal2Message.textContent = "Invalid UBD format. Please enter in the format DD MMM (e.g., 19 MAY).";
+      modal2Message.style.display = "block";
+      return;
+    }
+
+    // 计算 HCODE 到 UBD 的天数
+    const hcodeDate = parseHCODE(hcode); // 解析 HCODE 为日期
+    const ubdDate = parseUBD(ubd); // 解析 UBD 为日期
+    const daysDifference = Math.floor((ubdDate - hcodeDate) / (1000 * 60 * 60 * 24)); // 计算天数差
+
+    // 如果不是整数，转换为整数
+    if (!Number.isInteger(daysDifference)) {
+      daysDifference = parseInt(daysDifference, 10);
+      console.warn("daysDifference was not an integer, converted to:", daysDifference);
+    }
+    if (!Number.isInteger(shelfLifeDays)) {
+      shelfLifeDays = parseInt(shelfLifeDays, 10);
+      console.warn("shelfLifeDays was not an integer, converted to:", shelfLifeDays);
+    }
+
+    // 检查天数差是否等于保质期天数
+    if (daysDifference !== shelfLifeDays) {
+      // 显示提示信息
+      modal2Message.textContent = `The difference between HCODE and UBD is ${daysDifference} days, which does not match the shelf life of ${shelfLifeDays} days. Please confirm HCODE and UBD.`;
+      modal2Message.style.display = "block";
+      return;
+    } else {
+      // 如果匹配，隐藏提示信息
+      modal2Message.style.display = "none";
+    }
+
+    // 如果验证通过，提交数据
     const productRow = configData.find((row) => row[0] === productName);
     const submittedData = {
       productName,
       barcodes: headers.slice(1).map((header) => fields[header.toLowerCase()] || ""),
       timestamp: new Date().toLocaleString("en-US", { timeZone: "Australia/Sydney" }),
+      lineNumber,
+      palletNumber,
+      boxCount,
+      hcode,
+      ubd,
     };
 
     try {
@@ -424,12 +585,77 @@ document.addEventListener("DOMContentLoaded", () => {
       else{        
         console.log("提交成功2");        
       }
+      
+      // 关闭 modal2
+      const modal2 = document.getElementById("modal2");
+      modal2.style.display = "none";
 
+      // 提交成功后重置Modal2的文本框
+      resetModal2Inputs(); 
+
+      // 重置表单
       resetForm();
     } catch (error) {
       console.error("Error submitting data:", error);
     }
   });
+
+  // 解析 HCODE 为日期
+  function parseHCODE(hcode) {
+    const day = parseInt(hcode.slice(1, 3), 10); // 提取 DD
+    const month = parseInt(hcode.slice(3, 5), 10) - 1; // 提取 MM（月份从 0 开始）
+    const currentYear = new Date().getFullYear();
+    return new Date(currentYear, month, day);
+  }
+
+  // 解析 UBD 为日期
+  function parseUBD(ubd) {
+    const [day, monthStr] = ubd.split(" ");
+    const month = new Date(Date.parse(`01 ${monthStr} 2000`)).getMonth(); // 将 MMM 转换为月份
+    const currentYear = new Date().getFullYear();
+    return new Date(currentYear, month, parseInt(day, 10));
+  }
+
+  // 显示确认提示框
+  function showConfirmationModal(message) {
+    const modal = document.createElement("div");
+    modal.style.position = "fixed";
+    modal.style.top = "50%";
+    modal.style.left = "50%";
+    modal.style.transform = "translate(-50%, -50%)";
+    modal.style.backgroundColor = "#ffcccc"; // 浅红色背景
+    modal.style.padding = "20px";
+    modal.style.borderRadius = "10px";
+    modal.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
+    modal.style.textAlign = "center";
+    modal.style.zIndex = "1000";
+    modal.innerHTML = `
+      <p>${message}</p>
+      <button id="confirmButton" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Confirm</button>
+      <button id="cancelButton" style="background-color: #f44336; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">Cancel</button>
+    `;
+
+    document.body.appendChild(modal);
+
+    // 添加闪烁效果
+    let isRed = true;
+    const interval = setInterval(() => {
+      modal.style.backgroundColor = isRed ? "#ffcccc" : "#ff9999";
+      isRed = !isRed;
+    }, 500);
+
+    // 确认按钮点击事件
+    document.getElementById("confirmButton").addEventListener("click", () => {
+      clearInterval(interval);
+      document.body.removeChild(modal);
+    });
+
+    // 取消按钮点击事件
+    document.getElementById("cancelButton").addEventListener("click", () => {
+      clearInterval(interval);
+      document.body.removeChild(modal);
+    });
+  }
 
   // 初始化
   loadExcelFile();

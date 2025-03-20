@@ -11,7 +11,7 @@
   <div class="container">
     <header class="header">
       <img src="https://www.pmfresh.com.au/wp-content/themes/pmfresh/images/logo.png" alt="PMFresh Logo" class="logo">
-      <h1>Production Line Label Check <span id="versionInfo" style="font-size: 14px; color: #666; margin-left: 10px;"></span></h1>
+      <h1>Production Line Label Check</h1>
     </header>
 
     <div class="form-container">
@@ -36,8 +36,6 @@
         <img id="modalImage" src="" alt="Modal Image" style="display: none; max-width: 100%; height: auto; margin-bottom: 20px;">
         <!-- 消息区域 -->
         <h2 id="modalMessage"></h2>
-        
-        
         <!-- 按钮区域 -->
         <button id="modalConfirmButton" class="modal-button yes" style="display: none;">Yes</button>
         <button id="modalCancelButton" class="modal-button cancel" style="display: none;">No</button>
@@ -45,37 +43,8 @@
       </div>
     </div>
 
-    <div id="modal2" class="modal">
-      <div class="modal-content">
-        <!-- 文本显示区域 -->
-        <div id="modal2Message" class="modal-message" style="display: none; color: red; margin-bottom: 15px;"></div>
-        <!-- 文本框区域 -->
-        <div class="input-group">
-          <label for="lineNumber">Line Number:</label>
-          <input type="text" id="lineNumber" placeholder="Line Number">
-        </div>
-        <div class="input-group">
-          <label for="palletNumber">Pallet Number:</label>
-          <input type="text" id="palletNumber" placeholder="Pallet Number">
-        </div>
-        <div class="input-group">
-          <label for="boxCount">Total Cartons on the Pallet:</label>
-          <input type="text" id="boxCount" placeholder="Qty of Cartons on the pallet">
-        </div>
-        <div class="input-group">
-          <label for="boxCount">HCODE:</label>
-          <input type="text" id="hcode" placeholder="HDDMM">
-        </div>
-        <div class="input-group">
-          <label for="boxCount">UBD:</label>
-          <input type="text" id="ubd" placeholder="DD MMM">
-        </div>
+
     
-        <!-- 提交按钮 -->
-        <button id="modalSubmitButton" class="modal-button submit">Submit</button>
-        <!-- 关闭按钮 -->
-        <button id="modal2CloseButton" class="modal-button cancel">Close</button>
-    </div>    
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
