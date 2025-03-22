@@ -11,8 +11,22 @@ const getFormattedFileName = (data) => {
   if (!timestamp) {
     console.warn("No timestamp found in data, using current time")
     // Fallback to current time if no timestamp is found
+    const options = {
+      timeZone: 'Australia/Sydney',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false, // Use 24-hour format
+    };
+  
     const now = new Date()
-    return getFormattedFileNameFromDate(now, data)
+
+    const sydneyDate = new Date(now.toLocaleString('en-US', options));
+    
+    return getFormattedFileNameFromDate(sydneyDate, data)
   }
 
   // Parse the timestamp string into a Date object
