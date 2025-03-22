@@ -33,7 +33,7 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
       // Parse the request body
-      const body = await request.json()
+      const body = await req.json()
   
       // Extract data - try both ways to get the data
       const data = body.data || body
