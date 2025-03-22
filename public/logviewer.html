@@ -96,8 +96,7 @@
     // 获取文件列表
     async function fetchFiles() {
       try {
-        console.log('fetchFiels --001')
-        const response = await fetch('/api/logviewer', { method: 'LIST' });
+        const response = await fetch('/api/logviewer?method=LIST');
         const result = await response.json();
         if (result.success) {
           allFiles = result.files;
