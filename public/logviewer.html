@@ -44,8 +44,12 @@
       max-height: 300px;
       overflow-y: auto;
     }
-    .hidden {
-      display: none;
+    .filename {
+      cursor: pointer;
+      color: #0066cc;
+    }
+    .filename:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -63,7 +67,6 @@
     <!-- 操作部分 -->
     <div class="action-section">
       <button onclick="downloadSelected()">下载选中文件</button>
-      <button onclick="viewSelected()">查看选中文件内容</button>
     </div>
 
     <!-- 文件列表 -->
@@ -81,7 +84,7 @@
     </table>
 
     <!-- 文件内容显示区域 -->
-    <div id="fileContent" class="file-content hidden"></div>
+    <div id="fileContent" class="file-content"></div>
   </div>
 
   <script>
@@ -115,14 +118,12 @@
       tbody.innerHTML = '';
       files.forEach(file => {
         const tr = document.createElement('tr');
-        console.log(file);
         tr.innerHTML = `
           <td><input type="checkbox" class="file-checkbox" data-filename="${file.fileName}"></td>
-          <td>${file.fileName}</td>
+          <td><span class="filename" onclick="viewFile('${file.url}')">${file.fileName}</span></td>
           <td>${file.size}</td>
           <td>${new Date(file.uploadedAt).toLocaleString()}</td>
           <td>
-            <button onclick="viewFile('${file.fileName}')">查看</button>
             <button onclick="downloadFile('${file.url}', '${file.fileName}')">下载</button>
           </td>
         `;
@@ -153,22 +154,17 @@
       });
     }
 
-    // 查看单个文件内容
-    async function viewFile(fileName) {
+    // 查看文件内容（通过URL）
+    async function viewFile(fileUrl) {
       try {
-        const date = fileName.split('-')[0]; // 提取日期部分
-        const response = await fetch(`/api/logviewer?date=${date}`);
+        const response = await fetch(fileUrl);
         const result = await response.json();
-        if (result.success) {
-          const contentDiv = document.getElementById('fileContent');
-          contentDiv.textContent = JSON.stringify(result.data, null, 2);
-          contentDiv.classList.remove('hidden');
-        } else {
-          alert('查看文件失败: ' + result.message);
-        }
+        const contentDiv = document.getElementById('fileContent');
+        contentDiv.textContent = JSON.stringify(result, null, 2);
       } catch (error) {
         console.error('Error viewing file:', error);
-        alert('查看文件失败');
+        const contentDiv = document.getElementById('fileContent');
+        contentDiv.textContent = '无法加载文件内容: ' + error.message;
       }
     }
 
@@ -186,30 +182,6 @@
     function getSelectedFiles() {
       const checkboxes = document.querySelectorAll('.file-checkbox:checked');
       return Array.from(checkboxes).map(cb => cb.dataset.filename);
-    }
-
-    // 查看选中文件内容
-    async function viewSelected() {
-      const selectedFiles = getSelectedFiles();
-      if (selectedFiles.length === 0) {
-        alert('请先选择文件');
-        return;
-      }
-      const contentDiv = document.getElementById('fileContent');
-      contentDiv.innerHTML = '';
-      for (const fileName of selectedFiles) {
-        const date = fileName.split('-')[0];
-        try {
-          const response = await fetch(`/api/logviewer?date=${date}`);
-          const result = await response.json();
-          if (result.success) {
-            contentDiv.innerHTML += `<h3>${fileName}</h3><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
-          }
-        } catch (error) {
-          console.error('Error viewing file:', error);
-        }
-      }
-      contentDiv.classList.remove('hidden');
     }
 
     // 下载选中文件
