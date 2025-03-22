@@ -32,39 +32,47 @@ const getFormattedFileName = (data) => {
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
-      const data = req.body.data; // 直接获取 data 对象
-
-      console.log('data:', data);
-
-      
-      
-      // 直接保存原始 data，不添加额外的 timestamp
-      const jsonData = JSON.stringify(data, null, 2);
-
-      console.log('jsonData:', jsonData);
-
-      const fileName = getFormattedFileName(data);
-
+      // Parse the request body
+      const body = await request.json()
+  
+      // Extract data - try both ways to get the data
+      const data = body.data || body
+  
+      // Log the data to verify we have it
+      console.log("Received data:", JSON.stringify(data, null, 2))
+  
+      // Generate a custom filename based on the data content
+      const fileName = getFormattedFileName(data)
+      console.log("Generated filename:", fileName)
+  
+      // Convert data to JSON string
+      const jsonData = JSON.stringify(data, null, 2)
+  
+      // Save to Vercel Blob
       const blob = await put(fileName, jsonData, {
         contentType: "application/json",
         access: "public",
-      });
-
-      console.log(`数据保存成功到 ${fileName}: blob.url=`, blob.url);
-
-      return res.status(200).json({
+      })
+  
+      console.log(`Data saved successfully to ${fileName}: blob.url=`, blob.url)
+  
+      // Return success response
+      return NextResponse.json({
         success: true,
-        message: "数据保存成功",
+        message: "Data saved successfully",
         url: blob.url,
         fileName,
-      });
+      })
     } catch (error) {
-      console.error("保存数据失败:", error);
-      return res.status(500).json({
-        success: false,
-        message: "服务器错误",
-        error: error.message,
-      });
+      console.error("Failed to save data:", error)
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Server error",
+          error: error.message,
+        },
+        { status: 500 },
+      )
     }
   } else if (req.method === "GET") {
     try {
