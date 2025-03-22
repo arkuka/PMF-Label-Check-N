@@ -1,6 +1,7 @@
 import { list, get } from '@vercel/blob';
 
 export default async function handler(req, res) {
+  console.log('logviewer.js ; 请求方法:', req.method);
   if (req.method === 'LIST') {
     try {
       const { blobs } = await list();
