@@ -115,6 +115,7 @@
       tbody.innerHTML = '';
       files.forEach(file => {
         const tr = document.createElement('tr');
+        console.log(file);
         tr.innerHTML = `
           <td><input type="checkbox" class="file-checkbox" data-filename="${file.fileName}"></td>
           <td>${file.fileName}</td>
