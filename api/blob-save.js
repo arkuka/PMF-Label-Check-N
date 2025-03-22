@@ -1,28 +1,40 @@
 import { put, get, list } from '@vercel/blob';
 
-// 获取当前时间戳作为文件名前缀（格式：YYYYMMDD_HHMMSS）
-const getTimestampPrefix = () => {
+// 生成格式化的文件名
+const getFormattedFileName = (data) => {
   const now = new Date();
-  const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
-  return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+  
+  // 从 barcodes 数组中找到第一个非空的6位数字 barcode
+  const barcode = data.barcodes.find(b => b && b.length === 6) || 'unknown';
+  
+  // 构建文件名
+  const fileNameParts = [
+    `${month}${day}`,
+    `${hours}${minutes}${seconds}`,
+    data.lineNumber || 'unknown',
+    barcode,
+    data.palletNumber || 'unknown',
+    data.boxCount || 'unknown',
+    data.hcode || 'unknown',
+    data.productName || 'unknown'
+  ];
+  
+  return `${fileNameParts.join('-')}.json`;
 };
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
-      const data = req.body;
-      const fileName = `${getTimestampPrefix()}.json`;
+      const data = req.body.data; // 直接获取 data 对象
+      const fileName = getFormattedFileName(data);
       
-      // 直接创建新文件，不需要检查现有文件
-      const jsonData = JSON.stringify([{
-        data: data,
-        timestamp: new Date().toISOString(),
-      }], null, 2);
+      // 直接保存原始 data，不添加额外的 timestamp
+      const jsonData = JSON.stringify(data, null, 2);
 
       const blob = await put(fileName, jsonData, {
         contentType: "application/json",
