@@ -12,6 +12,8 @@ const getFormattedFileName = (data) => {
   // 从 barcodes 数组中找到第一个非空的6位数字 barcode
   // const barcode = data.barcodes.find(b => b && b.length === 6) || 'unknown';
   
+  console.log('data:', data);
+
   // 构建文件名
   const fileNameParts = [
     `${month}${day}`,
