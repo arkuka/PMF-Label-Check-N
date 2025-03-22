@@ -10,14 +10,14 @@ const getFormattedFileName = (data) => {
   const seconds = String(now.getSeconds()).padStart(2, '0');
   
   // 从 barcodes 数组中找到第一个非空的6位数字 barcode
-  const barcode = data.barcodes.find(b => b && b.length === 6) || 'unknown';
+  // const barcode = data.barcodes.find(b => b && b.length === 6) || 'unknown';
   
   // 构建文件名
   const fileNameParts = [
     `${month}${day}`,
     `${hours}${minutes}${seconds}`,
     data.lineNumber || 'unknown',
-    data.barcodes[4] || 'unknown',
+    data.barcodes.palletLabel || 'unknown',
     data.palletNumber || 'unknown',
     data.boxCount || 'unknown',
     data.hcode || 'unknown',
