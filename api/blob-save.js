@@ -39,6 +39,7 @@ const getFormattedFileName = (data) => {
 // Helper function to format filename from a Date object and data
 const getFormattedFileNameFromDate = (date, data) => {
   // Format the date components
+  const year = String(date.getFullYear());
   const month = String(date.getMonth() + 1).padStart(2, "0")
   const day = String(date.getDate()).padStart(2, "0")
   const hours = String(date.getHours()).padStart(2, "0")
@@ -57,7 +58,7 @@ const getFormattedFileNameFromDate = (date, data) => {
 
   // Construct filename parts
   const fileNameParts = [
-    `${month}${day}`,
+    `${year}${month}${day}`,
     `${hours}${minutes}${seconds}`,
     actualData.lineNumber || "unknown",
     palletLabel,
