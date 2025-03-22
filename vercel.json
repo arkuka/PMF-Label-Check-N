@@ -1,7 +1,16 @@
 {
   "version": 2,
-  "builds": [{ "src": "api/blob-save.js", "use": "@vercel/node" }, { "src": "api/logviewer.js", "use": "@vercel/node" }, { "src": "api/index.js", "use": "@vercel/node" }, { "src": "public/**", "use": "@vercel/static" }],
-  "routes": [{ "src": "/api/blob-save", "dest": "/api/blob-save.js" }, { "src": "/api/logviewer", "dest": "/api/logviewer.js" }, { "src": "/api/index", "dest": "/api/index.js" }, { "src": "/(.*)", "dest": "/public/$1" }]
+  "builds": [
+    { "src": "api/blob-save.js", "use": "@vercel/node" },
+    { "src": "api/logviewer.js", "use": "@vercel/node" },
+    { "src": "api/index.js", "use": "@vercel/node" },
+    { "src": "public/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/logviewer.html", "dest": "/public/logviewer.html" }, // 明确指定 logviewer.html
+    { "src": "/api/blob-save", "dest": "/api/blob-save.js" },
+    { "src": "/api/logviewer", "dest": "/api/logviewer.js" },
+    { "src": "/api/index", "dest": "/api/index.js" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ]
 }
-
-
