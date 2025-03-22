@@ -1,14 +1,18 @@
 import { put, get, list } from '@vercel/blob';
 
-// Generate formatted filename
 const getFormattedFileName = (data) => {
-  const now = new Date()
-  const month = String(now.getMonth() + 1).padStart(2, "0")
-  const day = String(now.getDate()).padStart(2, "0")
-  const hours = String(now.getHours()).padStart(2, "0")
-  const minutes = String(now.getMinutes()).padStart(2, "0")
-  const seconds = String(now.getSeconds()).padStart(2, "0")
+  // Create a date object with Sydney timezone
+  const sydneyTime = new Date().toLocaleString("en-AU", { timeZone: "Australia/Sydney" })
+  const sydneyDate = new Date(sydneyTime)
 
+  // Format the date components
+  const month = String(sydneyDate.getMonth() + 1).padStart(2, "0")
+  const day = String(sydneyDate.getDate()).padStart(2, "0")
+  const hours = String(sydneyDate.getHours()).padStart(2, "0")
+  const minutes = String(sydneyDate.getMinutes()).padStart(2, "0")
+  const seconds = String(sydneyDate.getSeconds()).padStart(2, "0")
+
+  console.log("Sydney time:", sydneyTime)
   console.log("Formatting filename from data:", data)
 
   // Access the barcodes object correctly
