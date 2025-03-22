@@ -96,7 +96,8 @@
     // 获取文件列表
     async function fetchFiles() {
       try {
-        const response = await fetch('/api/data', { method: 'LIST' });
+        console.log('fetchFiels --001')
+        const response = await fetch('/api/logviewer', { method: 'LIST' });
         const result = await response.json();
         if (result.success) {
           allFiles = result.files;
@@ -156,7 +157,7 @@
     async function viewFile(fileName) {
       try {
         const date = fileName.split('-')[0]; // 提取日期部分
-        const response = await fetch(`/api/data?date=${date}`);
+        const response = await fetch(`/api/logviewer?date=${date}`);
         const result = await response.json();
         if (result.success) {
           const contentDiv = document.getElementById('fileContent');
@@ -199,7 +200,7 @@
       for (const fileName of selectedFiles) {
         const date = fileName.split('-')[0];
         try {
-          const response = await fetch(`/api/data?date=${date}`);
+          const response = await fetch(`/api/logviewer?date=${date}`);
           const result = await response.json();
           if (result.success) {
             contentDiv.innerHTML += `<h3>${fileName}</h3><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
