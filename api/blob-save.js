@@ -1,37 +1,56 @@
-import { put, get, list } from '@vercel/blob';
+import { put, get, list } from "@vercel/blob"
 
+// Generate formatted filename using the timestamp from the data
 const getFormattedFileName = (data) => {
-  // Create a date object with Sydney timezone
-  const sydneyTime = new Date().toLocaleString("en-AU", { timeZone: "Australia/Sydney" })
-  const sydneyDate = new Date(sydneyTime)
-
-  // Format the date components
-  const month = String(sydneyDate.getMonth() + 1).padStart(2, "0")
-  const day = String(sydneyDate.getDate()).padStart(2, "0")
-  const hours = String(sydneyDate.getHours()).padStart(2, "0")
-  const minutes = String(sydneyDate.getMinutes()).padStart(2, "0")
-  const seconds = String(sydneyDate.getSeconds()).padStart(2, "0")
-
-  console.log("Sydney time:", sydneyTime)
   console.log("Formatting filename from data:", data)
 
-  // Access the barcodes object correctly
-  // Based on your frontend code, barcodes is an array of values corresponding to headers
+  // Extract the timestamp from the data
+  // Handle both direct data object and nested data object
+  const timestamp = data.timestamp || (data.data && data.data.timestamp)
+
+  if (!timestamp) {
+    console.warn("No timestamp found in data, using current time")
+    // Fallback to current time if no timestamp is found
+    const now = new Date()
+    return getFormattedFileNameFromDate(now, data)
+  }
+
+  // Parse the timestamp string into a Date object
+  // Format example: "3/21/2025, 2:50:33 AM"
+  const date = new Date(timestamp)
+
+  return getFormattedFileNameFromDate(date, data)
+}
+
+// Helper function to format filename from a Date object and data
+const getFormattedFileNameFromDate = (date, data) => {
+  // Format the date components
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  const hours = String(date.getHours()).padStart(2, "0")
+  const minutes = String(date.getMinutes()).padStart(2, "0")
+  const seconds = String(date.getSeconds()).padStart(2, "0")
+
+  // Handle both direct data object and nested data object
+  const actualData = data.data || data
+
+  // Access the barcodes array correctly
+  const barcodes = actualData.barcodes || []
   const palletLabel =
-    data.barcodes && Array.isArray(data.barcodes)
-      ? data.barcodes[4] || "unknown" // palletLabel is the 5th item (index 4)
-      : data.barcodes?.palletLabel || "unknown"
+    Array.isArray(barcodes) && barcodes.length >= 5
+      ? barcodes[4] || "unknown" // palletLabel is the 5th item (index 4)
+      : actualData.barcodes?.palletLabel || "unknown"
 
   // Construct filename parts
   const fileNameParts = [
     `${month}${day}`,
     `${hours}${minutes}${seconds}`,
-    data.lineNumber || "unknown",
+    actualData.lineNumber || "unknown",
     palletLabel,
-    data.palletNumber || "unknown",
-    data.boxCount || "unknown",
-    data.hcode || "unknown",
-    data.productName || "unknown",
+    actualData.palletNumber || "unknown",
+    actualData.boxCount || "unknown",
+    actualData.hcode || "unknown",
+    actualData.productName || "unknown",
   ]
 
   return `${fileNameParts.join("-")}.json`
