@@ -17,7 +17,7 @@ const getFormattedFileName = (data) => {
     `${month}${day}`,
     `${hours}${minutes}${seconds}`,
     data.lineNumber || 'unknown',
-    data.barcodes[0] || 'unknown',
+    data.barcodes[4] || 'unknown',
     data.palletNumber || 'unknown',
     data.boxCount || 'unknown',
     data.hcode || 'unknown',
