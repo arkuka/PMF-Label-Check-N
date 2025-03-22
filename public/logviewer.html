@@ -222,14 +222,34 @@
         if (file) {
           try {
             const response = await fetch(file.url);
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const jsonData = await response.json();
-            // 将JSON数据格式化
-            const formattedData = formatData(jsonData, fileName);
-            data.push(formattedData);
+            console.log(`Fetched data for ${fileName}:`, jsonData); // Debug log
+
+            // 确保jsonData是数组
+            if (Array.isArray(jsonData)) {
+              jsonData.forEach(item => {
+                const formattedData = formatData(item, fileName);
+                data.push(formattedData);
+              });
+            } else {
+              // 如果不是数组，直接格式化
+              const formattedData = formatData(jsonData, fileName);
+              data.push(formattedData);
+            }
           } catch (error) {
             console.error(`Error fetching file ${fileName}:`, error);
           }
         }
+      }
+
+      console.log('Data to export:', data); // Debug log
+
+      if (data.length === 0) {
+        alert('没有可导出的数据');
+        return;
       }
 
       // 创建工作表
@@ -260,26 +280,29 @@
 
     // 格式化数据
     function formatData(jsonData, fileName) {
-      // 假设jsonData是一个数组，获取第一个元素
-      const data = jsonData[0]?.data || {};
+      // 确保获取data对象
+      const data = jsonData.data || jsonData;
       const barcodes = data.barcodes || [];
 
-      return {
+      const formatted = {
         timestamp: data.timestamp || "",
         lineNumber: data.lineNumber || "",
-        palletLabel: barcodes[4] || "", // palletLabel
+        palletLabel: barcodes[4] || "",
         productName: data.productName || "",
         palletNumber: data.palletNumber || "",
         boxCount: data.boxCount || "",
         hcode: data.hcode || "",
         ubd: data.ubd || "",
-        topLabel: barcodes[0] || "",    // topLabel
-        sideLabel: barcodes[1] || "",   // sideLabel
-        bottomLabel: barcodes[2] || "", // bottomLabel
-        boxLabel: barcodes[3] || "",    // boxLabel
-        waterMark: barcodes[5] || "",   // waterMark
+        topLabel: barcodes[0] || "",
+        sideLabel: barcodes[1] || "",
+        bottomLabel: barcodes[2] || "",
+        boxLabel: barcodes[3] || "",
+        waterMark: barcodes[5] || "",
         filename: fileName
       };
+
+      console.log(`Formatted data for ${fileName}:`, formatted); // Debug log
+      return formatted;
     }
   </script>
 </body>
