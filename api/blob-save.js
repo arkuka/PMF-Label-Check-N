@@ -1,63 +1,29 @@
 import { put, get, list } from '@vercel/blob';
 
-// 获取当前日期前缀（格式：YYYYMMDD）
-const getDatePrefix = () => {
+// 获取当前时间戳作为文件名前缀（格式：YYYYMMDD_HHMMSS）
+const getTimestampPrefix = () => {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  return `${year}${month}${day}`;
-};
-
-// 查找或确定当天的唯一文件
-const getDailyFileName = async (datePrefix) => {
-  const { blobs } = await list();
-  const matchingFiles = blobs.filter(blob => blob.pathname.startsWith(datePrefix));
-  
-  if (matchingFiles.length > 0) {
-    // 始终使用最早创建的文件作为当天的唯一文件
-    return matchingFiles.sort((a, b) => new Date(a.uploadedAt) - new Date(b.uploadedAt))[0].pathname;
-  }
-  // 如果没有文件，返回基础文件名（Vercel 会添加后缀）
-  return `${datePrefix}.json`;
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  return `${year}${month}${day}_${hours}${minutes}${seconds}`;
 };
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
       const data = req.body;
-      const datePrefix = getDatePrefix();
-
-      // 获取或确定当天的唯一文件名
-      let fileName = await getDailyFileName(datePrefix);
-      let existingData = [];
-
-      // 如果文件已存在，读取其内容
-      try {
-        const existingBlob = await get(fileName);
-        if (existingBlob) {
-          const text = await existingBlob.text();
-          existingData = JSON.parse(text);
-        }
-      } catch (e) {
-        console.log(`无法读取文件 ${fileName}，将创建新文件`);
-      }
-
-      // 如果 existingData 不是数组，初始化为数组
-      if (!Array.isArray(existingData)) {
-        existingData = [];
-      }
-
-      // 将新数据追加到数组中
-      existingData.push({
+      const fileName = `${getTimestampPrefix()}.json`;
+      
+      // 直接创建新文件，不需要检查现有文件
+      const jsonData = JSON.stringify([{
         data: data,
         timestamp: new Date().toISOString(),
-      });
+      }], null, 2);
 
-      // 将更新后的数据转换为 JSON 字符串
-      const jsonData = JSON.stringify(existingData, null, 2);
-
-      // 更新文件内容
       const blob = await put(fileName, jsonData, {
         contentType: "application/json",
         access: "public",
@@ -81,22 +47,19 @@ export default async function handler(req, res) {
     }
   } else if (req.method === "GET") {
     try {
-      const dateParam = req.query.date || getDatePrefix();
-      if (!/^\d{8}$/.test(dateParam)) {
+      const fileName = req.query.fileName;
+      if (!fileName) {
         return res.status(400).json({
           success: false,
-          message: "日期格式错误，应为 YYYYMMDD",
+          message: "请提供文件名",
         });
       }
 
-      const fileName = await getDailyFileName(dateParam);
       const blob = await get(fileName);
-
       if (!blob) {
-        return res.status(200).json({
-          success: true,
-          data: [],
-          message: `日期 ${dateParam} 暂无数据`,
+        return res.status(404).json({
+          success: false,
+          message: `文件 ${fileName} 不存在`,
         });
       }
 
