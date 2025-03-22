@@ -33,10 +33,17 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
       const data = req.body.data; // 直接获取 data 对象
-      const fileName = getFormattedFileName(data);
+
+      console.log('data:', data);
+
+      
       
       // 直接保存原始 data，不添加额外的 timestamp
       const jsonData = JSON.stringify(data, null, 2);
+
+      console.log('jsonData:', jsonData);
+
+      const fileName = getFormattedFileName(data);
 
       const blob = await put(fileName, jsonData, {
         contentType: "application/json",
