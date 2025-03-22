@@ -3,10 +3,226 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title></title>  
+  <title>Vercel JSON File Manager</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    .filter-section, .action-section {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    input, button {
+      padding: 8px;
+    }
+    .file-content {
+      white-space: pre-wrap;
+      background-color: #f9f9f9;
+      padding: 10px;
+      border: 1px solid #ddd;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  
-  <script src="test.js"></script> <!-- 引入 JavaScript 文件 -->
+  <div class="container">
+    <h1>Vercel JSON File Manager</h1>
+
+    <!-- 筛选部分 -->
+    <div class="filter-section">
+      <input type="text" id="filterInput" placeholder="输入日期 (YYYYMMDD) 或文件名关键词" />
+      <button onclick="filterFiles()">筛选</button>
+      <button onclick="resetFilter()">重置</button>
+    </div>
+
+    <!-- 操作部分 -->
+    <div class="action-section">
+      <button onclick="downloadSelected()">下载选中文件</button>
+      <button onclick="viewSelected()">查看选中文件内容</button>
+    </div>
+
+    <!-- 文件列表 -->
+    <table id="fileTable">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+          <th>文件名</th>
+          <th>大小 (字节)</th>
+          <th>上传时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="fileList"></tbody>
+    </table>
+
+    <!-- 文件内容显示区域 -->
+    <div id="fileContent" class="file-content hidden"></div>
+  </div>
+
+  <script>
+    let allFiles = [];
+
+    // 初始化加载文件列表
+    window.onload = async () => {
+      await fetchFiles();
+      renderFileList(allFiles);
+    };
+
+    // 获取文件列表
+    async function fetchFiles() {
+      try {
+        const response = await fetch('/api/data', { method: 'LIST' });
+        const result = await response.json();
+        if (result.success) {
+          allFiles = result.files;
+        } else {
+          alert('获取文件列表失败: ' + result.message);
+        }
+      } catch (error) {
+        console.error('Error fetching files:', error);
+        alert('获取文件列表失败');
+      }
+    }
+
+    // 渲染文件列表
+    function renderFileList(files) {
+      const tbody = document.getElementById('fileList');
+      tbody.innerHTML = '';
+      files.forEach(file => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><input type="checkbox" class="file-checkbox" data-filename="${file.fileName}"></td>
+          <td>${file.fileName}</td>
+          <td>${file.size}</td>
+          <td>${new Date(file.uploadedAt).toLocaleString()}</td>
+          <td>
+            <button onclick="viewFile('${file.fileName}')">查看</button>
+            <button onclick="downloadFile('${file.url}', '${file.fileName}')">下载</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 筛选文件
+    function filterFiles() {
+      const filterValue = document.getElementById('filterInput').value.toLowerCase();
+      const filteredFiles = allFiles.filter(file => 
+        file.fileName.toLowerCase().includes(filterValue)
+      );
+      renderFileList(filteredFiles);
+    }
+
+    // 重置筛选
+    function resetFilter() {
+      document.getElementById('filterInput').value = '';
+      renderFileList(allFiles);
+    }
+
+    // 全选/取消全选
+    function toggleSelectAll() {
+      const selectAll = document.getElementById('selectAll').checked;
+      document.querySelectorAll('.file-checkbox').forEach(checkbox => {
+        checkbox.checked = selectAll;
+      });
+    }
+
+    // 查看单个文件内容
+    async function viewFile(fileName) {
+      try {
+        const date = fileName.split('-')[0]; // 提取日期部分
+        const response = await fetch(`/api/data?date=${date}`);
+        const result = await response.json();
+        if (result.success) {
+          const contentDiv = document.getElementById('fileContent');
+          contentDiv.textContent = JSON.stringify(result.data, null, 2);
+          contentDiv.classList.remove('hidden');
+        } else {
+          alert('查看文件失败: ' + result.message);
+        }
+      } catch (error) {
+        console.error('Error viewing file:', error);
+        alert('查看文件失败');
+      }
+    }
+
+    // 下载单个文件
+    function downloadFile(url, fileName) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // 获取选中的文件
+    function getSelectedFiles() {
+      const checkboxes = document.querySelectorAll('.file-checkbox:checked');
+      return Array.from(checkboxes).map(cb => cb.dataset.filename);
+    }
+
+    // 查看选中文件内容
+    async function viewSelected() {
+      const selectedFiles = getSelectedFiles();
+      if (selectedFiles.length === 0) {
+        alert('请先选择文件');
+        return;
+      }
+      const contentDiv = document.getElementById('fileContent');
+      contentDiv.innerHTML = '';
+      for (const fileName of selectedFiles) {
+        const date = fileName.split('-')[0];
+        try {
+          const response = await fetch(`/api/data?date=${date}`);
+          const result = await response.json();
+          if (result.success) {
+            contentDiv.innerHTML += `<h3>${fileName}</h3><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+          }
+        } catch (error) {
+          console.error('Error viewing file:', error);
+        }
+      }
+      contentDiv.classList.remove('hidden');
+    }
+
+    // 下载选中文件
+    function downloadSelected() {
+      const selectedFiles = getSelectedFiles();
+      if (selectedFiles.length === 0) {
+        alert('请先选择文件');
+        return;
+      }
+      selectedFiles.forEach(fileName => {
+        const file = allFiles.find(f => f.fileName === fileName);
+        if (file) downloadFile(file.url, file.fileName);
+      });
+    }
+  </script>
 </body>
 </html>
