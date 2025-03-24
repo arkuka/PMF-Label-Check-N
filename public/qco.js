@@ -546,7 +546,7 @@ document.addEventListener("DOMContentLoaded", () => {
       productName,
       barcodes: headers.slice(1).map((header) => {
         const value = fields[header.toLowerCase()] || "";
-        return `${value} (${header})`; // 在值后添加备注，格式为 "值 (字段名)"
+        return `${value}` //`(${header})`; // 在值后添加备注，格式为 "值 (字段名)"
       }),
       lineNumber,
       palletNumber,
