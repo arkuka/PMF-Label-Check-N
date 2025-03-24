@@ -17,7 +17,7 @@
       flex-direction: column;
       gap: 20px;
       padding-right: 20px;
-      transition: padding-top 0.3s ease; /* 平滑过渡 */
+      transition: padding-top 0.3s ease;
     }
     table {
       width: 100%;
@@ -58,13 +58,17 @@
       max-height: 300px;
       overflow-y: auto;
       position: fixed;
-      top: 80px; /* 距离顶部固定位置 */
+      top: 80px;
       left: 50%;
       transform: translateX(-50%);
       width: 80%;
       max-width: 1100px;
       z-index: 1000;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: none; /* 默认隐藏 */
+    }
+    .file-content.visible {
+      display: block; /* 显示时设置为block */
     }
     .filename {
       cursor: pointer;
@@ -98,6 +102,7 @@
       </div>
       <button onclick="filterFiles()">Filter</button>
       <button onclick="resetFilter()">Reset</button>
+      <button id="toggleContentBtn" onclick="toggleFileContent()">Show Content</button>
     </div>
 
     <!-- Action section -->
@@ -124,6 +129,7 @@
   <script>
     let allFiles = [];
     let currentSelectedFile = null;
+    let isContentVisible = false;
 
     // Initialize
     window.onload = async () => {
@@ -233,8 +239,30 @@
       document.getElementById('endDateTime').title = 'Format: YYYY-MM-DD HH:MM:SS (empty for current time)';
       document.getElementById('fileContent').textContent = '';
       const container = document.getElementById('mainContainer');
-      container.style.paddingTop = '0px'; // 重置顶部间距
+      container.style.paddingTop = '0px';
       renderFileList(allFiles);
+    }
+
+    // Toggle file content visibility
+    function toggleFileContent() {
+      const contentDiv = document.getElementById('fileContent');
+      const toggleBtn = document.getElementById('toggleContentBtn');
+      const container = document.getElementById('mainContainer');
+
+      isContentVisible = !isContentVisible;
+
+      if (isContentVisible) {
+        contentDiv.classList.add('visible');
+        toggleBtn.textContent = 'Hide Content';
+        if (contentDiv.textContent) { // 如果有内容，则调整间距
+          const contentHeight = contentDiv.offsetHeight;
+          container.style.paddingTop = `${contentHeight + 100}px`;
+        }
+      } else {
+        contentDiv.classList.remove('visible');
+        toggleBtn.textContent = 'Show Content';
+        container.style.paddingTop = '0px';
+      }
     }
 
     // Toggle select all
@@ -261,10 +289,12 @@
         row.classList.add('selected-row');
         currentSelectedFile = element;
 
-        // 动态调整容器顶部间距
-        const contentHeight = contentDiv.offsetHeight;
-        const container = document.getElementById('mainContainer');
-        container.style.paddingTop = `${contentHeight + 100}px`; // 100px包括标题和额外间距
+        // 如果内容区域可见，调整容器间距
+        if (isContentVisible) {
+          const container = document.getElementById('mainContainer');
+          const contentHeight = contentDiv.offsetHeight;
+          container.style.paddingTop = `${contentHeight + 100}px`;
+        }
 
       } catch (error) {
         console.error('Error viewing file:', error);
