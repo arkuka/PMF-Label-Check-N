@@ -16,7 +16,8 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
-      padding-right: 20px; /* 移除右侧大padding，因为内容区域不再在右上角 */
+      padding-right: 20px;
+      transition: padding-top 0.3s ease; /* 平滑过渡 */
     }
     table {
       width: 100%;
@@ -56,12 +57,12 @@
       border: 1px solid #ddd;
       max-height: 300px;
       overflow-y: auto;
-      position: fixed; /* 保持固定定位 */
-      top: 80px; /* 调整位置到标题下方 */
-      left: 50%; /* 居中 */
-      transform: translateX(-50%); /* 居中偏移 */
-      width: 80%; /* 宽度占80% */
-      max-width: 1100px; /* 与容器宽度匹配 */
+      position: fixed;
+      top: 80px; /* 距离顶部固定位置 */
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      max-width: 1100px;
       z-index: 1000;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
@@ -73,15 +74,15 @@
       text-decoration: underline;
     }
     .selected-row {
-      background-color: #e6f3ff; /* 淡蓝色 */
+      background-color: #e6f3ff;
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" id="mainContainer">
     <h1>Vercel JSON File Manager</h1>
 
-    <!-- File content display area - moved here -->
+    <!-- File content display area -->
     <div id="fileContent" class="file-content"></div>
 
     <!-- Filter section -->
@@ -231,6 +232,8 @@
       document.getElementById('endDateTime').value = '';
       document.getElementById('endDateTime').title = 'Format: YYYY-MM-DD HH:MM:SS (empty for current time)';
       document.getElementById('fileContent').textContent = '';
+      const container = document.getElementById('mainContainer');
+      container.style.paddingTop = '0px'; // 重置顶部间距
       renderFileList(allFiles);
     }
 
@@ -257,6 +260,11 @@
         const row = element.closest('tr');
         row.classList.add('selected-row');
         currentSelectedFile = element;
+
+        // 动态调整容器顶部间距
+        const contentHeight = contentDiv.offsetHeight;
+        const container = document.getElementById('mainContainer');
+        container.style.paddingTop = `${contentHeight + 100}px`; // 100px包括标题和额外间距
 
       } catch (error) {
         console.error('Error viewing file:', error);
