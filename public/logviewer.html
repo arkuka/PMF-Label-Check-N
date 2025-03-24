@@ -40,6 +40,16 @@
       flex-wrap: wrap; /* 添加这行以支持更好的响应式布局 */
     }
 
+    .datetime-group {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .datetime-group label {
+      white-space: nowrap;
+    }
+
     input, button {
       padding: 8px;
     }
@@ -73,8 +83,14 @@
     <!-- 筛选部分 -->
     <div class="filter-section">
       <input type="text" id="filterInput" placeholder="输入日期 (YYYYMMDD) 或文件名关键词" />
-      <input type="date" id="startDate" placeholder="开始日期">
-      <input type="date" id="endDate" placeholder="结束日期">
+      <div class="datetime-group">
+        <label>开始时间:</label>
+        <input type="datetime-local" id="startDateTime" step="1">
+      </div>
+      <div class="datetime-group">
+        <label>结束时间:</label>
+        <input type="datetime-local" id="endDateTime" step="1">
+      </div>
       <button onclick="filterFiles()">筛选</button>
       <button onclick="resetFilter()">重置</button>
     </div>
@@ -106,10 +122,13 @@
   <script>
     let allFiles = [];
 
-    // 初始化加载文件列表
+    // 初始化时添加提示
     window.onload = async () => {
       await fetchFiles();
       renderFileList(allFiles);
+      // 添加悬停提示
+      document.getElementById('startDateTime').title = '格式: xxxx年xx月xx日 xx时xx分xx秒';
+      document.getElementById('endDateTime').title = '格式: xxxx年xx月xx日 xx时xx分xx秒 (留空为当前时间)';
     };
 
     // 获取文件列表
@@ -147,11 +166,22 @@
       });
     }
 
+    function formatDateTime(date) {
+      if (!date) return '';
+      const d = new Date(date);
+      return `${d.getFullYear()}年${padZero(d.getMonth() + 1)}月${padZero(d.getDate())}日 ${padZero(d.getHours())}时${padZero(d.getMinutes())}分${padZero(d.getSeconds())}秒`;
+    }
+
+    // 补零函数
+    function padZero(num) {
+      return num < 10 ? `0${num}` : num;
+    }
+
     // 筛选文件
     function filterFiles() {
       const filterValue = document.getElementById('filterInput').value.toLowerCase();
-      const startDate = document.getElementById('startDate').value;
-      const endDate = document.getElementById('endDate').value;
+      const startDateTime = document.getElementById('startDateTime').value;
+      let endDateTime = document.getElementById('endDateTime').value;
 
       let filteredFiles = allFiles;
 
@@ -162,35 +192,44 @@
         );
       }
 
-      // 按时间范围筛选
-      if (startDate || endDate) {
+      // 按日期时间范围筛选
+      if (startDateTime || endDateTime) {
         filteredFiles = filteredFiles.filter(file => {
           const fileDate = new Date(file.uploadedAt);
           
-          // 如果只设置了开始日期
-          if (startDate && !endDate) {
-            const start = new Date(startDate);
-            return fileDate >= start;
+          // 处理开始时间
+          const start = startDateTime ? new Date(startDateTime) : null;
+          
+          // 处理结束时间，如果为空则使用当前时间
+          const end = endDateTime ? new Date(endDateTime) : new Date();
+
+          // 如果只设置了开始时间
+          if (start && !endDateTime) {
+            return fileDate >= start && fileDate <= new Date();
           }
           
-          // 如果只设置了结束日期
-          if (!startDate && endDate) {
-            const end = new Date(endDate);
-            // 设置结束日期为当天的23:59:59
-            end.setHours(23, 59, 59, 999);
+          // 如果只设置了结束时间
+          if (!startDateTime && end) {
             return fileDate <= end;
           }
           
           // 如果都设置了
-          if (startDate && endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            end.setHours(23, 59, 59, 999);
+          if (start && end) {
             return fileDate >= start && fileDate <= end;
           }
           
           return true;
         });
+      }
+
+      // 更新输入框显示为中文格式（仅用于查看，不影响实际筛选）
+      if (startDateTime) {
+        document.getElementById('startDateTime').title = formatDateTime(startDateTime);
+      }
+      if (endDateTime) {
+        document.getElementById('endDateTime').title = formatDateTime(endDateTime);
+      } else {
+        document.getElementById('endDateTime').title = formatDateTime(new Date());
       }
 
       renderFileList(filteredFiles);
@@ -199,8 +238,10 @@
     // 重置筛选
     function resetFilter() {
       document.getElementById('filterInput').value = '';
-      document.getElementById('startDate').value = '';
-      document.getElementById('endDate').value = '';
+      document.getElementById('startDateTime').value = '';
+      document.getElementById('startDateTime').title = '';
+      document.getElementById('endDateTime').value = '';
+      document.getElementById('endDateTime').title = '';
       renderFileList(allFiles);
     }
 
