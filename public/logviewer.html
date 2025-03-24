@@ -11,64 +11,116 @@
       padding: 20px;
       max-width: 1200px;
       margin: 0 auto;
+      background-color: #f5f5f5;
     }
     .container {
       display: flex;
       flex-direction: column;
       gap: 20px;
-      padding-right: 20px;
       transition: padding-top 0.3s ease;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 20px;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    h1 {
+      margin: 0;
+      color: #333;
+      font-size: 24px;
+      border-bottom: 2px solid #0066cc;
+      padding-bottom: 10px;
     }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-      text-align: left;
-    }
-    th {
-      background-color: #f4f4f4;
-    }
-    .filter-section, .action-section {
-      display: flex;
-      gap: 10px;
+    .control-panel {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
       align-items: center;
     }
-    .filter-section {      
+    .filter-section {
+      display: flex;
       flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
     }
-    .datetime-group {
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .filter-group {
       display: flex;
       align-items: center;
       gap: 5px;
     }
-    .datetime-group label {
+    .filter-group label {
       white-space: nowrap;
+      color: #555;
     }
     input, button {
-      padding: 8px;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    input:focus {
+      outline: none;
+      border-color: #0066cc;
+      box-shadow: 0 0 3px rgba(0,102,204,0.3);
+    }
+    button {
+      background-color: #0066cc;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #0052a3;
+    }
+    button:active {
+      background-color: #003d7a;
     }
     .file-content {
       white-space: pre-wrap;
       background-color: #f9f9f9;
-      padding: 10px;
+      padding: 15px;
       border: 1px solid #ddd;
+      border-radius: 4px;
       max-height: 300px;
       overflow-y: auto;
       position: fixed;
-      top: 80px;
+      top: 20px;
       left: 50%;
       transform: translateX(-50%);
       width: 80%;
-      max-width: 1100px;
+      max-width: 1160px;
       z-index: 1000;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      display: none; /* 默认隐藏 */
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      display: none;
     }
     .file-content.visible {
-      display: block; /* 显示时设置为block */
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #eee;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+      color: #333;
+      font-weight: 600;
+    }
+    tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+    tr:hover {
+      background-color: #f0f0f0;
     }
     .filename {
       cursor: pointer;
@@ -78,40 +130,42 @@
       text-decoration: underline;
     }
     .selected-row {
-      background-color: #e6f3ff;
+      background-color: #e6f3ff !important;
     }
   </style>
 </head>
 <body>
   <div class="container" id="mainContainer">
-    <!--h5>Log File Viewer</h5-->
+    <h1>Vercel JSON File Manager</h1>
 
     <!-- File content display area -->
     <div id="fileContent" class="file-content"></div>
 
-    <!-- Filter section -->
-    <div class="filter-section">
-      <div>
-        <label>Keyword:</label>
-        <input type="text" id="filterInput" placeholder="Enter keyword for filtering" />
+    <!-- Control panel -->
+    <div class="control-panel">
+      <!-- Filter section -->
+      <div class="filter-section">
+        <div class="filter-group">
+          <label>Keyword:</label>
+          <input type="text" id="filterInput" placeholder="Enter keyword for filtering" />
+        </div>
+        <div class="filter-group">
+          <label>Start Time:</label>
+          <input type="datetime-local" id="startDateTime" step="1">
+        </div>
+        <div class="filter-group">
+          <label>End Time:</label>
+          <input type="datetime-local" id="endDateTime" step="1">
+        </div>
       </div>
-      <div class="datetime-group">
-        <label>Start Time:</label>
-        <input type="datetime-local" id="startDateTime" step="1">
-      </div>
-      <div class="datetime-group">
-        <label>End Time:</label>
-        <input type="datetime-local" id="endDateTime" step="1">
-      </div>
-      <button onclick="filterFiles()">Filter</button>
-      <button onclick="resetFilter()">Reset</button>
-      <button id="toggleContentBtn" onclick="toggleFileContent()">Show Text Panel</button>
-    </div>
 
-    <!-- Action section -->
-    <div class="action-section">
-      <button onclick="downloadSelected()">Download Selected</button>
-      <button onclick="exportToExcel()">Export Selected to Excel</button>
+      <!-- Action buttons -->
+      <div class="action-buttons">
+        <button onclick="filterFiles()">Filter</button>
+        <button onclick="resetFilter()">Reset</button>
+        <button id="toggleContentBtn" onclick="toggleFileContent()">Show Text Panel</button>
+        <button onclick="exportToExcel()">Export to Excel</button>
+      </div>
     </div>
 
     <!-- File list -->
@@ -122,7 +176,6 @@
           <th>Filename</th>
           <th>Size (bytes)</th>
           <th>Upload Time</th>
-          <th>Actions</th>
         </tr>
       </thead>
       <tbody id="fileList"></tbody>
@@ -170,9 +223,6 @@
           <td><span class="filename" onclick="viewFile('${file.url}', this)">${file.fileName}</span></td>
           <td>${file.size}</td>
           <td>${new Date(file.uploadedAt).toLocaleString()}</td>
-          <td>
-            <button onclick="downloadFile('${file.url}', '${file.fileName}')">Download</button>
-          </td>
         `;
         tbody.appendChild(tr);
       });
@@ -256,14 +306,14 @@
 
       if (isContentVisible) {
         contentDiv.classList.add('visible');
-        toggleBtn.textContent = 'Hide Content';
-        if (contentDiv.textContent) { // 如果有内容，则调整间距
+        toggleBtn.textContent = 'Hide Text Panel';
+        if (contentDiv.textContent) {
           const contentHeight = contentDiv.offsetHeight;
-          container.style.paddingTop = `${contentHeight + 100}px`;
+          container.style.paddingTop = `${contentHeight + 60}px`; // 调整间距
         }
       } else {
         contentDiv.classList.remove('visible');
-        toggleBtn.textContent = 'Show Content';
+        toggleBtn.textContent = 'Show Text Panel';
         container.style.paddingTop = '0px';
       }
     }
@@ -292,11 +342,10 @@
         row.classList.add('selected-row');
         currentSelectedFile = element;
 
-        // 如果内容区域可见，调整容器间距
         if (isContentVisible) {
           const container = document.getElementById('mainContainer');
           const contentHeight = contentDiv.offsetHeight;
-          container.style.paddingTop = `${contentHeight + 100}px`;
+          container.style.paddingTop = `${contentHeight + 60}px`;
         }
 
       } catch (error) {
@@ -306,33 +355,10 @@
       }
     }
 
-    // Download single file
-    function downloadFile(url, fileName) {
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-
     // Get selected files
     function getSelectedFiles() {
       const checkboxes = document.querySelectorAll('.file-checkbox:checked');
       return Array.from(checkboxes).map(cb => cb.dataset.filename);
-    }
-
-    // Download selected files
-    function downloadSelected() {
-      const selectedFiles = getSelectedFiles();
-      if (selectedFiles.length === 0) {
-        alert('Please select files first');
-        return;
-      }
-      selectedFiles.forEach(fileName => {
-        const file = allFiles.find(f => f.fileName === fileName);
-        if (file) downloadFile(file.url, file.fileName);
-      });
     }
 
     // Export to Excel
