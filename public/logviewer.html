@@ -31,10 +31,9 @@
       padding-bottom: 10px;
     }
     .control-panel {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 20px;
-      align-items: center;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
     }
     .filter-section {
       display: flex;
@@ -45,6 +44,7 @@
     .action-buttons {
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
     }
     .filter-group {
       display: flex;
@@ -148,10 +148,12 @@
         <div class="filter-group">
           <label>Keyword:</label>
           <input type="text" id="filterInput" placeholder="Enter keyword for filtering" />
-        
+        </div>
+        <div class="filter-group">
           <label>Start Time:</label>
-          <input type="datetime-local" id="startDateTime" step="1">        
-        
+          <input type="datetime-local" id="startDateTime" step="1">
+        </div>
+        <div class="filter-group">
           <label>End Time:</label>
           <input type="datetime-local" id="endDateTime" step="1">
         </div>
@@ -307,7 +309,7 @@
         toggleBtn.textContent = 'Hide Text Panel';
         if (contentDiv.textContent) {
           const contentHeight = contentDiv.offsetHeight;
-          container.style.paddingTop = `${contentHeight + 60}px`; // 调整间距
+          container.style.paddingTop = `${contentHeight + 60}px`;
         }
       } else {
         contentDiv.classList.remove('visible');
