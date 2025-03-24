@@ -368,7 +368,7 @@
         alert('Please select files first');
         return;
       }
-
+    
       const data = [];
       
       for (const fileName of selectedFiles) {
@@ -380,7 +380,7 @@
               throw new Error(`HTTP error! status: ${response.status}`);
             }
             const jsonData = await response.json();
-
+    
             if (Array.isArray(jsonData)) {
               jsonData.forEach(item => {
                 const formattedData = formatData(item, fileName);
@@ -395,12 +395,12 @@
           }
         }
       }
-
+    
       if (data.length === 0) {
         alert('No data to export');
         return;
       }
-
+    
       const ws = XLSX.utils.json_to_sheet(data, {
         header: [
           "timestamp",
@@ -419,9 +419,25 @@
           "filename"
         ]
       });
+      
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Files");
-      XLSX.writeFile(wb, `exported_files_${new Date().toISOString().slice(0,10)}.xlsx`);
+      
+      // 获取当前时间并格式化为两种不同的文件名
+      const now = new Date();
+      
+      // 第二种格式: production_log_yyyy_mm_dd_hh_mm_ss.xlsx
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      
+      const fileName2 = `production_log_${year}_${month}_${day}_${hours}_${minutes}_${seconds}.xlsx`;
+      
+      // 使用第二种格式导出
+      XLSX.writeFile(wb, fileName2);
     }
 
     // Format data for export
