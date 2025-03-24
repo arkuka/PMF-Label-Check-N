@@ -35,6 +35,11 @@
       gap: 10px;
       align-items: center;
     }
+
+    .filter-section {      
+      flex-wrap: wrap; /* 添加这行以支持更好的响应式布局 */
+    }
+
     input, button {
       padding: 8px;
     }
@@ -68,6 +73,8 @@
     <!-- 筛选部分 -->
     <div class="filter-section">
       <input type="text" id="filterInput" placeholder="输入日期 (YYYYMMDD) 或文件名关键词" />
+      <input type="date" id="startDate" placeholder="开始日期">
+      <input type="date" id="endDate" placeholder="结束日期">
       <button onclick="filterFiles()">筛选</button>
       <button onclick="resetFilter()">重置</button>
     </div>
@@ -143,15 +150,57 @@
     // 筛选文件
     function filterFiles() {
       const filterValue = document.getElementById('filterInput').value.toLowerCase();
-      const filteredFiles = allFiles.filter(file => 
-        file.fileName.toLowerCase().includes(filterValue)
-      );
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+
+      let filteredFiles = allFiles;
+
+      // 按文件名或日期筛选
+      if (filterValue) {
+        filteredFiles = filteredFiles.filter(file => 
+          file.fileName.toLowerCase().includes(filterValue)
+        );
+      }
+
+      // 按时间范围筛选
+      if (startDate || endDate) {
+        filteredFiles = filteredFiles.filter(file => {
+          const fileDate = new Date(file.uploadedAt);
+          
+          // 如果只设置了开始日期
+          if (startDate && !endDate) {
+            const start = new Date(startDate);
+            return fileDate >= start;
+          }
+          
+          // 如果只设置了结束日期
+          if (!startDate && endDate) {
+            const end = new Date(endDate);
+            // 设置结束日期为当天的23:59:59
+            end.setHours(23, 59, 59, 999);
+            return fileDate <= end;
+          }
+          
+          // 如果都设置了
+          if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            return fileDate >= start && fileDate <= end;
+          }
+          
+          return true;
+        });
+      }
+
       renderFileList(filteredFiles);
     }
 
     // 重置筛选
     function resetFilter() {
       document.getElementById('filterInput').value = '';
+      document.getElementById('startDate').value = '';
+      document.getElementById('endDate').value = '';
       renderFileList(allFiles);
     }
 
