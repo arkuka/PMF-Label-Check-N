@@ -35,21 +35,17 @@
       gap: 10px;
       align-items: center;
     }
-
     .filter-section {      
-      flex-wrap: wrap; /* 添加这行以支持更好的响应式布局 */
+      flex-wrap: wrap;
     }
-
     .datetime-group {
       display: flex;
       align-items: center;
       gap: 5px;
     }
-
     .datetime-group label {
       white-space: nowrap;
     }
-
     input, button {
       padding: 8px;
     }
@@ -74,64 +70,77 @@
     .filename:hover {
       text-decoration: underline;
     }
+    .info-section {
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+    }
+    .selected-row {
+      background-color: #e6f3ff; /* 淡蓝色 */
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Vercel JSON File Manager</h1>
 
-    <!-- 筛选部分 -->
+    <!-- Info section -->
+    <div class="info-section" id="infoSection">
+      Selected file information will appear here
+    </div>
+
+    <!-- Filter section -->
     <div class="filter-section">
-      <input type="text" id="filterInput" placeholder="输入日期 (YYYYMMDD) 或文件名关键词" />
+      <input type="text" id="filterInput" placeholder="Enter date (YYYYMMDD) or filename keyword" />
       <div class="datetime-group">
-        <label>开始时间:</label>
+        <label>Start Time:</label>
         <input type="datetime-local" id="startDateTime" step="1">
       </div>
       <div class="datetime-group">
-        <label>结束时间:</label>
+        <label>End Time:</label>
         <input type="datetime-local" id="endDateTime" step="1">
       </div>
-      <button onclick="filterFiles()">筛选</button>
-      <button onclick="resetFilter()">重置</button>
+      <button onclick="filterFiles()">Filter</button>
+      <button onclick="resetFilter()">Reset</button>
     </div>
 
-    <!-- 操作部分 -->
+    <!-- Action section -->
     <div class="action-section">
-      <button onclick="downloadSelected()">下载选中文件</button>
-      <button onclick="exportToExcel()">将所选的文件导出到EXCEL文件</button>
+      <button onclick="downloadSelected()">Download Selected</button>
+      <button onclick="exportToExcel()">Export Selected to Excel</button>
     </div>
 
-    <!-- 文件列表 -->
+    <!-- File list -->
     <table id="fileTable">
       <thead>
         <tr>
           <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-          <th>文件名</th>
-          <th>大小 (字节)</th>
-          <th>上传时间</th>
-          <th>操作</th>
+          <th>Filename</th>
+          <th>Size (bytes)</th>
+          <th>Upload Time</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody id="fileList"></tbody>
     </table>
 
-    <!-- 文件内容显示区域 -->
+    <!-- File content display area -->
     <div id="fileContent" class="file-content"></div>
   </div>
 
   <script>
     let allFiles = [];
+    let currentSelectedFile = null;
 
-    // 初始化时添加提示
+    // Initialize
     window.onload = async () => {
       await fetchFiles();
       renderFileList(allFiles);
-      // 添加悬停提示
-      document.getElementById('startDateTime').title = '格式: xxxx年xx月xx日 xx时xx分xx秒';
-      document.getElementById('endDateTime').title = '格式: xxxx年xx月xx日 xx时xx分xx秒 (留空为当前时间)';
+      document.getElementById('startDateTime').title = 'Format: YYYY-MM-DD HH:MM:SS';
+      document.getElementById('endDateTime').title = 'Format: YYYY-MM-DD HH:MM:SS (empty for current time)';
     };
 
-    // 获取文件列表
+    // Fetch file list
     async function fetchFiles() {
       try {
         const response = await fetch('/api/logviewer?method=LIST');
@@ -139,27 +148,28 @@
         if (result.success) {
           allFiles = result.files;
         } else {
-          alert('获取文件列表失败: ' + result.message);
+          alert('Failed to fetch file list: ' + result.message);
         }
       } catch (error) {
         console.error('Error fetching files:', error);
-        alert('获取文件列表失败');
+        alert('Failed to fetch file list');
       }
     }
 
-    // 渲染文件列表
+    // Render file list
     function renderFileList(files) {
       const tbody = document.getElementById('fileList');
       tbody.innerHTML = '';
       files.forEach(file => {
         const tr = document.createElement('tr');
+        tr.dataset.filename = file.fileName;
         tr.innerHTML = `
           <td><input type="checkbox" class="file-checkbox" data-filename="${file.fileName}"></td>
-          <td><span class="filename" onclick="viewFile('${file.url}')">${file.fileName}</span></td>
+          <td><span class="filename" onclick="viewFile('${file.url}', this)">${file.fileName}</span></td>
           <td>${file.size}</td>
           <td>${new Date(file.uploadedAt).toLocaleString()}</td>
           <td>
-            <button onclick="downloadFile('${file.url}', '${file.fileName}')">下载</button>
+            <button onclick="downloadFile('${file.url}', '${file.fileName}')">Download</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -169,15 +179,14 @@
     function formatDateTime(date) {
       if (!date) return '';
       const d = new Date(date);
-      return `${d.getFullYear()}年${padZero(d.getMonth() + 1)}月${padZero(d.getDate())}日 ${padZero(d.getHours())}时${padZero(d.getMinutes())}分${padZero(d.getSeconds())}秒`;
+      return `${d.getFullYear()}-${padZero(d.getMonth() + 1)}-${padZero(d.getDate())} ${padZero(d.getHours())}:${padZero(d.getMinutes())}:${padZero(d.getSeconds())}`;
     }
 
-    // 补零函数
     function padZero(num) {
       return num < 10 ? `0${num}` : num;
     }
 
-    // 筛选文件
+    // Filter files
     function filterFiles() {
       const filterValue = document.getElementById('filterInput').value.toLowerCase();
       const startDateTime = document.getElementById('startDateTime').value;
@@ -185,44 +194,31 @@
 
       let filteredFiles = allFiles;
 
-      // 按文件名或日期筛选
       if (filterValue) {
         filteredFiles = filteredFiles.filter(file => 
           file.fileName.toLowerCase().includes(filterValue)
         );
       }
 
-      // 按日期时间范围筛选
       if (startDateTime || endDateTime) {
         filteredFiles = filteredFiles.filter(file => {
           const fileDate = new Date(file.uploadedAt);
-          
-          // 处理开始时间
           const start = startDateTime ? new Date(startDateTime) : null;
-          
-          // 处理结束时间，如果为空则使用当前时间
           const end = endDateTime ? new Date(endDateTime) : new Date();
 
-          // 如果只设置了开始时间
           if (start && !endDateTime) {
             return fileDate >= start && fileDate <= new Date();
           }
-          
-          // 如果只设置了结束时间
           if (!startDateTime && end) {
             return fileDate <= end;
           }
-          
-          // 如果都设置了
           if (start && end) {
             return fileDate >= start && fileDate <= end;
           }
-          
           return true;
         });
       }
 
-      // 更新输入框显示为中文格式（仅用于查看，不影响实际筛选）
       if (startDateTime) {
         document.getElementById('startDateTime').title = formatDateTime(startDateTime);
       }
@@ -235,17 +231,18 @@
       renderFileList(filteredFiles);
     }
 
-    // 重置筛选
+    // Reset filter
     function resetFilter() {
       document.getElementById('filterInput').value = '';
       document.getElementById('startDateTime').value = '';
       document.getElementById('startDateTime').title = '';
       document.getElementById('endDateTime').value = '';
       document.getElementById('endDateTime').title = '';
+      document.getElementById('infoSection').textContent = 'Selected file information will appear here';
       renderFileList(allFiles);
     }
 
-    // 全选/取消全选
+    // Toggle select all
     function toggleSelectAll() {
       const selectAll = document.getElementById('selectAll').checked;
       document.querySelectorAll('.file-checkbox').forEach(checkbox => {
@@ -253,21 +250,38 @@
       });
     }
 
-    // 查看文件内容（通过URL）
-    async function viewFile(fileUrl) {
+    // View file content
+    async function viewFile(fileUrl, element) {
       try {
         const response = await fetch(fileUrl);
         const result = await response.json();
         const contentDiv = document.getElementById('fileContent');
         contentDiv.textContent = JSON.stringify(result, null, 2);
+
+        // Remove previous selection
+        if (currentSelectedFile) {
+          currentSelectedFile.closest('tr').classList.remove('selected-row');
+        }
+        
+        // Add new selection
+        const row = element.closest('tr');
+        row.classList.add('selected-row');
+        currentSelectedFile = element;
+
+        // Update info section
+        const fileName = row.dataset.filename;
+        const file = allFiles.find(f => f.fileName === fileName);
+        document.getElementById('infoSection').textContent = 
+          `Selected File: ${file.fileName}\nSize: ${file.size} bytes\nUploaded: ${new Date(file.uploadedAt).toLocaleString()}`;
+
       } catch (error) {
         console.error('Error viewing file:', error);
         const contentDiv = document.getElementById('fileContent');
-        contentDiv.textContent = '无法加载文件内容: ' + error.message;
+        contentDiv.textContent = 'Failed to load file content: ' + error.message;
       }
     }
 
-    // 下载单个文件
+    // Download single file
     function downloadFile(url, fileName) {
       const a = document.createElement('a');
       a.href = url;
@@ -277,17 +291,17 @@
       document.body.removeChild(a);
     }
 
-    // 获取选中的文件
+    // Get selected files
     function getSelectedFiles() {
       const checkboxes = document.querySelectorAll('.file-checkbox:checked');
       return Array.from(checkboxes).map(cb => cb.dataset.filename);
     }
 
-    // 下载选中文件
+    // Download selected files
     function downloadSelected() {
       const selectedFiles = getSelectedFiles();
       if (selectedFiles.length === 0) {
-        alert('请先选择文件');
+        alert('Please select files first');
         return;
       }
       selectedFiles.forEach(fileName => {
@@ -296,17 +310,16 @@
       });
     }
 
-    // 导出到Excel
+    // Export to Excel
     async function exportToExcel() {
       const selectedFiles = getSelectedFiles();
       if (selectedFiles.length === 0) {
-        alert('请先选择文件');
+        alert('Please select files first');
         return;
       }
 
       const data = [];
       
-      // 获取所有选中文件的内容
       for (const fileName of selectedFiles) {
         const file = allFiles.find(f => f.fileName === fileName);
         if (file) {
@@ -316,16 +329,13 @@
               throw new Error(`HTTP error! status: ${response.status}`);
             }
             const jsonData = await response.json();
-            console.log(`Fetched data for ${fileName}:`, jsonData); // Debug log
 
-            // 确保jsonData是数组
             if (Array.isArray(jsonData)) {
               jsonData.forEach(item => {
                 const formattedData = formatData(item, fileName);
                 data.push(formattedData);
               });
             } else {
-              // 如果不是数组，直接格式化
               const formattedData = formatData(jsonData, fileName);
               data.push(formattedData);
             }
@@ -335,14 +345,11 @@
         }
       }
 
-      console.log('Data to export:', data); // Debug log
-
       if (data.length === 0) {
-        alert('没有可导出的数据');
+        alert('No data to export');
         return;
       }
 
-      // 创建工作表
       const ws = XLSX.utils.json_to_sheet(data, {
         header: [
           "timestamp",
@@ -363,18 +370,15 @@
       });
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Files");
-
-      // 导出Excel文件
       XLSX.writeFile(wb, `exported_files_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
-    // 格式化数据
+    // Format data for export
     function formatData(jsonData, fileName) {
-      // 确保获取data对象
       const data = jsonData.data || jsonData;
       const barcodes = data.barcodes || [];
 
-      const formatted = {
+      return {
         timestamp: data.timestamp || "",
         lineNumber: data.lineNumber || "",
         palletLabel: barcodes[4] || "",
@@ -390,9 +394,6 @@
         waterMark: barcodes[5] || "",
         filename: fileName
       };
-
-      console.log(`Formatted data for ${fileName}:`, formatted); // Debug log
-      return formatted;
     }
   </script>
 </body>
