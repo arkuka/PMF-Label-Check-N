@@ -16,7 +16,7 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
-      padding-right: 450px;
+      padding-right: 20px; /* 移除右侧大padding，因为内容区域不再在右上角 */
     }
     table {
       width: 100%;
@@ -56,10 +56,12 @@
       border: 1px solid #ddd;
       max-height: 300px;
       overflow-y: auto;
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      width: 400px;
+      position: fixed; /* 保持固定定位 */
+      top: 80px; /* 调整位置到标题下方 */
+      left: 50%; /* 居中 */
+      transform: translateX(-50%); /* 居中偏移 */
+      width: 80%; /* 宽度占80% */
+      max-width: 1100px; /* 与容器宽度匹配 */
       z-index: 1000;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
@@ -70,11 +72,6 @@
     .filename:hover {
       text-decoration: underline;
     }
-    .info-section {
-      padding: 10px;
-      background-color: #f0f0f0;
-      border-radius: 5px;
-    }
     .selected-row {
       background-color: #e6f3ff; /* 淡蓝色 */
     }
@@ -84,10 +81,8 @@
   <div class="container">
     <h1>Vercel JSON File Manager</h1>
 
-    <!-- Info section -->
-    <div class="info-section" id="infoSection">
-      Selected file information will appear here
-    </div>
+    <!-- File content display area - moved here -->
+    <div id="fileContent" class="file-content"></div>
 
     <!-- Filter section -->
     <div class="filter-section">
@@ -123,9 +118,6 @@
       </thead>
       <tbody id="fileList"></tbody>
     </table>
-
-    <!-- File content display area -->
-    <div id="fileContent" class="file-content"></div>
   </div>
 
   <script>
@@ -220,12 +212,12 @@
       }
 
       if (startDateTime) {
-        document.getElementById('startDateTime').title = formatDateTime(startDateTime);
+        document.getElementById('startDateTime').title = `Selected: ${formatDateTime(startDateTime)}`;
       }
       if (endDateTime) {
-        document.getElementById('endDateTime').title = formatDateTime(endDateTime);
+        document.getElementById('endDateTime').title = `Selected: ${formatDateTime(endDateTime)}`;
       } else {
-        document.getElementById('endDateTime').title = formatDateTime(new Date());
+        document.getElementById('endDateTime').title = `Selected: ${formatDateTime(new Date())} (current time)`;
       }
 
       renderFileList(filteredFiles);
@@ -235,10 +227,10 @@
     function resetFilter() {
       document.getElementById('filterInput').value = '';
       document.getElementById('startDateTime').value = '';
-      document.getElementById('startDateTime').title = '';
+      document.getElementById('startDateTime').title = 'Format: YYYY-MM-DD HH:MM:SS';
       document.getElementById('endDateTime').value = '';
-      document.getElementById('endDateTime').title = '';
-      document.getElementById('infoSection').textContent = 'Selected file information will appear here';
+      document.getElementById('endDateTime').title = 'Format: YYYY-MM-DD HH:MM:SS (empty for current time)';
+      document.getElementById('fileContent').textContent = '';
       renderFileList(allFiles);
     }
 
@@ -258,21 +250,13 @@
         const contentDiv = document.getElementById('fileContent');
         contentDiv.textContent = JSON.stringify(result, null, 2);
 
-        // Remove previous selection
         if (currentSelectedFile) {
           currentSelectedFile.closest('tr').classList.remove('selected-row');
         }
         
-        // Add new selection
         const row = element.closest('tr');
         row.classList.add('selected-row');
         currentSelectedFile = element;
-
-        // Update info section
-        const fileName = row.dataset.filename;
-        const file = allFiles.find(f => f.fileName === fileName);
-        document.getElementById('infoSection').textContent = 
-          `Selected File: ${file.fileName}\nSize: ${file.size} bytes\nUploaded: ${new Date(file.uploadedAt).toLocaleString()}`;
 
       } catch (error) {
         console.error('Error viewing file:', error);
