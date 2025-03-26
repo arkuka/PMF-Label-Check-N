@@ -21,6 +21,8 @@ let barcode = "";
 let scannedBarcode = "";
 let currentField = "";  // 用于记录当前输入的字段
 let sannedHCode = ""
+let matchingProducts = [];
+let currentMatchingIndex = 0;
 
 // 全局函数
 const validateScan = (field, scannedCode) => {
@@ -263,77 +265,58 @@ const showModalWithButtons = (message, showConfirmCancel = true, imageUrl = "") 
 
 // 全局 handleInputChange 函数
 const handleInputChange = (field, value, event) => {
-     value = value.toUpperCase()
-     value = value.trim()
-    if (event.key === "Enter") {
-      
-      let processedScannedCode = value.trim();
+  value = value.toUpperCase();
+  value = value.trim();
+  
+  if (event.key === "Enter") {
+    let processedScannedCode = value.trim();
+    console.log("handleInputChange(); field=", field);
+    console.log("handleInputChange(); value=", value);
 
-      console.log("handleInputChange(); field=",field)
-      console.log("handleInputChange(); value=",value)
+    processedScannedCode = processScannedCode(value, field);
+    fields[field] = processedScannedCode;
 
-      processedScannedCode = processScannedCode(value, field);
-      
-      fields[field] = processedScannedCode;
-    
-      if (!productName && value.trim() !== "") {
-        // 查找是否有匹配的产品字段信息
-          const matchingProduct = configData.find((row) => {
-          const fieldIndex = headers.indexOf(field); // 获取当前字段的索引
-          return row[fieldIndex] === processedScannedCode; // 检查当前字段的值是否匹配
-        });
-    
-        if (matchingProduct && !prompted) {
-          // 如果找到匹配的产品
-          possibleProduct = matchingProduct[0];
-          prompted = true;
-          showModal = true;
-          scannedBarcode = processedScannedCode; // 保存条码信息
-          barcode = processedScannedCode;
-          //modalMessage.textContent = `Do you want to start processing product: ${possibleProduct}?`;
-          //modal.style.display = "flex";
-          showModalWithButtons(`Do you want to start processing product: ${possibleProduct}?`, true, "");
-        } else if (!matchingProduct) {
-          // 如果没有找到匹配的产品
-          possibleProduct = ""; // 设置为空，表示是错误提示
-          showModalWithButtons("No matching product information found for this field.", false);
-        }
+    if (!productName && value.trim() !== "") {
+      // Find all products that match this barcode in the specified field
+      matchingProducts = configData.filter((row) => {
+        const fieldIndex = headers.indexOf(field);
+        return row[fieldIndex] === processedScannedCode;
+      });
+
+      if (matchingProducts.length > 0) {
+        // Start with the first matching product
+        currentMatchingIndex = 0;
+        promptForProductConfirmation(field, processedScannedCode);
       } else {
-        // 如果 productName 已存在，则验证扫描信息
-        validateScan(field, processedScannedCode);
+        // No matching products found
+        showModalWithButtons("No matching product information found for this barcode.", false);
       }
+    } else {
+      // If productName already exists, validate the scan
+      validateScan(field, processedScannedCode);
+    }
 
-    //  validateScan(field, value);
-    
     renderInputFields();
-
-    // 设置当前输入字段
     currentField = field;
+  }
+};
 
-    // 设置焦点到下一个可用的输入框
-    // const currentInput = event.target;
-    // console.log("handleInputChange, currentInput=", currentInput);
-
-    // 确保选择器匹配所有输入框
-    // const allInputs = Array.from(document.querySelectorAll("#inputFields input[type='text']:not([disabled])"));
-
-    // for (let ci = 0; ci < allInputs.length; ci++) {
-    //    if (currentInput.id === allInputs[ci].id) {
-    //      currentIndex = ci;
-    //      break;
-    //    }
-    //  }
-
-    // if (currentIndex !== -1) {
-    //      const nextAvailableTextFieldIndex = currentIndex + 1;
-    //      console.log("handleInputChange, nextAvailableTextFieldIndex=", nextAvailableTextFieldIndex);
-
-    //      if (nextAvailableTextFieldIndex < allInputs.length) {
-    //          allInputs[nextAvailableTextFieldIndex].focus();
-    //        }
-    //  } else {
-    //      console.error("Current input not found in allInputs array.");
-    //  }
+const promptForProductConfirmation = (field, scannedCode) => {
+  if (currentMatchingIndex < matchingProducts.length) {
+    const product = matchingProducts[currentMatchingIndex];
+    possibleProduct = product[0];
+    scannedBarcode = scannedCode;
+    
+    showModalWithButtons(
+      `Found matching product (${currentMatchingIndex + 1}/${matchingProducts.length}):\n\n${possibleProduct}\n\nIs this the correct product?`,
+      true,
+      "",
+      true
+    );
+  } else {
+    // No more matching products
+    showModalWithButtons("No more matching products found for this barcode.", false);
+    resetMatchingState();
   }
 };
 
@@ -413,35 +396,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 模态确认按钮
   modalConfirmButton.addEventListener("click", () => {
+  if (matchingProducts.length > 0) {
+    // User confirmed this is the correct product
     productName = possibleProduct;
     updateFieldAvailability(possibleProduct);
-    showModal = false;
-    prompted = false;
     modal.style.display = "none";
 
     if (currentField) {
-      fields[currentField] = scannedBarcode;  // 存储条码信息到用户输入的字段
+      fields[currentField] = scannedBarcode;
     }
 
-    // 更新下拉框中的选中值
-    const productSelect = document.getElementById("productNameSelect");  // 假设下拉框的 id 是 "productName"
+    // Update the product dropdown
+    const productSelect = document.getElementById("productNameSelect");
     if (productSelect) {
-      productSelect.value = productName;  // 设置选中值
+      productSelect.value = productName;
     }
     
     renderInputFields();
-
-    isSubmitEnabled = allFieldsValid(); // 调用独立的 allFieldsValid 函数
+    isSubmitEnabled = allFieldsValid();
     submitButton.disabled = !isSubmitEnabled;
-  });
+    
+    resetMatchingState();
+  }
+});
 
   // 模态取消按钮
   modalCancelButton.addEventListener("click", () => {
-    showModal = false;
-    prompted = false;
+  if (matchingProducts.length > 0) {
+    // Move to next matching product
+    currentMatchingIndex++;
+    promptForProductConfirmation(currentField, scannedBarcode);
+  } else {
     modal.style.display = "none";
-    resetForm();
-  });
+    resetMatchingState();
+  }
+});
+
+const resetMatchingState = () => {
+  matchingProducts = [];
+  currentMatchingIndex = 0;
+  possibleProduct = "";
+  scannedBarcode = "";
+};
 
   modalOkButton.addEventListener("click", () => {
     // 关闭模态窗口
