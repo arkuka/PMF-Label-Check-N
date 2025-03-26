@@ -241,6 +241,7 @@
     let allFiles = [];
     let currentSelectedFile = null;
     let isContentVisible = false;
+    const API_ENDPOINT = '/api/blob-handler'; // 更新为新的API端点
 
     // Initialize
     window.onload = async () => {
@@ -253,7 +254,7 @@
     // Fetch file list
     async function fetchFiles() {
       try {
-        const response = await fetch('/api/logviewer?method=LIST');
+        const response = await fetch(`${API_ENDPOINT}?list=true`); // 使用新的API端点和参数
         const result = await response.json();
         if (result.success) {
           allFiles = result.files;
@@ -447,9 +448,16 @@
         return;
       }
 
+      // Show loading state
+      const deleteButton = document.querySelector('#deleteModal .delete-btn');
+      const originalText = deleteButton.textContent;
+      deleteButton.textContent = 'Deleting...';
+      deleteButton.disabled = true;
+
       try {
+        // 使用新的API端点删除文件
         const deletePromises = selectedFiles.map(fileName =>
-          fetch(`/api/logviewer?fileName=${encodeURIComponent(fileName)}`, {
+          fetch(`${API_ENDPOINT}?fileName=${encodeURIComponent(fileName)}`, {
             method: 'DELETE'
           }).then(response => {
             if (!response.ok) {
@@ -459,10 +467,13 @@
           })
         );
 
-        await Promise.all(deletePromises);
-        alert('Selected files deleted successfully');
+        await Promise.all(deletePromises)
+          .then(results => {
+            console.log('Delete results:', results);
+            alert('Selected files deleted successfully');
+          });
         
-        // Refresh file list
+        // 刷新文件列表
         await fetchFiles();
         renderFileList(allFiles);
         document.getElementById('selectAll').checked = false; // Reset select all checkbox
@@ -471,6 +482,9 @@
         alert('Failed to delete files: ' + error.message);
       } finally {
         document.getElementById('deleteModal').style.display = 'none';
+        // Reset button state
+        deleteButton.textContent = originalText;
+        deleteButton.disabled = false;
       }
     }
 
@@ -574,3 +588,4 @@
   </script>
 </body>
 </html>
+
