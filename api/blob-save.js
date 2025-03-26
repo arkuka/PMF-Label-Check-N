@@ -63,7 +63,7 @@ const getFormattedFileNameFromDate = (date, data) => {
     actualData.lineNumber || "unknown",
     palletLabel,
     actualData.palletNumber || "unknown",
-    actualData.boxCount || "unknown",
+    actualData.cartonCount || "unknown",
     actualData.hcode || "unknown",
     actualData.productName || "unknown",
   ]
