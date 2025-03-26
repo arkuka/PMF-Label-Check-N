@@ -5,7 +5,7 @@ let fields = {
   topLabel: "",
   sideLabel: "",
   bottomLabel: "",
-  boxLabel: "",
+  cartonLabel: "",
   palletLabel: "",
   watermark: "",
 };
@@ -180,7 +180,7 @@ const updateFieldAvailability = (selectedProductName) => {
     topLabel: productRow[headers.indexOf("topLabel")] ? fields.topLabel : "",
     sideLabel: productRow[headers.indexOf("sideLabel")] ? fields.sideLabel : "",
     bottomLabel: productRow[headers.indexOf("bottomLabel")] ? fields.bottomLabel : "",
-    boxLabel: productRow[headers.indexOf("boxLabel")] ? fields.boxLabel : "",
+    cartonLabel: productRow[headers.indexOf("cartonLabel")] ? fields.cartonLabel : "",
     palletLabel: productRow[headers.indexOf("palletLabel")] ? fields.palletLabel : "",
     waterMark: productRow[headers.indexOf("waterMark")] ? fields.waterMark : "",
   };
@@ -194,7 +194,7 @@ const resetForm = () => {
     topLabel: "",
     sideLabel: "",
     bottomLabel: "",
-    boxLabel: "",
+    cartonLabel: "",
     palletLabel: "",
     waterMark: "",
   };
@@ -345,7 +345,7 @@ document.getElementById('resetButton').addEventListener('click', function() {
 const resetModal2Inputs = () => {
   document.getElementById("lineNumber").value = "";
   document.getElementById("palletNumber").value = "";
-  document.getElementById("boxCount").value = "";
+  document.getElementById("cartonCount").value = "";
   document.getElementById("hcode").value = "";
   document.getElementById("ubd").value = "";
   const modal2Message = document.getElementById("modal2Message");
@@ -477,7 +477,7 @@ document.addEventListener("DOMContentLoaded", () => {
   modalSubmitButton.addEventListener("click", async () => {
     const lineNumber = document.getElementById("lineNumber").value;
     const palletNumber = document.getElementById("palletNumber").value;
-    const boxCount = document.getElementById("boxCount").value;
+    const cartonCount = document.getElementById("cartonCount").value;
     const hcode = document.getElementById("hcode").value;
     const ubd = document.getElementById("ubd").value;
 
@@ -485,7 +485,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const modal2Message = document.getElementById("modal2Message");
 
     // 检查所有字段是否已填写
-    if (!lineNumber || !palletNumber || !boxCount || !hcode || !ubd) {      
+    if (!lineNumber || !palletNumber || !cartonCount || !hcode || !ubd) {      
       modal2Message.textContent = "Please fill in all fields.";
       modal2Message.style.display = "block";
       return;
@@ -550,7 +550,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }),
       lineNumber,
       palletNumber,
-      boxCount,
+      cartonCount,
       hcode,
       ubd,
     };
@@ -629,7 +629,7 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.style.backgroundColor = "#ffcccc"; // 浅红色背景
     modal.style.padding = "20px";
     modal.style.borderRadius = "10px";
-    modal.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
+    modal.style.cartonShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
     modal.style.textAlign = "center";
     modal.style.zIndex = "1000";
     modal.innerHTML = `
