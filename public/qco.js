@@ -164,6 +164,7 @@ const renderInputFields = () => {
           type="text"
           id="${header.toLowerCase()}"
           value="${fields[header.toLowerCase()] || ""}"
+          oninput="handleInputChange('${header.toLowerCase()}', this.value, event)"
           onkeydown="handleInputChange('${header.toLowerCase()}', this.value, event)"
           ${isFieldDisabled(header) ? "disabled" : ""}
           style="background-color: ${getInputBackgroundColor(header.toLowerCase())}"
@@ -269,15 +270,20 @@ const showModalWithButtons = (message, showConfirmCancel = true, imageUrl = "") 
 const handleInputChange = (field, value, event) => {
   value = value.toUpperCase();
   value = value.trim();
+
+  const inputElement = document.getElementById(field);
+  if (inputElement) {
+    inputElement.value = value; // Reflect the uppercase value in the UI immediately
+  }
+
+  let processedScannedCode = value.trim();
+  console.log("handleInputChange(); field=", field);
+  console.log("handleInputChange(); value=", value);
   
-  if (event.key === "Enter") {
-    let processedScannedCode = value.trim();
-    console.log("handleInputChange(); field=", field);
-    console.log("handleInputChange(); value=", value);
-
-    processedScannedCode = processScannedCode(value, field);
-    fields[field] = processedScannedCode;
-
+  processedScannedCode = processScannedCode(value, field);
+  fields[field] = processedScannedCode;
+  
+  if (event.key === "Enter") {   
     if (!productName && value.trim() !== "") {
       // Find all products that match this barcode in the specified field
       matchingProducts = configData.filter((row) => {
