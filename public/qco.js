@@ -316,8 +316,8 @@ const promptForProductConfirmation = (field, scannedCode) => {
     const productListHtml = matchingProducts
         .map((product, index) => `
             <div style="display: flex; align-items: center; margin: 8px 0;">
-                <input type="radio" name="productSelection" id="product_${index}" value="${index}" ${index === 0 ? 'checked' : ''} style="margin-right: 10px;">
-                <label for="product_${index}" style="flex: 1;">${product[0]}</label>
+                <input type="radio" name="productSelection" id="product_${index}" value="${index}" ${index === 0 ? 'checked' : ''} style="width: 16px; height: 16px; min-width: 16px; margin-right: 8px; vertical-align: middle;">
+                <label for="product_${index}" style="flex: 1; word-wrap: break-word; overflow-wrap: break-word;">${product[0]}</label>
             </div>
         `)
         .join('');
