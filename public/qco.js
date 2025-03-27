@@ -501,6 +501,13 @@ const convertToUpperCase = (inputId) => {
     modal2.style.display = "none"; // 隐藏 modal2
     resetModal2Inputs(); // 重置 modal2 中的输入框
   });
+
+  // click handler for modal2Message
+  const modal2Message = document.getElementById("modal2Message");
+  modal2Message.addEventListener("click", () => {
+      modal2Message.textContent = "";
+      modal2Message.style.display = "none"; // Optional: hide it after clearing
+  });
   
   // modal2中的提交按钮点击事件
   const modalSubmitButton = document.getElementById("modalSubmitButton");
