@@ -479,6 +479,15 @@ const convertToUpperCase = (inputId) => {
     resetForm();
   });
 
+  // 提交按钮点击事件
+  submitButton.addEventListener("click", () => { // 主页面中的submit按钮
+    if (!productName || !configData) return;
+
+    // 显示 modal2 模态窗口
+    const modal2 = document.getElementById("modal2");
+    modal2.style.display = "flex";
+  });
+
   // 获取 Close 按钮
   const modal2CloseButton = document.getElementById("modal2CloseButton");
 
@@ -492,18 +501,6 @@ const convertToUpperCase = (inputId) => {
     modal2.style.display = "none"; // 隐藏 modal2
     resetModal2Inputs(); // 重置 modal2 中的输入框
   });
-
-  // 提交按钮点击事件
-  submitButton.addEventListener("click", () => { // 主页面中的submit按钮
-    if (!productName || !configData) return;
-
-    // 显示 modal2 模态窗口
-    const modal2 = document.getElementById("modal2");
-    modal2.style.display = "flex";
-  });
-
-  const modal2Inputs = ['lineNumber', 'palletNumber', 'cartonCount', 'hcode', 'ubd'];
-  modal2Inputs.forEach(inputId => convertToUpperCase(inputId));
   
   // modal2中的提交按钮点击事件
   const modalSubmitButton = document.getElementById("modalSubmitButton");
