@@ -47,37 +47,37 @@
     </div>
 
     <div id="modal2" class="modal">
-      <div class="modal-content">
-        <!-- 文本显示区域 -->
-        <div id="modal2Message" class="modal-message" style="display: none; color: red; margin-bottom: 15px;"></div>
-        <!-- 文本框区域 -->
-        <div class="input-group">
-          <label for="lineNumber">Line Number:</label>
-          <input type="text" id="lineNumber" placeholder="Line Number">
+    <div class="modal-content" style="width: 500px;">
+        <h2>Enter Details</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+                <label for="lineNumber">Line:</label>
+                <input type="text" id="lineNumber">
+            </div>
+            <div class="form-group">
+                <label for="palletNumber">Pallet No.:</label>
+                <input type="text" id="palletNumber">
+            </div>
+            <div class="form-group">
+                <label for="cartonCount"># Ctns:</label>
+                <input type="text" id="cartonCount">
+            </div>
+            <div class="form-group">
+                <label for="hcode">HCODE:</label>
+                <input type="text" id="hcode">
+            </div>
+            <div class="form-group">
+                <label for="ubd">UBD:</label>
+                <input type="text" id="ubd" placeholder="e.g., 01MAY">
+            </div>
         </div>
-        <div class="input-group">
-          <label for="palletNumber">Pallet Number:</label>
-          <input type="text" id="palletNumber" placeholder="Pallet Number">
+        <div id="modal2Message" style="color: red; margin: 10px 0; display: none;"></div>
+        <div style="margin-top: 20px;">
+            <button id="modalSubmitButton">Submit</button>
+            <button id="modal2CloseButton">Close</button>
         </div>
-        <div class="input-group">
-          <label for="cartonCount">Total Cartons on the Pallet:</label>
-          <input type="text" id="cartonCount" placeholder="Qty of Cartons on the pallet">
-        </div>
-        <div class="input-group">
-          <label for="cartonCount">HCODE:</label>
-          <input type="text" id="hcode" placeholder="HDDMM">
-        </div>
-        <div class="input-group">
-          <label for="cartonCount">UBD:</label>
-          <input type="text" id="ubd" placeholder="DD MMM">
-        </div>
-    
-        <!-- 提交按钮 -->
-        <button id="modalSubmitButton" class="modal-button submit">Submit</button>
-        <!-- 关闭按钮 -->
-        <button id="modal2CloseButton" class="modal-button cancel">Close</button>
-    </div>    
-  </div>
+    </div>
+</div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
   <script src="qco.js"></script> <!-- 引入 JavaScript 文件 -->
