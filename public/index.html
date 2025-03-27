@@ -46,38 +46,35 @@
       </div>
     </div>
 
-    <div id="modal2" class="modal">
-    <div class="modal-content" style="width: 500px;">
-        <h2>Enter Details</h2>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div class="form-group">
-                <label for="lineNumber">Line:</label>
-                <input type="text" id="lineNumber">
-            </div>
-            <div class="form-group">
-                <label for="palletNumber">Pallet No.:</label>
-                <input type="text" id="palletNumber">
-            </div>
-            <div class="form-group">
-                <label for="cartonCount"># Ctns:</label>
-                <input type="text" id="cartonCount">
-            </div>
-            <div class="form-group">
-                <label for="hcode">HCODE:</label>
-                <input type="text" id="hcode">
-            </div>
-            <div class="form-group">
-                <label for="ubd">UBD:</label>
-                <input type="text" id="ubd" placeholder="e.g., 01MAY">
-            </div>
-        </div>        
-        <div id="modal2Message" style="color: red; margin: 10px 0; display: none; cursor: pointer;"></div>
-        <div style="margin-top: 20px;">
-            <button id="modalSubmitButton">Submit</button>
-            <button id="modal2CloseButton">Close</button>
+    <div id="modal2" class="modal" style="display: none;">
+      <div class="modal-content" style="position: relative; padding: 20px;">
+        <!-- Top-right close icon -->
+        <span id="modal2CloseIcon" style="position: absolute; top: 10px; right: 10px; font-size: 20px; cursor: pointer;">✖</span>
+        
+        <div class="form-group">
+          <label for="lineNumber">Line Number:</label>
+          <input type="text" id="lineNumber" class="modal-input">
         </div>
+        <div class="form-group">
+          <label for="palletNumber">Pallet Number:</label>
+          <input type="text" id="palletNumber" class="modal-input">
+        </div>
+        <div class="form-group">
+          <label for="cartonCount">Carton Count:</label>
+          <input type="text" id="cartonCount" class="modal-input">
+        </div>
+        <div class="form-group">
+          <label for="hcode">HCODE:</label>
+          <input type="text" id="hcode" class="modal-input">
+        </div>
+        <div class="form-group" style="display: flex; align-items: center;">
+          <label for="ubd" style="margin-right: 10px;">UBD:</label>
+          <input type="text" id="ubd" class="modal-input" style="margin-right: 10px;">
+          <button id="modalSubmitButton" class="submit-button">Submit</button>
+        </div>
+        <div id="modal2Message" style="color: red; margin-top: 10px; display: none;"></div>
+      </div>
     </div>
-</div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
   <script src="qco.js"></script> <!-- 引入 JavaScript 文件 -->
