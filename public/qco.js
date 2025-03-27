@@ -463,6 +463,13 @@ const resetMatchingState = () => {
   scannedBarcode = "";
 };
 
+const convertToUpperCase = (inputId) => {
+    const input = document.getElementById(inputId);
+    input.addEventListener('input', (e) => {
+        e.target.value = e.target.value.toUpperCase();
+    });
+};
+
   modalOkButton.addEventListener("click", () => {
     // 关闭模态窗口
     showModal = false;
@@ -474,6 +481,10 @@ const resetMatchingState = () => {
 
   // 获取 Close 按钮
   const modal2CloseButton = document.getElementById("modal2CloseButton");
+
+  // Add uppercase conversion for all Modal2 inputs
+  const modal2Inputs = ['lineNumber', 'palletNumber', 'cartonCount', 'hcode', 'ubd'];
+  modal2Inputs.forEach(inputId => convertToUpperCase(inputId));
 
   // 添加点击事件
   modal2CloseButton.addEventListener("click", () => {
@@ -491,9 +502,12 @@ const resetMatchingState = () => {
     modal2.style.display = "flex";
   });
 
+  const modal2Inputs = ['lineNumber', 'palletNumber', 'cartonCount', 'hcode', 'ubd'];
+  modal2Inputs.forEach(inputId => convertToUpperCase(inputId));
+  
   // modal2中的提交按钮点击事件
   const modalSubmitButton = document.getElementById("modalSubmitButton");
-
+  
   modalSubmitButton.addEventListener("click", async () => {
     const lineNumber = document.getElementById("lineNumber").value;
     const palletNumber = document.getElementById("palletNumber").value;
