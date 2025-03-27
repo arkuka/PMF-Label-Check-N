@@ -214,52 +214,54 @@ const resetForm = () => {
   productNameSelect.value = "";  // Reset to default (empty or first option)
 };
 
+// 更新 showModalWithButtons 函数以支持 HTML 内容
 const showModalWithButtons = (message, showConfirmCancel = true, imageUrl = "") => {
-  // 设置消息内容
-  modalMessage.textContent = message;
+    const modalMessage = document.getElementById("modalMessage");
+    modalMessage.innerHTML = message; // 使用 innerHTML 以支持 HTML 内容
 
-  // 设置图片
-  const modalImage = document.getElementById("modalImage");
-  if (showConfirmCancel && imageUrl) {
-    modalImage.src = imageUrl; // 设置图片链接
-    modalImage.style.display = "block"; // 显示图片
+    // 设置图片
+    const modalImage = document.getElementById("modalImage");
+    if (showConfirmCancel && imageUrl) {
+        modalImage.src = imageUrl;
+        modalImage.style.display = "block";
 
-    // 动态调整图片尺寸
-    modalImage.onload = () => {
-      const maxWidth = 500; // 最大宽度
-      const maxHeight = 500; // 最大高度
-      const width = modalImage.naturalWidth; // 图片原始宽度
-      const height = modalImage.naturalHeight; // 图片原始高度
+        modalImage.onload = () => {
+            const maxWidth = 500;
+            const maxHeight = 500;
+            const width = modalImage.naturalWidth;
+            const height = modalImage.naturalHeight;
 
-      // 如果图片尺寸超过限制，按比例缩放
-      if (width > maxWidth || height > maxHeight) {
-        const ratio = Math.min(maxWidth / width, maxHeight / height);
-        modalImage.style.width = `${width * ratio}px`;
-        modalImage.style.height = `${height * ratio}px`;
-      } else {
-        modalImage.style.width = `${width}px`;
-        modalImage.style.height = `${height}px`;
-      }
-    };
-  } else {
-    modalImage.style.display = "none"; // 隐藏图片
-  }
+            if (width > maxWidth || height > maxHeight) {
+                const ratio = Math.min(maxWidth / width, maxHeight / height);
+                modalImage.style.width = `${width * ratio}px`;
+                modalImage.style.height = `${height * ratio}px`;
+            } else {
+                modalImage.style.width = `${width}px`;
+                modalImage.style.height = `${height}px`;
+            }
+        };
+    } else {
+        modalImage.style.display = "none";
+    }
 
-  // 设置按钮显示状态
-  if (showConfirmCancel) {
-    // 显示 Confirm 和 Cancel 按钮
-    modalConfirmButton.style.display = "inline-block";
-    modalCancelButton.style.display = "inline-block";
-    modalOkButton.style.display = "none";
-  } else {
-    // 显示 OK 按钮
-    modalConfirmButton.style.display = "none";
-    modalCancelButton.style.display = "none";
-    modalOkButton.style.display = "inline-block";
-  }
+    // 设置按钮显示状态
+    const modalConfirmButton = document.getElementById("modalConfirmButton");
+    const modalCancelButton = document.getElementById("modalCancelButton");
+    const modalOkButton = document.getElementById("modalOkButton");
 
-  // 显示模态窗口
-  modal.style.display = "flex";
+    if (showConfirmCancel) {
+        modalConfirmButton.style.display = "inline-block";
+        modalCancelButton.style.display = "inline-block";
+        modalOkButton.style.display = "none";
+    } else {
+        modalConfirmButton.style.display = "none";
+        modalCancelButton.style.display = "none";
+        modalOkButton.style.display = "inline-block";
+    }
+
+    // 显示模态窗口
+    const modal = document.getElementById("modal");
+    modal.style.display = "flex";
 };
 
 
@@ -302,23 +304,77 @@ const handleInputChange = (field, value, event) => {
 };
 
 const promptForProductConfirmation = (field, scannedCode) => {
-  if (currentMatchingIndex < matchingProducts.length) {
-    const product = matchingProducts[currentMatchingIndex];
-    possibleProduct = product[0];
+    if (matchingProducts.length === 0) {
+        showModalWithButtons("No matching product information found for this barcode.", false);
+        return;
+    }
+
+    // 存储扫描的条码
     scannedBarcode = scannedCode;
-    
-    showModalWithButtons(
-      `Found matching product (${currentMatchingIndex + 1}/${matchingProducts.length}):\n\n${possibleProduct}\n\nIs this the correct product?`,
-      true,
-      "",
-      true
-    );
-  } else {
-    // No more matching products
-    showModalWithButtons("No more matching products found for this barcode.", false);
-    resetMatchingState();
-  }
+
+    // 创建产品选择列表的 HTML，包含单选按钮
+    const productListHtml = matchingProducts
+        .map((product, index) => `
+            <div style="margin: 5px;">
+                <input type="radio" name="productSelection" id="product_${index}" value="${index}" ${index === 0 ? 'checked' : ''}>
+                <label for="product_${index}">${product[0]}</label>
+            </div>
+        `)
+        .join('');
+
+    // 创建模态窗口内容
+    const modalContent = `Multiple products found matching this barcode:<br><br>${productListHtml}<br>Please select the correct product:`;
+
+    // 显示模态窗口
+    showModalWithButtons(modalContent, true);
 };
+
+// 处理产品选择的函数
+const handleProductSelection = (field) => {
+    const selectedRadio = document.querySelector('input[name="productSelection"]:checked');
+    const modal = document.getElementById("modal");
+
+    if (!selectedRadio) {
+        showModalWithButtons("Please select a product before confirming.", true);
+        return;
+    }
+
+    const selectedIndex = parseInt(selectedRadio.value);
+    possibleProduct = matchingProducts[selectedIndex][0];
+    productName = possibleProduct;
+    updateFieldAvailability(possibleProduct);
+
+    if (currentField) {
+        fields[currentField] = scannedBarcode;
+    }
+
+    // 更新产品下拉框
+    const productSelect = document.getElementById("productNameSelect");
+    if (productSelect) {
+        productSelect.value = productName;
+    }
+
+    // 渲染输入字段并更新提交按钮状态
+    renderInputFields();
+    isSubmitEnabled = allFieldsValid();
+    submitButton.disabled = !isSubmitEnabled;
+
+    // 关闭模态窗口并重置匹配状态
+    modal.style.display = "none";
+    resetMatchingState();
+};
+
+// 更新 modalConfirmButton 的事件监听器
+modalConfirmButton.addEventListener("click", () => {
+    handleProductSelection(currentField);
+});
+
+// 更新 modalCancelButton 的事件监听器
+modalCancelButton.addEventListener("click", () => {
+    const modal = document.getElementById("modal");
+    modal.style.display = "none";
+    resetMatchingState();
+});
 
 document.getElementById('resetButton').addEventListener('click', function() {
   // 重置表单逻辑
@@ -393,44 +449,6 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Failed to load or parse the Excel file:", error);
       }
   };
-
-  // 模态确认按钮
-  modalConfirmButton.addEventListener("click", () => {
-  if (matchingProducts.length > 0) {
-    // User confirmed this is the correct product
-    productName = possibleProduct;
-    updateFieldAvailability(possibleProduct);
-    modal.style.display = "none";
-
-    if (currentField) {
-      fields[currentField] = scannedBarcode;
-    }
-
-    // Update the product dropdown
-    const productSelect = document.getElementById("productNameSelect");
-    if (productSelect) {
-      productSelect.value = productName;
-    }
-    
-    renderInputFields();
-    isSubmitEnabled = allFieldsValid();
-    submitButton.disabled = !isSubmitEnabled;
-    
-    resetMatchingState();
-  }
-});
-
-  // 模态取消按钮
-  modalCancelButton.addEventListener("click", () => {
-  if (matchingProducts.length > 0) {
-    // Move to next matching product
-    currentMatchingIndex++;
-    promptForProductConfirmation(currentField, scannedBarcode);
-  } else {
-    modal.style.display = "none";
-    resetMatchingState();
-  }
-});
 
 const resetMatchingState = () => {
   matchingProducts = [];
