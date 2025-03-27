@@ -198,3 +198,18 @@ input, select {
 button {
     margin: 0 5px;
 }
+
+.modal-content input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.modal-content label {
+    flex: 1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%; /* 防止溢出容器 */
+}
