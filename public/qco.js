@@ -526,11 +526,11 @@ const resetMatchingState = () => {
     }
 
     // 验证 UBD 格式
-    const ubdRegex = /^\d{2} [A-Z]{3}$/; // DD MMM 格式
+    const ubdRegex = /^\d{2}[A-Z]{3}$/; // NNMMM format (e.g., 01MAY)
     if (!ubdRegex.test(ubd)) {
-      modal2Message.textContent = "Invalid UBD format. Please enter in the format DD MMM (e.g., 19 MAY).";
-      modal2Message.style.display = "block";
-      return;
+        modal2Message.textContent = "Invalid UBD format. Please enter in the format NNMMM (e.g., 01MAY).";
+        modal2Message.style.display = "block";
+        return;
     }
 
     // 计算 HCODE 到 UBD 的天数
@@ -631,13 +631,14 @@ const resetMatchingState = () => {
     return new Date(currentYear, month, day);
   }
 
-  // 解析 UBD 为日期
+  // 解析 UBD "DDMMM"
   function parseUBD(ubd) {
-    const [day, monthStr] = ubd.split(" ");
-    const month = new Date(Date.parse(`01 ${monthStr} 2000`)).getMonth(); // 将 MMM 转换为月份
-    const currentYear = new Date().getFullYear();
-    return new Date(currentYear, month, parseInt(day, 10));
-  }
+        const day = parseInt(ubd.slice(0, 2), 10); // First 2 digits
+        const monthStr = ubd.slice(2, 5); // Last 3 letters
+        const month = new Date(Date.parse(`01 ${monthStr} 2000`)).getMonth();
+        const currentYear = new Date().getFullYear();
+        return new Date(currentYear, month, day);
+    }
 
   // 显示确认提示框
   function showConfirmationModal(message) {
