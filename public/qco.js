@@ -312,18 +312,24 @@ const promptForProductConfirmation = (field, scannedCode) => {
     // 存储扫描的条码
     scannedBarcode = scannedCode;
 
-    // 创建产品选择列表的 HTML，包含单选按钮
+    // 创建产品选择列表的 HTML，单选按钮和产品名称在同一行
     const productListHtml = matchingProducts
         .map((product, index) => `
-            <div style="margin: 5px;">
-                <input type="radio" name="productSelection" id="product_${index}" value="${index}" ${index === 0 ? 'checked' : ''}>
-                <label for="product_${index}">${product[0]}</label>
+            <div style="display: flex; align-items: center; margin: 8px 0;">
+                <input type="radio" name="productSelection" id="product_${index}" value="${index}" ${index === 0 ? 'checked' : ''} style="margin-right: 10px;">
+                <label for="product_${index}" style="flex: 1;">${product[0]}</label>
             </div>
         `)
         .join('');
 
     // 创建模态窗口内容
-    const modalContent = `Multiple products found matching this barcode:<br><br>${productListHtml}<br>Please select the correct product:`;
+    const modalContent = `
+        <div style="text-align: left;">
+            <p style="margin-bottom: 10px;">Multiple products found matching this barcode:</p>
+            ${productListHtml}
+            <p style="margin-top: 10px;">Please select the correct product:</p>
+        </div>
+    `;
 
     // 显示模态窗口
     showModalWithButtons(modalContent, true);
