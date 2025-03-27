@@ -52,11 +52,11 @@
         <span id="modal2CloseIcon" style="position: absolute; top: 10px; right: 10px; font-size: 20px; cursor: pointer;">✖</span>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <div class="form-group">
-            <label for="lineNumber">Line Number:</label>
+            <label for="lineNumber">Line Num:</label>
             <input type="text" id="lineNumber" class="modal-input">
           </div>
           <div class="form-group">
-            <label for="palletNumber">Pallet Number:</label>
+            <label for="palletNumber">Pallet Num:</label>
             <input type="text" id="palletNumber" class="modal-input">
           </div>
           <div class="form-group">
@@ -67,12 +67,11 @@
             <label for="hcode">HCODE:</label>
             <input type="text" id="hcode" class="modal-input">
           </div>
-          <div class="form-group">
-            <label for="hcode">UBD:</label>
-            <input type="text" id="ubd" class="modal-input">            
-          </div>
-          <div class="form-group" align-items: LEFT;">
-            <label></label>
+          <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+            <div style="flex: 1;">
+              <label for="ubd">UBD:</label>
+              <input type="text" id="ubd" class="modal-input">
+            </div>
             <button id="modalSubmitButton" class="submit-button">Submit</button>
           </div>
         </div>
