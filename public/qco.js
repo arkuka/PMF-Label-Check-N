@@ -11,7 +11,7 @@ let fields = {
 };
 let shelfLifeDays = 0; // 保质期天数
 let headers = [];
-let productNames = [];
+let productNames = [];  // 产品名称列表
 let productNameLabel = "";
 let isSubmitEnabled = false;
 let prompted = false;
@@ -485,15 +485,16 @@ const convertToUpperCase = (inputId) => {
     resetForm();
   });
 
-  // 显示 modal2 模态窗口
-  const modal2 = document.getElementById("modal2");
-  const modal2CloseIcon = document.getElementById("modal2CloseIcon"); // New close icon    
   
   // 提交按钮点击事件
   submitButton.addEventListener("click", () => { // 主页面中的submit按钮
     if (!productName || !configData) return;    
     modal2.style.display = "flex";
   });
+
+  // 显示 modal2 模态窗口
+  const modal2 = document.getElementById("modal2");
+  const modal2CloseIcon = document.getElementById("modal2CloseIcon"); // New close icon
 
   // Close icon event listener
     modal2CloseIcon.addEventListener("click", () => {
