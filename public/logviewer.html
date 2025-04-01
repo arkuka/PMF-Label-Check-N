@@ -297,6 +297,7 @@
     }
 
     // Toggle file content visibility
+    // Toggle file content visibility
     function toggleFileContent() {
       const contentDiv = document.getElementById('fileContent');
       const toggleBtn = document.getElementById('toggleContentBtn');
@@ -327,6 +328,7 @@
     }
 
     // View file content
+    // View file content
     async function viewFile(fileUrl, element) {
       try {
         const response = await fetch(fileUrl);
@@ -342,7 +344,11 @@
         row.classList.add('selected-row');
         currentSelectedFile = element;
 
-        if (isContentVisible) {
+        // Automatically show content panel if it's hidden
+        if (!isContentVisible) {
+          toggleFileContent(); // This will show the panel
+        } else {
+          // If already visible, just adjust the padding
           const container = document.getElementById('mainContainer');
           const contentHeight = contentDiv.offsetHeight;
           container.style.paddingTop = `${contentHeight + 60}px`;
@@ -352,6 +358,11 @@
         console.error('Error viewing file:', error);
         const contentDiv = document.getElementById('fileContent');
         contentDiv.textContent = 'Failed to load file content: ' + error.message;
+        
+        // Still show the panel even if there's an error
+        if (!isContentVisible) {
+          toggleFileContent();
+        }
       }
     }
 
