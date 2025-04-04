@@ -640,6 +640,10 @@ const convertToUpperCase = (inputId) => {
 
       // 重置表单
       resetForm();
+
+      // Show success message - NEW CODE
+      showModalWithButtons("Data submitted successfully!", false);
+      
     } catch (error) {
       console.error("Error submitting data:", error);
     }
