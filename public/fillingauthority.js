@@ -23,13 +23,27 @@ document.addEventListener("DOMContentLoaded", () => {
             productNameSelect.innerHTML = '<option value="">Select Product</option>' +
             products.map(product => `<option value="${product.name}" data-id="${product.id}">${product.name}</option>`).join('');
 
+        } catch (error) {
+            console.error("Failed to load or parse the Excel file:", error);
+        }
 
-            // 加载生产线数据
-            const linesResponse = await fetch('/api/getProductionLines');
-            if (!linesResponse.ok) throw new Error('Failed to fetch production lines');
-            const productionLines = await linesResponse.json();
+        try {
+            const response = await fetch("/production_lines.xlsx");
+            const arrayBuffer = await response.arrayBuffer();
+    
+            const workbook = XLSX.read(arrayBuffer, { type: "array" });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    
+            console.log(data); // Log the data to see its structure
+    
+            const production_lines = data.slice(1).map(row => ({
+            name: row[0],
+            id: row[1]
+            }));
+    
             productionLineSelect.innerHTML = '<option value="">Select Production Line</option>' +
-                productionLines.map(line => `<option value="${line.name}">${line.name} - ${line.note1}</option>`).join('');
+            production_lines.map(production_line => `<option value="${production_line.name}" data-id="${production_line.id}">${production_line.name}</option>`).join('');
 
         } catch (error) {
             console.error("Failed to load or parse the Excel file:", error);
