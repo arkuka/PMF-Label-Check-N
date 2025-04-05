@@ -89,6 +89,11 @@ async function submitSelection() {
         productionLineSelect.value = '';
         productNameSelect.value = '';
         submitButton.disabled = true;
+
+
+
+        
+
     } catch (error) {
         console.error('Error saving selection:', error);
         alert('Failed to save selection. Please try again.');

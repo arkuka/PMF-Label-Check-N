@@ -3,8 +3,8 @@
   "builds": [
               { "src": "api/blob-save.js", "use": "@vercel/node" }, 
               { "src": "api/logviewer.js", "use": "@vercel/node" }, 
-              { "src": "api/saveSelection.js", "use": "@vercel/node" },
-              { "src": "api/fillingAuthority.js", "use": "@vercel/node" }, 
+              { "src": "api/saveselection.js", "use": "@vercel/node" },
+              { "src": "api/fillingauthority.js", "use": "@vercel/node" }, 
               { "src": "api/index.js", "use": "@vercel/node" }, 
               { "src": "public/**", "use": "@vercel/static" }
             ],
@@ -12,8 +12,8 @@
   "routes": [
               { "src": "/api/blob-save", "dest": "/api/blob-save.js" }, 
               { "src": "/api/logviewer", "dest": "/api/logviewer.js" }, 
-              { "src": "/api/saveSelection", "dest": "/api/saveSelection.js" }, 
-              { "src": "/api/fillingAuthority", "dest": "/api/fillingAuthority.js" }, 
+              { "src": "/api/saveselection", "dest": "/api/saveselection.js" }, 
+              { "src": "/api/fillingauthority", "dest": "/api/fillingauthority.js" }, 
               { "src": "/api/index", "dest": "/api/index.js" }, 
 
               { "src": "/logviewer.html", "dest": "/public/logviewer.html" },
