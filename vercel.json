@@ -5,7 +5,8 @@
               { "src": "api/logviewer.js", "use": "@vercel/node" }, 
               { "src": "api/getProductionLines.js", "use": "@vercel/node" },
               { "src": "api/getProducts.js", "use": "@vercel/node" }, 
-              { "src": "api/saveSelection.js", "use": "@vercel/node" }, 
+              { "src": "api/saveSelection.js", "use": "@vercel/node" },
+              { "src": "api/getLabeLibrary.js", "use": "@vercel/node" }, 
               { "src": "api/index.js", "use": "@vercel/node" }, 
               { "src": "public/**", "use": "@vercel/static" }
             ],
@@ -16,6 +17,7 @@
               { "src": "/api/getProductionLines", "dest": "/api/getProductionLines.js" }, 
               { "src": "/api/getProducts", "dest": "/api/getProducts.js" }, 
               { "src": "/api/saveSelection", "dest": "/api/saveSelection.js" }, 
+              { "src": "/api/getLabelLibrary", "dest": "/api/getLabelLibrary.js" }, 
               { "src": "/api/index", "dest": "/api/index.js" }, 
 
               { "src": "/logviewer.html", "dest": "/public/logviewer.html" },
