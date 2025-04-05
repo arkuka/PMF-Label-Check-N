@@ -55,31 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 )
 
-
-
-
-
-// 加载数据
-async function loadData() {
-    try {
-        
-
-        // 加载产品数据
-        // const productsResponse = await fetch('/api/getLabelLibrary');
-        // if (!productsResponse.ok) throw new Error('Failed to fetch products');
-        // const productData = await productsResponse.json();
-        // const products = productData.data.slice(1).map(row => ({
-        //     name: row[0],
-        //     id: row[5] // pallet label as ID
-        // }));
-        // productNameSelect.innerHTML = '<option value="">Select Product</option>' +
-        //     products.map(product => `<option value="${product.name}" data-id="${product.id}">${product.name}</option>`).join('');
-    } catch (error) {
-        console.error('Error loading data:', error);
-        alert('Failed to load data. Please refresh the page.');
-    }
-}
-
 // 检查提交按钮状态
 function updateSubmitButton() {
     const lineSelected = productionLineSelect.value !== '';
