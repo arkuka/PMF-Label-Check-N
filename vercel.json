@@ -3,10 +3,7 @@
   "builds": [
               { "src": "api/blob-save.js", "use": "@vercel/node" }, 
               { "src": "api/logviewer.js", "use": "@vercel/node" }, 
-              { "src": "api/getProductionLines.js", "use": "@vercel/node" },
-              { "src": "api/getProducts.js", "use": "@vercel/node" }, 
               { "src": "api/saveSelection.js", "use": "@vercel/node" },
-              { "src": "api/getLabeLibrary.js", "use": "@vercel/node" }, 
               { "src": "api/fillingAuthority.js", "use": "@vercel/node" }, 
               { "src": "api/index.js", "use": "@vercel/node" }, 
               { "src": "public/**", "use": "@vercel/static" }
@@ -15,10 +12,7 @@
   "routes": [
               { "src": "/api/blob-save", "dest": "/api/blob-save.js" }, 
               { "src": "/api/logviewer", "dest": "/api/logviewer.js" }, 
-              { "src": "/api/getProductionLines", "dest": "/api/getProductionLines.js" }, 
-              { "src": "/api/getProducts", "dest": "/api/getProducts.js" }, 
               { "src": "/api/saveSelection", "dest": "/api/saveSelection.js" }, 
-              { "src": "/api/getLabelLibrary", "dest": "/api/getLabelLibrary.js" }, 
               { "src": "/api/fillingAuthority", "dest": "/api/fillingAuthority.js" }, 
               { "src": "/api/index", "dest": "/api/index.js" }, 
 
