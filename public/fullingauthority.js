@@ -3,32 +3,36 @@ const productNameSelect = document.getElementById('productNameSelect');
 const submitButton = document.getElementById('submitButton');
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    const loadExcelFile = async () => {
+        try {
+            const response = await fetch("/label_library.xlsx");
+            const arrayBuffer = await response.arrayBuffer();
+    
+            const workbook = XLSX.read(arrayBuffer, { type: "array" });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    
+            console.log(data); // Log the data to see its structure
+    
+            const products = data.slice(1).map(row => ({
+            name: row[0],
+            id: row[5] // pallet label as ID
+            }));
+    
+            productNameSelect.innerHTML = '<option value="">Select Product</option>' +
+            products.map(product => `<option value="${product.name}" data-id="${product.id}">${product.name}</option>`).join('');
+        } catch (error) {
+            console.error("Failed to load or parse the Excel file:", error);
+        }
+    }
+
+    
     loadExcelFile();
     }
 )
 
-const loadExcelFile = async () => {
-    try {
-        const response = await fetch("/label_library.xlsx");
-        const arrayBuffer = await response.arrayBuffer();
 
-        const workbook = XLSX.read(arrayBuffer, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-        console.log(data); // Log the data to see its structure
-
-        const products = data.slice(1).map(row => ({
-        name: row[0],
-        id: row[5] // pallet label as ID
-        }));
-
-        productNameSelect.innerHTML = '<option value="">Select Product</option>' +
-        products.map(product => `<option value="${product.name}" data-id="${product.id}">${product.name}</option>`).join('');
-    } catch (error) {
-        console.error("Failed to load or parse the Excel file:", error);
-    }
-}
 
 
 
