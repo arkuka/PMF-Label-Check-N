@@ -6,9 +6,9 @@ module.exports = async (req, res) => {
     const data = XLSX.utils.sheet_to_json(sheet);
     
     const lines = data.map(row => ({
-        name: row['生产线名字'],
-        note1: row['备注信息1'],
-        note2: row['备注信息2']
+        name: row['Production Lines'],
+        note1: row['Comment 1'],
+        note2: row['Comment 2']
     }));
     
     res.json(lines);
