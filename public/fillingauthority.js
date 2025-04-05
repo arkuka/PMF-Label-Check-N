@@ -22,6 +22,15 @@ document.addEventListener("DOMContentLoaded", () => {
     
             productNameSelect.innerHTML = '<option value="">Select Product</option>' +
             products.map(product => `<option value="${product.name}" data-id="${product.id}">${product.name}</option>`).join('');
+
+
+            // 加载生产线数据
+            const linesResponse = await fetch('/api/getProductionLines');
+            if (!linesResponse.ok) throw new Error('Failed to fetch production lines');
+            const productionLines = await linesResponse.json();
+            productionLineSelect.innerHTML = '<option value="">Select Production Line</option>' +
+                productionLines.map(line => `<option value="${line.name}">${line.name} - ${line.note1}</option>`).join('');
+
         } catch (error) {
             console.error("Failed to load or parse the Excel file:", error);
         }
@@ -39,12 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // 加载数据
 async function loadData() {
     try {
-        // 加载生产线数据
-        const linesResponse = await fetch('/api/getProductionLines');
-        if (!linesResponse.ok) throw new Error('Failed to fetch production lines');
-        const productionLines = await linesResponse.json();
-        productionLineSelect.innerHTML = '<option value="">Select Production Line</option>' +
-            productionLines.map(line => `<option value="${line.name}">${line.name} - ${line.note1}</option>`).join('');
+        
 
         // 加载产品数据
         // const productsResponse = await fetch('/api/getLabelLibrary');
