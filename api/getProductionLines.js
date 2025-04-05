@@ -1,7 +1,7 @@
 const XLSX = require('xlsx');
 
 module.exports = async (req, res) => {
-    const workbook = XLSX.readFile('Production Lines.xlsx');
+    const workbook = XLSX.readFile('production_lines.xlsx');
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const data = XLSX.utils.sheet_to_json(sheet);
     
