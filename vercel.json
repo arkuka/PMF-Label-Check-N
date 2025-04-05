@@ -3,6 +3,9 @@
   "builds": [
               { "src": "api/blob-save.js", "use": "@vercel/node" }, 
               { "src": "api/logviewer.js", "use": "@vercel/node" }, 
+              { "src": "api/getProductionLines.js", "use": "@vercel/node" },
+              { "src": "api/getProducts.js", "use": "@vercel/node" }, 
+              { "src": "api/saveSelection.js", "use": "@vercel/node" }, 
               { "src": "api/index.js", "use": "@vercel/node" }, 
               { "src": "public/**", "use": "@vercel/static" }
             ],
@@ -10,9 +13,13 @@
   "routes": [
               { "src": "/api/blob-save", "dest": "/api/blob-save.js" }, 
               { "src": "/api/logviewer", "dest": "/api/logviewer.js" }, 
+              { "src": "/api/getProductionLines", "dest": "/api/getProductionLines.js" }, 
+              { "src": "/api/getProducts", "dest": "/api/getProducts.js" }, 
+              { "src": "/api/saveSelection", "dest": "/api/saveSelection.js" }, 
               { "src": "/api/index", "dest": "/api/index.js" }, 
 
               { "src": "/logviewer.html", "dest": "/public/logviewer.html" },
+              { "src": "/fillingauthority.html", "dest": "/public/fillingauthority.html" },
               
               { "src": "/(.*)", "dest": "/public/$1" }
             ]
