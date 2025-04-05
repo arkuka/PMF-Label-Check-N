@@ -3,69 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Filling Authority test</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Filling Line Selection</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        select {
-            width: 250px;
-            padding: 8px;
-            font-size: 16px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-        button {
-            padding: 10px 30px;
-            font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-    </style>
+  <title>QC Scanner App</title>
+  <link rel="stylesheet" href="style.css"> <!-- 引入样式文件 -->
 </head>
 <body>
-    <div class="container">
-        <select id="productionLineSelect">
-            <option value="">Select Production Line</option>
-        </select>
+  
+  <div class="container">
+    <header class="header">
+      <img src="https://www.pmfresh.com.au/wp-content/themes/pmfresh/images/logo.png" alt="PMFresh Logo" class="logo">
+      <h1>Production Line Label Check <span id="versionInfo" style="font-size: 14px; color: #666; margin-left: 10px;"></span></h1>
+    </header>
+
+    <div class="form-container">
+      <div class="form-group">
+        <label id="productNameLabel"></label>
         <select id="productNameSelect">
-            <option value="">Select Product</option>
+          <option value="">Select Product</option>
         </select>
-        <button id="submitButton" disabled>Confirm</button>
+      </div>
+      
+
+      <div id="inputFields"></div>
+
+      <div id="buttons" class="form-group">
+        <button id="submitButton" class="submit-button">Submit</button>
+        <button id="resetButton" class="reset-button">Reset</button>
+      </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
-    <script src="fillingauthority.html"></script> <!-- 引入 JavaScript 文件 -->
-  </body>
+    <div id="modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <!-- 图片区域 -->
+        <img id="modalImage" src="" alt="Modal Image" style="display: none; max-width: 100%; height: auto; margin-bottom: 20px;">
+        <!-- 消息区域 -->
+        <h2 id="modalMessage"></h2>
+        
+        
+        <!-- 按钮区域 -->
+        <button id="modalConfirmButton" class="modal-button yes" style="display: none;">Yes</button>
+        <button id="modalCancelButton" class="modal-button cancel" style="display: none;">No</button>
+        <button id="modalOkButton" class="modal-button ok" style="display: none;">OK</button>
+      </div>
+    </div>
+
+    <div id="modal2" class="modal" style="display: none;">
+      <div class="modal-content" style="position: relative; padding: 20px;">
+        <!-- Top-right close icon -->
+        <span id="modal2CloseIcon" style="position: absolute; top: 10px; right: 10px; font-size: 20px; cursor: pointer;">✖</span>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label for="lineNumber">Line Num:</label>
+            <input type="text" id="lineNumber" class="modal-input">
+          </div>
+          <div class="form-group">
+            <label for="palletNumber">Pallet Num:</label>
+            <input type="text" id="palletNumber" class="modal-input">
+          </div>
+          <div class="form-group">
+            <label for="cartonCount">Carton Count:</label>
+            <input type="text" id="cartonCount" class="modal-input">
+          </div>
+          <div class="form-group">
+            <label for="hcode">HCODE:</label>
+            <input type="text" id="hcode" class="modal-input">
+          </div>
+          <div class="form-group">
+            <label for="ubd">UBD:</label>
+            <input type="text" id="ubd" class="modal-input">
+          </div>
+          <div class="form-group" style="display: flex; justify-content: flex-end;">
+            <button id="modalSubmitButton" class="submit-button">Submit</button>
+          </div>
+        </div>
+        <div id="modal2Message" style="color: red; margin-top: 10px; display: none;"></div>
+      </div>
+    </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+  <script src="qco.js"></script> <!-- 引入 JavaScript 文件 -->
 </body>
 </html>
