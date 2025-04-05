@@ -462,19 +462,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
   };
 
-const resetMatchingState = () => {
-  matchingProducts = [];
-  currentMatchingIndex = 0;
-  possibleProduct = "";
-  scannedBarcode = "";
-};
+  const resetMatchingState = () => {
+    matchingProducts = [];
+    currentMatchingIndex = 0;
+    possibleProduct = "";
+    scannedBarcode = "";
+  };
 
-const convertToUpperCase = (inputId) => {
-    const input = document.getElementById(inputId);
-    input.addEventListener('input', (e) => {
-        e.target.value = e.target.value.toUpperCase();
-    });
-};
+  const convertToUpperCase = (inputId) => {
+      const input = document.getElementById(inputId);
+      input.addEventListener('input', (e) => {
+          e.target.value = e.target.value.toUpperCase();
+      });
+  };
 
   modalOkButton.addEventListener("click", () => {
     // 关闭模态窗口
