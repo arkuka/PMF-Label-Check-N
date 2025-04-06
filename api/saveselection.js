@@ -6,7 +6,7 @@ export default async function handler(req, res) {
       const data = req.body;
       console.log("Received data:", JSON.stringify(data, null, 2));
 
-      const productionLine = data['production line'] || "unknown";
+      const productionLine = data['production Line'] || "unknown";
       const productionDate = data['production Date'] || "unknown";
 
       console.log("Production Date:", productionDate);
