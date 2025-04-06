@@ -1,4 +1,4 @@
-import { put, get, list } from "@vercel/blob"
+import { put, list } from "@vercel/blob"
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
@@ -13,7 +13,6 @@ export default async function handler(req, res) {
       const { blobs } = await list();
       
       // Look for existing blob with matching prefix
-      // The issue is here - we need to match the exact format used when creating files
       const prefix = `${productionLine}-Filling-Authority`;
       existingBlob = blobs.find(blob => 
         blob.pathname.startsWith(prefix)
@@ -26,18 +25,22 @@ export default async function handler(req, res) {
       
       if (existingBlob) {
         fileName = existingBlob.pathname;
-        // Load existing data
-        const blob = await get(existingBlob.url); // Use URL instead of pathname
-        const text = await blob.text();
-        try {
-          existingData = JSON.parse(text);
-          // Ensure existingData is an array
-          if (!Array.isArray(existingData)) {
-            existingData = [existingData];
+        // Load existing data - use fetch instead of get
+        const response = await fetch(existingBlob.url);
+        if (response.ok) {
+          const text = await response.text();
+          try {
+            existingData = JSON.parse(text);
+            // Ensure existingData is an array
+            if (!Array.isArray(existingData)) {
+              existingData = [existingData];
+            }
+          } catch (e) {
+            console.error("Error parsing existing JSON:", e);
+            existingData = [];
           }
-        } catch (e) {
-          console.error("Error parsing existing JSON:", e);
-          existingData = [];
+        } else {
+          console.error("Failed to fetch existing blob:", response.statusText);
         }
       } else {
         // Create new filename
@@ -91,8 +94,13 @@ export default async function handler(req, res) {
           });
         }
 
-        const blob = await get(blobInfo.url); // Use URL instead of pathname
-        const text = await blob.text();
+        // Use fetch instead of get
+        const response = await fetch(blobInfo.url);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch: ${response.statusText}`);
+        }
+        
+        const text = await response.text();
         const data = JSON.parse(text);
 
         return res.status(200).json({
