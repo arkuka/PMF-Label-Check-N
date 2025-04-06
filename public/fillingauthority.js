@@ -1,15 +1,16 @@
 const productionLineSelect = document.getElementById('productionLineSelect');
 const productNameSelect = document.getElementById('productNameSelect');
 const submitButton = document.getElementById('submitButton');
-const yesterdayDateRadio = document.getElementById('yesterdayDate');
-const todayDateRadio = document.getElementById('todayDate');
+const dateOptionsContainer = document.getElementById('dateOptions');
 
-// Function to format date as YYYY-MM-DD
-function formatDate(date) {
+// Function to format date as YYYY-MM-DD (Weekday)
+function formatDateWithWeekday(date) {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    const weekday = days[date.getDay()];
+    return `${year}-${month}-${day} (${weekday})`;
 }
 
 // Set up date radio buttons
@@ -18,11 +19,34 @@ function setupDateSelection() {
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
     
-    todayDateRadio.value = formatDate(today);
-    yesterdayDateRadio.value = formatDate(yesterday);
+    // Clear any existing options
+    dateOptionsContainer.innerHTML = '';
     
-    // Set today as default selected
-    todayDateRadio.checked = true;
+    // Add yesterday option
+    const yesterdayOption = document.createElement('div');
+    yesterdayOption.className = 'radio-option';
+    yesterdayOption.innerHTML = `
+        <input type="radio" name="productionDate" value="${formatDate(yesterday)}" id="yesterdayDate">
+        <label for="yesterdayDate">${formatDateWithWeekday(yesterday)}</label>
+    `;
+    dateOptionsContainer.appendChild(yesterdayOption);
+    
+    // Add today option
+    const todayOption = document.createElement('div');
+    todayOption.className = 'radio-option';
+    todayOption.innerHTML = `
+        <input type="radio" name="productionDate" value="${formatDate(today)}" id="todayDate" checked>
+        <label for="todayDate">${formatDateWithWeekday(today)}</label>
+    `;
+    dateOptionsContainer.appendChild(todayOption);
+    
+    // Helper function to format date for value attribute (without weekday)
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -81,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function updateSubmitButton() {
     const lineSelected = productionLineSelect.value !== '';
     const productSelected = productNameSelect.value !== '';
-    const dateSelected = document.querySelector('input[name="productionDate"]:checked').value !== '';
+    const dateSelected = document.querySelector('input[name="productionDate"]:checked') !== null;
     
     submitButton.disabled = !(lineSelected && productSelected && dateSelected);
 }
@@ -125,7 +149,9 @@ async function submitSelection() {
 // 事件监听
 productionLineSelect.addEventListener('change', updateSubmitButton);
 productNameSelect.addEventListener('change', updateSubmitButton);
-document.querySelectorAll('input[name="productionDate"]').forEach(radio => {
-    radio.addEventListener('change', updateSubmitButton);
+document.addEventListener('change', function(e) {
+    if (e.target.name === 'productionDate') {
+        updateSubmitButton();
+    }
 });
 submitButton.addEventListener('click', submitSelection);

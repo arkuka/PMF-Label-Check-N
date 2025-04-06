@@ -8,32 +8,24 @@
 </head>
 
 <body>
-    <div class="container">
-        <div class="date-selection">
-            <h3>Select Production Date:</h3>
-            <div class="radio-group">
-                <label>
-                    <input type="radio" name="productionDate" value="" checked disabled> Select Date
-                </label>
-                <label>
-                    <input type="radio" name="productionDate" value="" id="yesterdayDate"> Yesterday
-                </label>
-                <label>
-                    <input type="radio" name="productionDate" value="" id="todayDate"> Today
-                </label>
-            </div>
-        </div>
-        
-        <select id="productionLineSelect">
-            <option value="">Select Production Line</option>
-        </select>
-        <select id="productNameSelect">
-            <option value="">Select Product</option>
-        </select>
-        <button id="submitButton" disabled>Confirm</button>
-    </div>
+  <div class="container">
+      <div class="date-selection">
+          <h3>Select Production Date:</h3>
+          <div class="radio-group" id="dateOptions">
+              <!-- Options will be populated by JavaScript -->
+          </div>
+      </div>
+      
+      <select id="productionLineSelect">
+          <option value="">Select Production Line</option>
+      </select>
+      <select id="productNameSelect">
+          <option value="">Select Product</option>
+      </select>
+      <button id="submitButton" disabled>Confirm</button>
+  </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
-    <script src="fillingauthority.js"></script> <!-- 引入 JavaScript 文件 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+  <script src="fillingauthority.js"></script> <!-- 引入 JavaScript 文件 -->
 </body>
 </html>
