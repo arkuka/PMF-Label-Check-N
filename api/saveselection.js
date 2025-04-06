@@ -32,6 +32,7 @@ export default async function handler(req, res) {
           const text = await response.text();
           try {
             existingData = JSON.parse(text);
+            console.log("Existing data loaded:", existingData);
             // Ensure existingData is an array
             if (!Array.isArray(existingData)) {
               existingData = [existingData];
