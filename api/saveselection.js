@@ -27,7 +27,10 @@ export default async function handler(req, res) {
       if (existingBlob) {
         fileName = existingBlob.pathname;
         // Load existing data - use fetch instead of get
-        const response = await fetch(existingBlob.url);
+        const response = await fetch(existingBlob.url, { 
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
         if (response.ok) {
           const text = await response.text();
           try {
