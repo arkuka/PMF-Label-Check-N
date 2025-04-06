@@ -18,6 +18,8 @@ export default async function handler(req, res) {
         blob.pathname.startsWith(prefix)
       );
 
+      console.log("Existing blob found:", existingBlob);
+
       let fileName;
       let existingData = [];
       
