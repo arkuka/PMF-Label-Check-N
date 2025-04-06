@@ -10,7 +10,7 @@ function formatDateWithWeekday(date) {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const weekday = days[date.getDay()];
-    return `${year}-${month}-${day} (${weekday})`;
+    return `${day}-${month}-${year} (${weekday})`;
 }
 
 // Set up date radio buttons
