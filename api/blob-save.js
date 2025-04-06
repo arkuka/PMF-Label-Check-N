@@ -91,6 +91,7 @@ export default async function handler(req, res) {
       const blob = await put(fileName, jsonData, {
         contentType: "application/json",
         access: "public",
+        addRandomSuffix: false, // Don't add suffix
       })
 
       console.log(`Data saved successfully to ${fileName}: blob.url=`, blob.url)
