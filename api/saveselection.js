@@ -11,31 +11,38 @@ export default async function handler(req, res) {
 
       console.log("Production Date:", productionDate);
       
-      // Find existing blob for this production line
-      let existingBlob = null;
+      // Find all blobs for this production line and date
       const { blobs } = await list();
       
-      // Look for existing blob with matching prefix
+      // Look for blobs with matching prefix
       const prefix = `${productionDate}-${productionLine}-Filling-Authority`;
-      existingBlob = blobs.find(blob => 
+      const matchingBlobs = blobs.filter(blob => 
         blob.pathname.startsWith(prefix)
       );
+      
+      console.log(`Found ${matchingBlobs.length} matching blobs with prefix: ${prefix}`);
 
-      let fileName;
       let existingData = [];
       
-      if (existingBlob) {
-        fileName = existingBlob.pathname;
-        // Load existing data - use fetch instead of get
-        const response = await fetch(existingBlob.url, { 
+      if (matchingBlobs.length > 0) {
+        // Sort by uploadedAt to get the most recent one
+        const latestBlob = matchingBlobs.sort((a, b) => 
+          new Date(b.uploadedAt) - new Date(a.uploadedAt)
+        )[0];
+        
+        console.log("Latest blob found:", latestBlob);
+        
+        // Load existing data from the most recent blob
+        const response = await fetch(latestBlob.url, { 
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' }
         });
+        
         if (response.ok) {
           const text = await response.text();
           try {
             existingData = JSON.parse(text);
-            console.log("Existing data loaded:", existingData);
+            console.log("Existing data loaded from latest blob:", existingData);
             // Ensure existingData is an array
             if (!Array.isArray(existingData)) {
               existingData = [existingData];
@@ -45,11 +52,8 @@ export default async function handler(req, res) {
             existingData = [];
           }
         } else {
-          console.error("Failed to fetch existing blob:", response.statusText);
+          console.error("Failed to fetch latest blob:", response.statusText);
         }
-      } else {
-        // Create new filename
-        fileName = `${productionDate}-${productionLine}-Filling-Authority.json`;
       }
 
       // Add new entry to the array
@@ -57,11 +61,14 @@ export default async function handler(req, res) {
       const jsonData = JSON.stringify(existingData, null, 2);
       console.log("Final data to save:", jsonData);
 
-      // Save to Vercel Blob with addRandomSuffix set to false if updating existing file
+      // Create a new filename with timestamp to ensure uniqueness
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const fileName = `${productionDate}-${productionLine}-Filling-Authority-${timestamp}.json`;
+
+      // Save to Vercel Blob with a new filename
       const blob = await put(fileName, jsonData, {
         contentType: "application/json",
         access: "public",
-        addRandomSuffix: true, // Add suffix
       });
 
       console.log(`Data saved to ${blob.pathname}:`, blob.url);
@@ -81,28 +88,37 @@ export default async function handler(req, res) {
       });
     }
   } else if (req.method === "GET") {
-    // If a specific production line is requested
-    if (req.query.productionLine) {
+    // If a specific production line and date are requested
+    if (req.query.productionLine && req.query.productionDate) {
       try {
         const productionLine = req.query.productionLine;
         const productionDate = req.query.productionDate;
         
-        // Find the blob for this production line
+        // Find all blobs for this production line and date
         const { blobs } = await list();
-        const prefix = `${productionLine}-Filling-Authority`;
-        const blobInfo = blobs.find(blob => 
+        const prefix = `${productionDate}-${productionLine}-Filling-Authority`;
+        const matchingBlobs = blobs.filter(blob => 
           blob.pathname.startsWith(prefix)
         );
 
-        if (!blobInfo) {
+        if (matchingBlobs.length === 0) {
           return res.status(404).json({
             success: false,
-            message: `cannot found the production data of ${productionLine} on ${productionDate}`,
+            message: `Cannot find production data for ${productionLine} on ${productionDate}`,
           });
         }
 
-        // Use fetch instead of get
-        const response = await fetch(blobInfo.url);
+        // Sort by uploadedAt to get the most recent one
+        const latestBlob = matchingBlobs.sort((a, b) => 
+          new Date(b.uploadedAt) - new Date(a.uploadedAt)
+        )[0];
+        
+        // Use fetch with no-cache to avoid caching issues
+        const response = await fetch(latestBlob.url, {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
+        
         if (!response.ok) {
           throw new Error(`Failed to fetch: ${response.statusText}`);
         }
@@ -113,13 +129,13 @@ export default async function handler(req, res) {
         return res.status(200).json({
           success: true,
           data: data,
-          fileName: blobInfo.pathname,
+          fileName: latestBlob.pathname,
         });
       } catch (error) {
-        console.error("get data failed:", error);
+        console.error("Get data failed:", error);
         return res.status(500).json({
           success: false,
-          message: "server error",
+          message: "Server error",
           error: error.message,
         });
       }
@@ -132,13 +148,17 @@ export default async function handler(req, res) {
           blob.pathname.includes('-Filling-Authority')
         );
         
-        // Group by production line
-        const filesByLine = fillingAuthorityFiles.reduce((acc, blob) => {
-          const lineMatch = blob.pathname.match(/^(L\d{2})-/);
-          if (lineMatch) {
-            const line = lineMatch[1];
-            if (!acc[line]) acc[line] = [];
-            acc[line].push({
+        // Group by production date and line
+        const filesByDateAndLine = fillingAuthorityFiles.reduce((acc, blob) => {
+          // Extract date and line from pathname
+          const match = blob.pathname.match(/^(\d{2}-\d{2}-\d{4})-([^-]+)-/);
+          if (match) {
+            const date = match[1];
+            const line = match[2];
+            const key = `${date}-${line}`;
+            
+            if (!acc[key]) acc[key] = [];
+            acc[key].push({
               url: blob.url,
               fileName: blob.pathname,
               size: blob.size,
@@ -148,29 +168,46 @@ export default async function handler(req, res) {
           return acc;
         }, {});
 
+        // For each group, only keep the most recent file
+        const latestFiles = {};
+        for (const [key, files] of Object.entries(filesByDateAndLine)) {
+          const sortedFiles = files.sort((a, b) => 
+            new Date(b.uploadedAt) - new Date(a.uploadedAt)
+          );
+          
+          // Extract date and line from key
+          const [date, line] = key.split('-');
+          
+          if (!latestFiles[line]) {
+            latestFiles[line] = {};
+          }
+          
+          latestFiles[line][date] = sortedFiles[0];
+        }
+
         return res.status(200).json({
           success: true,
-          filesByLine,
+          filesByLine: latestFiles,
         });
       } catch (error) {
-        console.error("list files failed:", error);
+        console.error("List files failed:", error);
         return res.status(500).json({
           success: false,
-          message: "server error",
+          message: "Server error",
           error: error.message,
         });
       }
     } else {
       return res.status(400).json({
         success: false,
-        message: "please provide production line and production date",
+        message: "Please provide production line and production date",
       });
     }
   }
 
   return res.status(405).json({
     success: false,
-    message: "method not allowed",
+    message: "Method not allowed",
     allowedMethods: ["POST", "GET"],
   });
 }
