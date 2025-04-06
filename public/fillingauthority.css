@@ -69,3 +69,11 @@
         .radio-option input {
         margin-right: 8px;
         }
+
+        #versionInfo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 14px;
+            color: #666;
+          }
