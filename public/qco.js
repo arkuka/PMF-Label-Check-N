@@ -582,9 +582,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 如果验证通过，提交数据
+    const timeFormatter = new Intl.DateTimeFormat("en-AU", {
+      timeZone: "Australia/Sydney",
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+    
+    const parts = timeFormatter.formatToParts(new Date());
+    const formattedTimestamp = `${parts[0].value}-${parts[2].value}-${parts[4].value} ${parts[6].value}:${parts[8].value}:${parts[10].value}`;
+
     const productRow = configData.find((row) => row[0] === productName);
     const submittedData = {
-      timestamp: new Date().toLocaleString("en-US", { timeZone: "Australia/Sydney" }),
+      timestamp: formattedTimestamp,
       productName,
       barcodes: headers.slice(1).map((header) => {
         const value = fields[header.toLowerCase()] || "";

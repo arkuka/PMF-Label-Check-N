@@ -128,8 +128,22 @@ async function submitSelection() {
     const productId = productNameSelect.selectedOptions[0].dataset.id;
     const productionDate = document.querySelector('input[name="productionDate"]:checked').value;
 
+    const timeFormatter = new Intl.DateTimeFormat("en-AU", {
+        timeZone: "Australia/Sydney",
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
+      
+      const parts = timeFormatter.formatToParts(new Date());
+      const formattedTimestamp = `${parts[0].value}-${parts[2].value}-${parts[4].value} ${parts[6].value}:${parts[8].value}:${parts[10].value}`;
+
     const data = {
-        timestamp: new Date().toLocaleString("en-US", { timeZone: "Australia/Sydney" }),
+        timestamp: formattedTimestamp,
         'production Date': productionDate,
         'production Line': line,
         'product ID': productId,
