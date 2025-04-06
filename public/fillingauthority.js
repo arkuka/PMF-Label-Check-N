@@ -5,7 +5,7 @@ const dateOptionsContainer = document.getElementById('dateOptions');
 
 // Function to format date as YYYY-MM-DD (Weekday)
 function formatDateWithWeekday(date) {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
