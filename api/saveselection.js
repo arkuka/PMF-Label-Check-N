@@ -52,6 +52,7 @@ export default async function handler(req, res) {
       // Add new entry to the array
       existingData.push(data);
       const jsonData = JSON.stringify(existingData, null, 2);
+      console.log("Final data to save:", jsonData);
 
       // Save to Vercel Blob with addRandomSuffix set to false if updating existing file
       const blob = await put(fileName, jsonData, {
