@@ -119,10 +119,10 @@ async function submitSelection() {
 
     const data = {
         timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19).replace(/-/g, ''),
-        'production line': line,
-        'production ID': productId,
-        'production Name': productName,
-        'production Date': productionDate
+        'production Date': productionDate,
+        'production Line': line,
+        'product ID': productId,
+        'product Name': productName
     };
 
     try {

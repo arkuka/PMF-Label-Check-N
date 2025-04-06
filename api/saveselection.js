@@ -7,18 +7,17 @@ export default async function handler(req, res) {
       console.log("Received data:", JSON.stringify(data, null, 2));
 
       const productionLine = data['production line'] || "unknown";
+      const productionDate = data['production Date'] || "unknown";
       
       // Find existing blob for this production line
       let existingBlob = null;
       const { blobs } = await list();
       
       // Look for existing blob with matching prefix
-      const prefix = `${productionLine}-Filling-Authority`;
+      const prefix = `${productionDate}-${productionLine}-Filling-Authority`;
       existingBlob = blobs.find(blob => 
         blob.pathname.startsWith(prefix)
       );
-
-      console.log("Existing blob found:", existingBlob);
 
       let fileName;
       let existingData = [];
@@ -44,7 +43,7 @@ export default async function handler(req, res) {
         }
       } else {
         // Create new filename
-        fileName = `${productionLine}-Filling-Authority.json`;
+        fileName = `${productionDate}-${productionLine}-Filling-Authority.json`;
       }
 
       // Add new entry to the array
@@ -79,6 +78,7 @@ export default async function handler(req, res) {
     if (req.query.productionLine) {
       try {
         const productionLine = req.query.productionLine;
+        const productionDate = req.query.productionDate;
         
         // Find the blob for this production line
         const { blobs } = await list();
@@ -90,7 +90,7 @@ export default async function handler(req, res) {
         if (!blobInfo) {
           return res.status(404).json({
             success: false,
-            message: `没有找到生产线 ${productionLine} 的数据`,
+            message: `cannot found the production data of ${productionLine} on ${productionDate}`,
           });
         }
 
@@ -109,10 +109,10 @@ export default async function handler(req, res) {
           fileName: blobInfo.pathname,
         });
       } catch (error) {
-        console.error("获取数据失败:", error);
+        console.error("get data failed:", error);
         return res.status(500).json({
           success: false,
-          message: "服务器错误",
+          message: "server error",
           error: error.message,
         });
       }
@@ -146,23 +146,24 @@ export default async function handler(req, res) {
           filesByLine,
         });
       } catch (error) {
-        console.error("列出文件失败:", error);
+        console.error("list files failed:", error);
         return res.status(500).json({
           success: false,
-          message: "服务器错误",
+          message: "server error",
           error: error.message,
         });
       }
     } else {
       return res.status(400).json({
         success: false,
-        message: "请提供生产线编号 (如 L01, L02) 或设置 list=true 参数",
+        message: "please provide production line and production date",
       });
     }
   }
 
   return res.status(405).json({
     success: false,
-    message: "方法不允许",
+    message: "method not allowed",
+    allowedMethods: ["POST", "GET"],
   });
 }
