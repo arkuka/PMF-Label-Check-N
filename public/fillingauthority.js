@@ -45,7 +45,7 @@ function setupDateSelection() {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return `${day}-${month}-${year}`;
     }
 }
 
@@ -129,7 +129,7 @@ async function submitSelection() {
     const productionDate = document.querySelector('input[name="productionDate"]:checked').value;
 
     const data = {
-        timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19).replace(/-/g, ''),
+        timestamp: new Date().toLocaleString("en-US", { timeZone: "Australia/Sydney" }),
         'production Date': productionDate,
         'production Line': line,
         'product ID': productId,

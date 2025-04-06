@@ -8,6 +8,8 @@ export default async function handler(req, res) {
 
       const productionLine = data['production line'] || "unknown";
       const productionDate = data['production Date'] || "unknown";
+
+      console.log("Production Date:", productionDate);
       
       // Find existing blob for this production line
       let existingBlob = null;
