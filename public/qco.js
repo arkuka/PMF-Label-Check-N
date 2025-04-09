@@ -618,18 +618,18 @@ document.addEventListener("DOMContentLoaded", () => {
       //   body: JSON.stringify(submittedData),
       // });
 
-      const response =await fetch("/api/index", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submittedData),
-      });
+      // const response =await fetch("/api/index", {
+      //  method: "POST",
+      //  headers: { "Content-Type": "application/json" },
+      //  body: JSON.stringify(submittedData),
+      // });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      else{        
-        console.log("提交成功-信息存储成功, response", response);
-      }
+      // if (!response.ok) {
+      //  throw new Error(`HTTP error! status: ${response.status}`);
+      // }
+      // else{        
+      //  console.log("提交成功-信息存储成功, response", response);
+      // }
 
 
       const response2 =await fetch("/api/blob-save", {
