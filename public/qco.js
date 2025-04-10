@@ -623,12 +623,12 @@ function checkFillingAuthoritySync(lineNumber, modal2Message) {
       return true;
     }
 
-    const currentPalletId = document.getElementById("palletNumber").value.trim();
-    console.debug('[23] Current pallet ID:', currentPalletId);
+    const currentPalletLabel = document.getElementById("pallet label").value.trim();
+    console.debug('[23] Current pallet label:', currentPalletLabel);
     console.debug('[24] Record product ID:', mostRecentRecord["product ID"]);
     
     // Check if product IDs match
-    if (mostRecentRecord["product ID"] !== currentPalletId) {
+    if (mostRecentRecord["product ID"] !== currentPalletLabel) {
       console.debug('[25] Product ID mismatch detected');
       return false;
     }
