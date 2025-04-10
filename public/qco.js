@@ -588,7 +588,7 @@ async function checkFillingAuthority(lineNumber, modal2Message) {
         console.log('fileResult=', fileResult);
         
         // 修改这里的检查逻辑
-        if (Array.isArray(fileResult) {  // 直接检查是否是数组
+        if (Array.isArray(fileResult)) {  // 直接检查是否是数组
           console.debug('[16] File contains', fileResult.length, 'records');
           
           // Find records for our specific production line
