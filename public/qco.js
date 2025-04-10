@@ -504,6 +504,7 @@ async function checkFillingAuthority(lineNumber,modal2Message) {
   const standardizedLine = lineMap[lineNumber.toUpperCase()];
   if (!standardizedLine) {
     console.error('Invalid line number:', lineNumber);
+    console.log ('Invalid line number:', lineNumber)
     return true; // Proceed if line number is invalid
   }
 
