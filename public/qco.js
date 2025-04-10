@@ -751,8 +751,11 @@ async function checkFillingAuthority(lineNumber, modal2Message) {
 
     //如果当前要提交的产品不是Filling授权生产的产品，则返回
     console.log("submit button, isCheckingFillingAuthority =", isCheckingFillingAuthority ? "true" : "false")
-    if(isCheckingFillingAuthority && !checkFillingAuthority(lineNumber,modal2Message)){      
-      return;
+    if(isCheckingFillingAuthority){
+      console.log("going to call checkFillingAuthority")
+      if(checkFillingAuthority(lineNumber,modal2Message)==false){
+        return;
+      }
     }
       
     
