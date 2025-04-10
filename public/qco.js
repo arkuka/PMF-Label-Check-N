@@ -484,6 +484,98 @@ document.addEventListener("DOMContentLoaded", () => {
     resetForm();
   });
 
+  /**
+ * Checks filling authority record for the given production line
+ * @param {string} lineNumber - The production line number entered by user (e.g., "1", "5A", etc.)
+ * @returns {Promise<boolean>} - Returns true if check passes or no record found, false if mismatch
+ */
+async function checkFillingAuthority(lineNumber,modal2Message) {
+  // Convert line number to standardized format
+  const lineMap = {
+    '1': 'L01', '2': 'L02', '3': 'L03', '4': 'L04',
+    '5A': 'L05', '5B': 'L05', '6': 'L06', '7': 'L07',
+    '8': 'L08', '9': 'L09', '10': 'L10', '11': 'L11',
+    '12': 'L12', '13': 'L13', '14': 'L14', '15': 'L15'
+  };
+  
+  const standardizedLine = lineMap[lineNumber.toUpperCase()];
+  if (!standardizedLine) {
+    console.error('Invalid line number:', lineNumber);
+    return true; // Proceed if line number is invalid
+  }
+
+  // Function to format date as YYYYMMDD (matches your API format)
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}${month}${day}`;
+  };
+
+  // Get today's and yesterday's dates
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  const datesToCheck = [formatDate(today), formatDate(yesterday)];
+
+  try {
+    let mostRecentRecord = null;
+    
+    // Check both dates in order (today first, then yesterday)
+    for (const dateString of datesToCheck) {
+      // Call existing API endpoint with date parameter
+      const response = await fetch(`/api/logviewer?date=${dateString}`);
+      if (!response.ok) continue;
+      
+      const result = await response.json();
+      if (!result.success || !result.data || result.data.length === 0) continue;
+
+      // Find records for our specific production line
+      const lineRecords = result.data.filter(record => 
+        record["production Line"] === standardizedLine
+      );
+      
+      if (lineRecords.length > 0) {
+        // Use the most recent record (assuming data is already sorted)
+        mostRecentRecord = lineRecords[0];
+        break;
+      }
+    }
+
+    if (!mostRecentRecord) {
+      return true; // No records found for either date, proceed
+    }
+
+    const currentPalletId = document.getElementById("palletNumber").value.trim();
+    
+    // Check if product IDs match
+    if (mostRecentRecord["product ID"] !== currentPalletId) {
+      // Get current product name for display
+      const currentProductRow = configData.find(row => row[0] === productName);
+      const currentProductId = currentProductRow ? currentProductRow[someIndex] : 'Unknown';
+      
+      // Show warning message      
+      modal2Message.innerHTML = `
+        <div style="color: red; text-align: left;">
+          <p>Filling department authorized production at ${mostRecentRecord.timestamp} for:</p>
+          <p><strong>[${mostRecentRecord["product ID"]}] ${mostRecentRecord["product Name"]}</strong></p>
+          <p>But you are trying to submit for:</p>
+          <p><strong>[${currentProductId}] ${productName}</strong></p>
+          <p>Please confirm with Filling department that this is the correct product being produced.</p>
+        </div>
+      `;
+      modal2Message.style.display = "block";
+      return false;
+    }
+    
+    return true; // IDs match, proceed
+  } catch (error) {
+    console.error('Error checking filling authority:', error);
+    return true; // Proceed if there's an error
+  }
+}
+
   
   // 提交按钮点击事件
   submitButton.addEventListener("click", () => { // 主页面中的submit按钮
@@ -579,6 +671,13 @@ document.addEventListener("DOMContentLoaded", () => {
       // 如果匹配，隐藏提示信息
       modal2Message.style.display = "none";
     }
+
+    //如果当前要提交的产品不是Filling授权生产的产品，则返回
+    if(!checkFillingAuthority(lineNumber,modal2Message)){      
+      return;
+    }
+      
+    
 
     // 如果验证通过，提交数据
     const timeFormatter = new Intl.DateTimeFormat("en-AU", {
