@@ -624,17 +624,13 @@ async function checkFillingAuthority(lineNumber, modal2Message) {
     if (mostRecentRecord["product ID"] !== currentPalletId) {
       console.debug('[25] Product ID mismatch detected');
       
-      // Get current product name for display
-      const currentProductRow = configData.find(row => row[0] === productName);
-      const currentProductId = currentProductRow ? currentProductRow[someIndex] : 'Unknown';
-      
       // Show warning message      
       modal2Message.innerHTML = `
         <div style="color: red; text-align: left;">
           <p>Filling department authorized production at ${mostRecentRecord.timestamp} for:</p>
-          <p><strong>[${mostRecentRecord["product ID"]}] ${mostRecentRecord["product Name"]}</strong></p>
+          <p><strong>${mostRecentRecord["product Name"]}</strong></p>
           <p>But you are trying to submit for:</p>
-          <p><strong>[${currentProductId}] ${productName}</strong></p>
+          <p><strong>${productName}</strong></p>
           <p>Please confirm with Filling department that this is the correct product being produced.</p>
           <p>Source file: ${mostRecentFile.fileName}</p>
         </div>
