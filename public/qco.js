@@ -574,44 +574,41 @@ async function checkFillingAuthority(lineNumber, modal2Message) {
     }
 
     // Process matching files - we only need to check the most recent one
+    // Process matching files - we only need to check the most recent one
     if (matchingFiles.length > 0) {
       mostRecentFile = matchingFiles[0];
       console.debug('[12] Processing most recent file:', mostRecentFile.fileName);
       
-      // const apiDate = extractDate(mostRecentFile.fileName);
-      // console.debug('[13] Extracted API date:', apiDate);
+      console.debug('[14] Fetching file content...');
+      const fileResponse = await fetch(mostRecentFile.url);
       
-      //if (apiDate) {
-        console.debug('[14] Fetching file content...');
-        const fileResponse = await fetch(mostRecentFile.url);
+      if (fileResponse.ok) {
+        console.debug('[15] File content fetched successfully');
+        const fileResult = await fileResponse.json();
+        console.log('fileResult=', fileResult);
         
-        if (fileResponse.ok) {
-          console.debug('[15] File content fetched successfully');
-          const fileResult = await fileResponse.json();
-          console.log ('fileResult=',fileResult)
+        // 修改这里的检查逻辑
+        if (Array.isArray(fileResult) {  // 直接检查是否是数组
+          console.debug('[16] File contains', fileResult.length, 'records');
           
-          if (fileResult.success && fileResult.data && fileResult.data.length > 0) {
-            console.debug('[16] File contains', fileResult.data.length, 'records');
-            
-            // Find records for our specific production line
-            const lineRecords = fileResult.data.filter(record => 
-              record["production Line"] === standardizedLine
-            );
-            console.debug('[17] Found', lineRecords.length, 'records for line', standardizedLine);
-            
-            if (lineRecords.length > 0) {
-              mostRecentRecord = lineRecords[0];
-              console.debug('[18] Most recent record:', mostRecentRecord);
-            }
+          // Find records for our specific production line
+          const lineRecords = fileResult.filter(record => 
+            record["production Line"] === standardizedLine
+          );
+          console.debug('[17] Found', lineRecords.length, 'records for line', standardizedLine);
+          
+          if (lineRecords.length > 0) {
+            mostRecentRecord = lineRecords[0];
+            console.debug('[18] Most recent record:', mostRecentRecord);
           } else {
-            console.debug('[19] File has no valid data');
+            console.debug('[19] No records found for this production line');
           }
         } else {
-          console.debug('[20] Failed to fetch file content, status:', fileResponse.status);
+          console.debug('[20] File content is not in expected array format');
         }
-      //} else {
-      //  console.debug('[21] Could not extract date from filename');
-      //}
+      } else {
+        console.debug('[21] Failed to fetch file content, status:', fileResponse.status);
+      }
     }
 
     if (!mostRecentRecord) {
