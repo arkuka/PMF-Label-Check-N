@@ -331,9 +331,8 @@ const promptForProductConfirmation = (field, scannedCode) => {
     // 创建模态窗口内容
     const modalContent = `
         <div style="text-align: left;">
-            <p style="margin-bottom: 10px;">Multiple products found matching this barcode:</p>
-            ${productListHtml}
-            <p style="margin-top: 10px;">Please select the correct product:</p>
+            <p style="margin-bottom: 10px;">Please select the correct product to process</p>
+            ${productListHtml}            
         </div>
     `;
 
