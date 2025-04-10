@@ -508,6 +508,8 @@ async function checkFillingAuthority(lineNumber,modal2Message) {
     return true; // Proceed if line number is invalid
   }
 
+  
+
   // Function to format date as YYYYMMDD (matches your API format)
   const formatDate = (date) => {
     const year = date.getFullYear();
@@ -523,6 +525,8 @@ async function checkFillingAuthority(lineNumber,modal2Message) {
   
   const datesToCheck = [formatDate(today), formatDate(yesterday)];
 
+  console.log ('standardizedLine=', standardizedLine)
+
   try {
     let mostRecentRecord = null;
     
@@ -530,10 +534,16 @@ async function checkFillingAuthority(lineNumber,modal2Message) {
     for (const dateString of datesToCheck) {
       // Call existing API endpoint with date parameter
       const response = await fetch(`/api/logviewer?date=${dateString}`);
-      if (!response.ok) continue;
+      if (!response.ok) {
+        console.log ('001 dateString=', dateString)
+        continue;
+      }
       
       const result = await response.json();
-      if (!result.success || !result.data || result.data.length === 0) continue;
+      if (!result.success || !result.data || result.data.length === 0) {
+        console.log ('002 result=', result)
+        continue;
+      }
 
       // Find records for our specific production line
       const lineRecords = result.data.filter(record => 
@@ -543,11 +553,13 @@ async function checkFillingAuthority(lineNumber,modal2Message) {
       if (lineRecords.length > 0) {
         // Use the most recent record (assuming data is already sorted)
         mostRecentRecord = lineRecords[0];
+        console.log ('003 mostRecentRecord=', mostRecentRecord)
         break;
       }
     }
 
     if (!mostRecentRecord) {
+      console.log ('004 No records found for either date, proceed')
       return true; // No records found for either date, proceed
     }
 
@@ -677,6 +689,7 @@ async function checkFillingAuthority(lineNumber,modal2Message) {
     }
 
     //如果当前要提交的产品不是Filling授权生产的产品，则返回
+    console.log("submit button, isCheckingFillingAuthority =", isCheckingFillingAuthority ? "true" : "false")
     if(isCheckingFillingAuthority && !checkFillingAuthority(lineNumber,modal2Message)){      
       return;
     }
