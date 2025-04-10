@@ -741,7 +741,7 @@ function checkFillingAuthoritySync(lineNumber, modal2Message) {
     console.log("submit button, isCheckingFillingAuthority =", isCheckingFillingAuthority ? "true" : "false")
     if(isCheckingFillingAuthority){
         console.log("going to call checkFillingAuthority")
-        if(checkFillingAuthority(lineNumber,modal2Message)==false){
+        if(checkFillingAuthoritySync(lineNumber,modal2Message)==false){
           // Show warning message      
           modal2Message.innerHTML = `
           <div style="color: red; text-align: left;">          
