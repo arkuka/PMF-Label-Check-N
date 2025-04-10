@@ -458,6 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
           versionInfoElement.textContent = "ver:"+versionInfo;        
         }        
         isCheckingFillingAuthority = settings[1][1] ? true : false; // 获取第二行第一列的值（B2）
+        console.log ("isCheckingFillingAuthority is ", isCheckingFillingAuthority?"true":"false")
       } catch (error) {
         console.error("Failed to load or parse the Excel file:", error);
       }
