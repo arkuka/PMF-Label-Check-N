@@ -492,7 +492,9 @@ document.addEventListener("DOMContentLoaded", () => {
  * @param {string} lineNumber - The production line number entered by user (e.g., "1", "5A", etc.)
  * @returns {Promise<boolean>} - Returns true if check passes or no record found, false if mismatch
  */
-async function checkFillingAuthority(lineNumber,modal2Message) {
+async function checkFillingAuthority(lineNumber, modal2Message) {
+  console.debug('[1] Starting checkFillingAuthority for line:', lineNumber);
+  
   // Convert line number to standardized format
   const lineMap = {
     '1': 'L01', '2': 'L02', '3': 'L03', '4': 'L04',
@@ -503,70 +505,127 @@ async function checkFillingAuthority(lineNumber,modal2Message) {
   
   const standardizedLine = lineMap[lineNumber.toUpperCase()];
   if (!standardizedLine) {
-    console.error('Invalid line number:', lineNumber);
-    console.log ('Invalid line number:', lineNumber)
-    return true; // Proceed if line number is invalid
+    console.error('[2] Invalid line number:', lineNumber);
+    return true;
   }
-
-  
-
-  // Function to format date as YYYYMMDD (matches your API format)
-  const formatDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}${month}${day}`;
-  };
-
-  // Get today's and yesterday's dates
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  
-  const datesToCheck = [formatDate(today), formatDate(yesterday)];
-
-  console.log ('standardizedLine=', standardizedLine)
+  console.debug('[3] Standardized line number:', standardizedLine);
 
   try {
-    let mostRecentRecord = null;
-    
-    // Check both dates in order (today first, then yesterday)
-    for (const dateString of datesToCheck) {
-      // Call existing API endpoint with date parameter
-      const response = await fetch(`/api/logviewer?date=${dateString}`);
-      if (!response.ok) {
-        console.log ('001 dateString=', dateString)
-        continue;
-      }
-      
-      const result = await response.json();
-      if (!result.success || !result.data || result.data.length === 0) {
-        console.log ('002 result=', result)
-        continue;
-      }
+    console.debug('[4] Fetching complete file list...');
+    const listResponse = await fetch('/api/logviewer?method=LIST');
+    if (!listResponse.ok) {
+      console.debug('[5] Failed to get file list, status:', listResponse.status);
+      return true;
+    }
 
-      // Find records for our specific production line
-      const lineRecords = result.data.filter(record => 
-        record["production Line"] === standardizedLine
-      );
+    const listResult = await listResponse.json();
+    if (!listResult.success || !listResult.files || listResult.files.length === 0) {
+      console.debug('[6] No files available in response');
+      return true;
+    }
+    console.debug('[7] Total files available:', listResult.files.length);
+
+    // Function to extract date from filename (format: DD-MM-YYYY)
+    const extractDate = (filename) => {
+      const match = filename.match(/(\d{2})-(\d{2})-(\d{4})/);
+      return match ? `${match[3]}${match[2]}${match[1]}` : null;
+    };
+
+    // Function to check if filename matches our pattern
+    const matchesPattern = (filename, line) => {
+      const pattern = new RegExp(`^\\d{2}-\\d{2}-\\d{4}-${line}-Filling-Authority-.*\\.json$`, 'i');
+      return pattern.test(filename);
+    };
+
+    // Get today's and yesterday's dates in DD-MM-YYYY format
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const formatDate = (date) => {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    };
+
+    const dateStrings = [formatDate(today), formatDate(yesterday)];
+    console.debug('[8] Checking dates:', dateStrings);
+
+    let mostRecentRecord = null;
+    let mostRecentFile = null;
+
+    // Find all matching files for our dates and line
+    const matchingFiles = listResult.files.filter(file => {
+      const matches = matchesPattern(file.fileName, standardizedLine) &&
+                     dateStrings.some(dateStr => file.fileName.includes(dateStr));
+      if (matches) {
+        console.debug('[9] Found matching file:', file.fileName);
+      }
+      return matches;
+    });
+
+    console.debug('[10] Total matching files found:', matchingFiles.length);
+
+    // Sort files by upload date (newest first)
+    matchingFiles.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+    if (matchingFiles.length > 0) {
+      console.debug('[11] Sorted files (newest first):', matchingFiles.map(f => f.fileName));
+    }
+
+    // Process matching files - we only need to check the most recent one
+    if (matchingFiles.length > 0) {
+      mostRecentFile = matchingFiles[0];
+      console.debug('[12] Processing most recent file:', mostRecentFile.fileName);
       
-      if (lineRecords.length > 0) {
-        // Use the most recent record (assuming data is already sorted)
-        mostRecentRecord = lineRecords[0];
-        console.log ('003 mostRecentRecord=', mostRecentRecord)
-        break;
+      const apiDate = extractDate(mostRecentFile.fileName);
+      console.debug('[13] Extracted API date:', apiDate);
+      
+      if (apiDate) {
+        console.debug('[14] Fetching file content...');
+        const fileResponse = await fetch(`/api/logviewer?date=${apiDate}`);
+        
+        if (fileResponse.ok) {
+          console.debug('[15] File content fetched successfully');
+          const fileResult = await fileResponse.json();
+          
+          if (fileResult.success && fileResult.data && fileResult.data.length > 0) {
+            console.debug('[16] File contains', fileResult.data.length, 'records');
+            
+            // Find records for our specific production line
+            const lineRecords = fileResult.data.filter(record => 
+              record["production Line"] === standardizedLine
+            );
+            console.debug('[17] Found', lineRecords.length, 'records for line', standardizedLine);
+            
+            if (lineRecords.length > 0) {
+              mostRecentRecord = lineRecords[0];
+              console.debug('[18] Most recent record:', mostRecentRecord);
+            }
+          } else {
+            console.debug('[19] File has no valid data');
+          }
+        } else {
+          console.debug('[20] Failed to fetch file content, status:', fileResponse.status);
+        }
+      } else {
+        console.debug('[21] Could not extract date from filename');
       }
     }
 
     if (!mostRecentRecord) {
-      console.log ('004 No records found for either date, proceed')
-      return true; // No records found for either date, proceed
+      console.debug('[22] No matching records found in the most recent file');
+      return true;
     }
 
     const currentPalletId = document.getElementById("palletNumber").value.trim();
+    console.debug('[23] Current pallet ID:', currentPalletId);
+    console.debug('[24] Record product ID:', mostRecentRecord["product ID"]);
     
     // Check if product IDs match
     if (mostRecentRecord["product ID"] !== currentPalletId) {
+      console.debug('[25] Product ID mismatch detected');
+      
       // Get current product name for display
       const currentProductRow = configData.find(row => row[0] === productName);
       const currentProductId = currentProductRow ? currentProductRow[someIndex] : 'Unknown';
@@ -579,16 +638,18 @@ async function checkFillingAuthority(lineNumber,modal2Message) {
           <p>But you are trying to submit for:</p>
           <p><strong>[${currentProductId}] ${productName}</strong></p>
           <p>Please confirm with Filling department that this is the correct product being produced.</p>
+          <p>Source file: ${mostRecentFile.fileName}</p>
         </div>
       `;
       modal2Message.style.display = "block";
       return false;
     }
     
-    return true; // IDs match, proceed
+    console.debug('[26] Product ID matches - proceeding');
+    return true;
   } catch (error) {
-    console.error('Error checking filling authority:', error);
-    return true; // Proceed if there's an error
+    console.error('[ERROR] in checkFillingAuthority:', error);
+    return true;
   }
 }
 
