@@ -492,7 +492,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * @param {string} lineNumber - The production line number entered by user (e.g., "1", "5A", etc.)
  * @returns {Promise<boolean>} - Returns true if check passes or no record found, false if mismatch
  */
-function checkFillingAuthority(lineNumber, modal2Message) {
+function checkFillingAuthoritySync(lineNumber, modal2Message) {
   console.debug('[1] Starting checkFillingAuthority for line:', lineNumber);
   
   // Convert line number to standardized format
@@ -512,13 +512,18 @@ function checkFillingAuthority(lineNumber, modal2Message) {
 
   try {
     console.debug('[4] Fetching complete file list...');
-    const listResponse = await fetch('/api/logviewer?method=LIST');
-    if (!listResponse.ok) {
-      console.debug('[5] Failed to get file list, status:', listResponse.status);
+    
+    // Synchronous XMLHttpRequest for file list
+    const listRequest = new XMLHttpRequest();
+    listRequest.open('GET', '/api/logviewer?method=LIST', false); // false makes it synchronous
+    listRequest.send(null);
+    
+    if (listRequest.status !== 200) {
+      console.debug('[5] Failed to get file list, status:', listRequest.status);
       return true;
     }
 
-    const listResult = await listResponse.json();
+    const listResult = JSON.parse(listRequest.responseText);
     if (!listResult.success || !listResult.files || listResult.files.length === 0) {
       console.debug('[6] No files available in response');
       return true;
@@ -574,21 +579,23 @@ function checkFillingAuthority(lineNumber, modal2Message) {
     }
 
     // Process matching files - we only need to check the most recent one
-    // Process matching files - we only need to check the most recent one
     if (matchingFiles.length > 0) {
       mostRecentFile = matchingFiles[0];
       console.debug('[12] Processing most recent file:', mostRecentFile.fileName);
       
       console.debug('[14] Fetching file content...');
-      const fileResponse = await fetch(mostRecentFile.url);
       
-      if (fileResponse.ok) {
+      // Synchronous XMLHttpRequest for file content
+      const fileRequest = new XMLHttpRequest();
+      fileRequest.open('GET', mostRecentFile.url, false); // false makes it synchronous
+      fileRequest.send(null);
+      
+      if (fileRequest.status === 200) {
         console.debug('[15] File content fetched successfully');
-        const fileResult = await fileResponse.json();
+        const fileResult = JSON.parse(fileRequest.responseText);
         console.log('fileResult=', fileResult);
         
-        // 修改这里的检查逻辑
-        if (Array.isArray(fileResult)) {  // 直接检查是否是数组
+        if (Array.isArray(fileResult)) {
           console.debug('[16] File contains', fileResult.length, 'records');
           
           // Find records for our specific production line
@@ -607,7 +614,7 @@ function checkFillingAuthority(lineNumber, modal2Message) {
           console.debug('[20] File content is not in expected array format');
         }
       } else {
-        console.debug('[21] Failed to fetch file content, status:', fileResponse.status);
+        console.debug('[21] Failed to fetch file content, status:', fileRequest.status);
       }
     }
 
