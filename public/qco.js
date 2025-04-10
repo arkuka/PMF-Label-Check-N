@@ -588,6 +588,7 @@ async function checkFillingAuthority(lineNumber, modal2Message) {
         if (fileResponse.ok) {
           console.debug('[15] File content fetched successfully');
           const fileResult = await fileResponse.json();
+          console.log ('fileResult=',fileResult)
           
           if (fileResult.success && fileResult.data && fileResult.data.length > 0) {
             console.debug('[16] File contains', fileResult.data.length, 'records');
