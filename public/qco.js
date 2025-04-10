@@ -636,6 +636,7 @@ async function checkFillingAuthority(lineNumber, modal2Message) {
         </div>
       `;
       modal2Message.style.display = "block";
+      console.log("modal2Message.innerHTML=",modal2Message.innerHTML)
       return false;
     }
     
@@ -748,6 +749,7 @@ async function checkFillingAuthority(lineNumber, modal2Message) {
     if(isCheckingFillingAuthority){
       console.log("going to call checkFillingAuthority")
       if(checkFillingAuthority(lineNumber,modal2Message)==false){
+        modal2Message.style.display = "block";
         return;
       }
     }
