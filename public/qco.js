@@ -492,7 +492,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * @param {string} lineNumber - The production line number entered by user (e.g., "1", "5A", etc.)
  * @returns {Promise<boolean>} - Returns true if check passes or no record found, false if mismatch
  */
-async function checkFillingAuthority(lineNumber, modal2Message) {
+function checkFillingAuthority(lineNumber, modal2Message) {
   console.debug('[1] Starting checkFillingAuthority for line:', lineNumber);
   
   // Convert line number to standardized format
