@@ -23,6 +23,7 @@ let currentField = "";  // 用于记录当前输入的字段
 let sannedHCode = ""
 let matchingProducts = [];
 let currentMatchingIndex = 0;
+let isCheckingFillingAuthority = false;
 
 // 全局函数
 const validateScan = (field, scannedCode) => {
@@ -448,14 +449,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 读取第二个工作表（版本信息）
         const sheet2 = workbook.Sheets[workbook.SheetNames[1]];
-        const versionData = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
-        const versionInfo = versionData[1][0]; // 获取第二行第一列的值（A2）
+        const settings = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
+        const versionInfo = settings[1][0]; // 获取第二行第一列的值（A2）
     
         // 显示版本号
         const versionInfoElement = document.getElementById("versionInfo");
         if (versionInfoElement) {
           versionInfoElement.textContent = "ver:"+versionInfo;        
-        }
+        }        
+        isCheckingFillingAuthority = settings[1][1] ? true : false; // 获取第二行第一列的值（B2）
       } catch (error) {
         console.error("Failed to load or parse the Excel file:", error);
       }
@@ -673,7 +675,7 @@ async function checkFillingAuthority(lineNumber,modal2Message) {
     }
 
     //如果当前要提交的产品不是Filling授权生产的产品，则返回
-    if(!checkFillingAuthority(lineNumber,modal2Message)){      
+    if(isCheckingFillingAuthority && !checkFillingAuthority(lineNumber,modal2Message)){      
       return;
     }
       
