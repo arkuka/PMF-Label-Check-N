@@ -623,20 +623,6 @@ async function checkFillingAuthority(lineNumber, modal2Message) {
     // Check if product IDs match
     if (mostRecentRecord["product ID"] !== currentPalletId) {
       console.debug('[25] Product ID mismatch detected');
-      
-      // Show warning message      
-      modal2Message.innerHTML = `
-        <div style="color: red; text-align: left;">
-          <p>Filling department authorized production at ${mostRecentRecord.timestamp} for:</p>
-          <p><strong>${mostRecentRecord["product Name"]}</strong></p>
-          <p>But you are trying to submit for:</p>
-          <p><strong>${productName}</strong></p>
-          <p>Please confirm with Filling department that this is the correct product being produced.</p>
-          <p>Source file: ${mostRecentFile.fileName}</p>
-        </div>
-      `;
-      modal2Message.style.display = "block";
-      console.log("modal2Message.innerHTML=",modal2Message.innerHTML)
       return false;
     }
     
@@ -747,9 +733,19 @@ async function checkFillingAuthority(lineNumber, modal2Message) {
     //如果当前要提交的产品不是Filling授权生产的产品，则返回
     console.log("submit button, isCheckingFillingAuthority =", isCheckingFillingAuthority ? "true" : "false")
     if(isCheckingFillingAuthority){
-      console.log("going to call checkFillingAuthority")
-      if(checkFillingAuthority(lineNumber,modal2Message)==false){
+        console.log("going to call checkFillingAuthority")
+        if(checkFillingAuthority(lineNumber,modal2Message)==false){
+          // Show warning message      
+          modal2Message.innerHTML = `
+          <div style="color: red; text-align: left;">          
+            <p>The product you are trying to submit:</p>
+            <p><strong>${productName}</strong></p>
+            <p> is not the one authorized by the filling department </p>
+            <p>Please confirm with Filling department that this is the correct product being produced.</p>          
+          </div>
+        `;
         modal2Message.style.display = "block";
+        console.log("modal2Message.innerHTML=",modal2Message.innerHTML)
         return;
       }
     }
