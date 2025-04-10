@@ -578,12 +578,12 @@ async function checkFillingAuthority(lineNumber, modal2Message) {
       mostRecentFile = matchingFiles[0];
       console.debug('[12] Processing most recent file:', mostRecentFile.fileName);
       
-      const apiDate = extractDate(mostRecentFile.fileName);
-      console.debug('[13] Extracted API date:', apiDate);
+      // const apiDate = extractDate(mostRecentFile.fileName);
+      // console.debug('[13] Extracted API date:', apiDate);
       
-      if (apiDate) {
+      //if (apiDate) {
         console.debug('[14] Fetching file content...');
-        const fileResponse = await fetch(`/api/logviewer?date=${apiDate}`);
+        const fileResponse = await fetch(mostRecentFile.url);
         
         if (fileResponse.ok) {
           console.debug('[15] File content fetched successfully');
@@ -608,9 +608,9 @@ async function checkFillingAuthority(lineNumber, modal2Message) {
         } else {
           console.debug('[20] Failed to fetch file content, status:', fileResponse.status);
         }
-      } else {
-        console.debug('[21] Could not extract date from filename');
-      }
+      //} else {
+      //  console.debug('[21] Could not extract date from filename');
+      //}
     }
 
     if (!mostRecentRecord) {
