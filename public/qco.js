@@ -403,6 +403,13 @@ const resetModal2Inputs = () => {
   if (modal2Message) modal2Message.style.display = "none"; // 同时隐藏提示信息
 };
 
+const resetMatchingState = () => {
+  matchingProducts = [];
+  currentMatchingIndex = 0;
+  possibleProduct = "";
+  scannedBarcode = "";
+};
+
 // DOMContentLoaded 事件
 document.addEventListener("DOMContentLoaded", () => {
   const productNameSelect = document.getElementById("productNameSelect");
@@ -462,13 +469,6 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (error) {
         console.error("Failed to load or parse the Excel file:", error);
       }
-  };
-
-  const resetMatchingState = () => {
-    matchingProducts = [];
-    currentMatchingIndex = 0;
-    possibleProduct = "";
-    scannedBarcode = "";
   };
 
   const convertToUpperCase = (inputId) => {
