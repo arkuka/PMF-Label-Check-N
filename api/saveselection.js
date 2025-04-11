@@ -8,64 +8,18 @@ export default async function handler(req, res) {
 
       const productionLine = data['production Line'] || "unknown";
       const productionDate = data['production Date'] || "unknown";
+      const productID = data['product ID'] || "unknown";
 
       console.log("Production Date:", productionDate);
       
-      // Find all blobs for this production line and date
-      const { blobs } = await list();
-      
-      // Look for blobs with matching prefix
-      const prefix = `${productionDate}-${productionLine}-Filling-Authority`;
-      const matchingBlobs = blobs.filter(blob => 
-        blob.pathname.startsWith(prefix)
-      );
-      
-      console.log(`Found ${matchingBlobs.length} matching blobs with prefix: ${prefix}`);
-
-      let existingData = [];
-      
-      if (matchingBlobs.length > 0) {
-        // Sort by uploadedAt to get the most recent one
-        const latestBlob = matchingBlobs.sort((a, b) => 
-          new Date(b.uploadedAt) - new Date(a.uploadedAt)
-        )[0];
-        
-        console.log("Latest blob found:", latestBlob);
-        
-        // Load existing data from the most recent blob
-        const response = await fetch(latestBlob.url, { 
-          cache: 'no-store',
-          headers: { 'Cache-Control': 'no-cache' }
-        });
-        
-        if (response.ok) {
-          const text = await response.text();
-          try {
-            existingData = JSON.parse(text);
-            console.log("Existing data loaded from latest blob:", existingData);
-            // Ensure existingData is an array
-            if (!Array.isArray(existingData)) {
-              existingData = [existingData];
-            }
-          } catch (e) {
-            console.error("Error parsing existing JSON:", e);
-            existingData = [];
-          }
-        } else {
-          console.error("Failed to fetch latest blob:", response.statusText);
-        }
-      }
-
-      // Add new entry to the array
-      existingData.push(data);
-      const jsonData = JSON.stringify(existingData, null, 2);
-      console.log("Final data to save:", jsonData);
-
-      // Create a new filename with timestamp to ensure uniqueness
+      // Create a unique filename with timestamp
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const fileName = `${productionDate}-${productionLine}-Filling-Authority-${timestamp}.json`;
+      const fileName = `${productionDate}-${productionLine}-Filling-Authority-$(productID)-${timestamp}.json`;
 
-      // Save to Vercel Blob with a new filename
+      // Save the new data as a standalone file
+      const jsonData = JSON.stringify([data], null, 2); // Wrap in array for consistency
+      console.log("Data to save:", jsonData);
+
       const blob = await put(fileName, jsonData, {
         contentType: "application/json",
         access: "public",
@@ -108,28 +62,35 @@ export default async function handler(req, res) {
           });
         }
 
-        // Sort by uploadedAt to get the most recent one
-        const latestBlob = matchingBlobs.sort((a, b) => 
-          new Date(b.uploadedAt) - new Date(a.uploadedAt)
-        )[0];
+        // Return all files for this date and line (not just latest)
+        const allData = [];
         
-        // Use fetch with no-cache to avoid caching issues
-        const response = await fetch(latestBlob.url, {
-          cache: 'no-store',
-          headers: { 'Cache-Control': 'no-cache' }
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch: ${response.statusText}`);
+        for (const blob of matchingBlobs) {
+          const response = await fetch(blob.url, {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache' }
+          });
+          
+          if (response.ok) {
+            const text = await response.text();
+            try {
+              const data = JSON.parse(text);
+              // If the file contains an array, spread it, otherwise add the object
+              if (Array.isArray(data)) {
+                allData.push(...data);
+              } else {
+                allData.push(data);
+              }
+            } catch (e) {
+              console.error(`Error parsing data from ${blob.pathname}:`, e);
+            }
+          }
         }
-        
-        const text = await response.text();
-        const data = JSON.parse(text);
 
         return res.status(200).json({
           success: true,
-          data: data,
-          fileName: latestBlob.pathname,
+          data: allData,
+          fileCount: matchingBlobs.length,
         });
       } catch (error) {
         console.error("Get data failed:", error);
@@ -168,26 +129,10 @@ export default async function handler(req, res) {
           return acc;
         }, {});
 
-        // For each group, only keep the most recent file
-        const latestFiles = {};
-        for (const [key, files] of Object.entries(filesByDateAndLine)) {
-          const sortedFiles = files.sort((a, b) => 
-            new Date(b.uploadedAt) - new Date(a.uploadedAt)
-          );
-          
-          // Extract date and line from key
-          const [date, line] = key.split('-');
-          
-          if (!latestFiles[line]) {
-            latestFiles[line] = {};
-          }
-          
-          latestFiles[line][date] = sortedFiles[0];
-        }
-
         return res.status(200).json({
           success: true,
-          filesByLine: latestFiles,
+          filesByDateAndLine: filesByDateAndLine,
+          totalFiles: fillingAuthorityFiles.length,
         });
       } catch (error) {
         console.error("List files failed:", error);
