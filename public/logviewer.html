@@ -115,6 +115,19 @@
       background-color: #f4f4f4;
       color: #333;
       font-weight: 600;
+      cursor: pointer;
+      position: relative;
+    }
+    th:hover {
+      background-color: #e9e9e9;
+    }
+    th.sort-asc::after {
+      content: " ↑";
+      color: #0066cc;
+    }
+    th.sort-desc::after {
+      content: " ↓";
+      color: #0066cc;
     }
     tr:nth-child(even) {
       background-color: #fafafa;
@@ -173,9 +186,9 @@
       <thead>
         <tr>
           <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-          <th>Filename</th>
-          <th>Size (bytes)</th>
-          <th>Upload Time</th>
+          <th onclick="sortFiles('fileName')">Filename</th>
+          <th onclick="sortFiles('size')">Size (bytes)</th>
+          <th onclick="sortFiles('uploadedAt')">Upload Time</th>
         </tr>
       </thead>
       <tbody id="fileList"></tbody>
@@ -186,6 +199,10 @@
     let allFiles = [];
     let currentSelectedFile = null;
     let isContentVisible = false;
+    let currentSort = {
+      field: null,
+      direction: 'asc' // 'asc' or 'desc'
+    };
 
     // Initialize
     window.onload = async () => {
@@ -209,6 +226,58 @@
         console.error('Error fetching files:', error);
         alert('Failed to fetch file list');
       }
+    }
+
+    // Sort files
+    function sortFiles(field) {
+      // Reset all sort indicators
+      document.querySelectorAll('th').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+      });
+      
+      // If clicking the same field, toggle direction
+      if (currentSort.field === field) {
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort.field = field;
+        currentSort.direction = 'asc';
+      }
+      
+      // Add sort indicator to current field
+      const headerCell = Array.from(document.querySelectorAll('th')).find(th => 
+        th.textContent.includes(field) || th.getAttribute('onclick')?.includes(field)
+      );
+      if (headerCell) {
+        headerCell.classList.add(`sort-${currentSort.direction}`);
+      }
+      
+      // Perform the sort
+      const sortedFiles = [...allFiles].sort((a, b) => {
+        let valA = a[field];
+        let valB = b[field];
+        
+        // Special handling for dates
+        if (field === 'uploadedAt') {
+          valA = new Date(valA).getTime();
+          valB = new Date(valB).getTime();
+        }
+        
+        // Special handling for sizes (convert to numbers)
+        if (field === 'size') {
+          valA = Number(valA);
+          valB = Number(valB);
+        }
+        
+        if (valA < valB) {
+          return currentSort.direction === 'asc' ? -1 : 1;
+        }
+        if (valA > valB) {
+          return currentSort.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+      
+      renderFileList(sortedFiles);
     }
 
     // Render file list
@@ -297,7 +366,6 @@
     }
 
     // Toggle file content visibility
-    // Toggle file content visibility
     function toggleFileContent() {
       const contentDiv = document.getElementById('fileContent');
       const toggleBtn = document.getElementById('toggleContentBtn');
@@ -327,7 +395,6 @@
       });
     }
 
-    // View file content
     // View file content
     async function viewFile(fileUrl, element) {
       try {
