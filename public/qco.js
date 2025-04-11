@@ -627,7 +627,7 @@ function checkFillingAuthoritySync(lineNumber, modal2Message) {
       theAuthorizedProductName = mostRecentRecord["product Name"]
       
       // Check if product IDs match
-      if (theMostRecentAuthorizedProductID !== currentPalletLabel) {
+      if (mostRecentRecord["product ID"] !== currentPalletLabel) {
         console.debug('[25] Product ID mismatch detected');
         return false;
       }
