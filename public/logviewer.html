@@ -190,7 +190,7 @@
       <div class="action-buttons">
         <button onclick="filterFiles()">Filter</button>
         <button onclick="resetFilter()">Reset</button>
-        <button id="toggleContentBtn" onclick="toggleFileContent()">Show Text Panel</button>
+        <!--button id="toggleContentBtn" onclick="toggleFileContent()">Show Text Panel</button-->
         <button onclick="exportToExcel()">Export to Excel</button>
       </div>
     </div>
@@ -387,7 +387,7 @@
     // Toggle file content visibility
     function toggleFileContent(show) {
       const contentDiv = document.getElementById('fileContent');
-      const toggleBtn = document.getElementById('toggleContentBtn');
+      // const toggleBtn = document.getElementById('toggleContentBtn');
       const container = document.getElementById('mainContainer');
       const backdrop = document.getElementById('contentBackdrop');
 
@@ -401,7 +401,7 @@
       if (isContentVisible) {
         contentDiv.classList.add('visible');
         backdrop.style.display = 'block';
-        toggleBtn.textContent = 'Hide Text Panel';
+        // toggleBtn.textContent = 'Hide Text Panel';
         if (contentDiv.textContent) {
           const contentHeight = contentDiv.offsetHeight;
           container.style.paddingTop = `${contentHeight + 60}px`;
@@ -409,7 +409,7 @@
       } else {
         contentDiv.classList.remove('visible');
         backdrop.style.display = 'none';
-        toggleBtn.textContent = 'Show Text Panel';
+        // toggleBtn.textContent = 'Show Text Panel';
         container.style.paddingTop = '0px';
       }
     }
