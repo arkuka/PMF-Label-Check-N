@@ -22,6 +22,7 @@
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       padding: 20px;
+      position: relative;
     }
     h1 {
       margin: 0;
@@ -145,10 +146,23 @@
     .selected-row {
       background-color: #e6f3ff !important;
     }
+    .file-content-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0,0,0,0.2);
+      z-index: 999;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="container" id="mainContainer">
+    <!-- Background overlay that will close the content panel when clicked -->
+    <div class="file-content-backdrop" id="contentBackdrop"></div>
+    
     <h4>Log files viewer</h4>
 
     <!-- File content display area -->
@@ -210,6 +224,11 @@
       renderFileList(allFiles);
       document.getElementById('startDateTime').title = 'Format: YYYY-MM-DD HH:MM:SS';
       document.getElementById('endDateTime').title = 'Format: YYYY-MM-DD HH:MM:SS (empty for current time)';
+      
+      // Add click handler for backdrop
+      document.getElementById('contentBackdrop').addEventListener('click', () => {
+        toggleFileContent(false);
+      });
     };
 
     // Fetch file list
@@ -366,15 +385,22 @@
     }
 
     // Toggle file content visibility
-    function toggleFileContent() {
+    function toggleFileContent(show) {
       const contentDiv = document.getElementById('fileContent');
       const toggleBtn = document.getElementById('toggleContentBtn');
       const container = document.getElementById('mainContainer');
+      const backdrop = document.getElementById('contentBackdrop');
 
-      isContentVisible = !isContentVisible;
+      // If show parameter is provided, use it; otherwise toggle
+      if (typeof show !== 'undefined') {
+        isContentVisible = show;
+      } else {
+        isContentVisible = !isContentVisible;
+      }
 
       if (isContentVisible) {
         contentDiv.classList.add('visible');
+        backdrop.style.display = 'block';
         toggleBtn.textContent = 'Hide Text Panel';
         if (contentDiv.textContent) {
           const contentHeight = contentDiv.offsetHeight;
@@ -382,6 +408,7 @@
         }
       } else {
         contentDiv.classList.remove('visible');
+        backdrop.style.display = 'none';
         toggleBtn.textContent = 'Show Text Panel';
         container.style.paddingTop = '0px';
       }
@@ -411,25 +438,13 @@
         row.classList.add('selected-row');
         currentSelectedFile = element;
 
-        // Automatically show content panel if it's hidden
-        if (!isContentVisible) {
-          toggleFileContent(); // This will show the panel
-        } else {
-          // If already visible, just adjust the padding
-          const container = document.getElementById('mainContainer');
-          const contentHeight = contentDiv.offsetHeight;
-          container.style.paddingTop = `${contentHeight + 60}px`;
-        }
-
+        // Automatically show content panel
+        toggleFileContent(true);
       } catch (error) {
         console.error('Error viewing file:', error);
         const contentDiv = document.getElementById('fileContent');
         contentDiv.textContent = 'Failed to load file content: ' + error.message;
-        
-        // Still show the panel even if there's an error
-        if (!isContentVisible) {
-          toggleFileContent();
-        }
+        toggleFileContent(true);
       }
     }
 
@@ -501,10 +516,8 @@
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Files");
       
-      // 获取当前时间并格式化为两种不同的文件名
+      // Get current time for filename
       const now = new Date();
-      
-      // 第二种格式: production_log_yyyy_mm_dd_hh_mm_ss.xlsx
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const day = String(now.getDate()).padStart(2, '0');
@@ -512,10 +525,9 @@
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const seconds = String(now.getSeconds()).padStart(2, '0');
       
-      const fileName2 = `production_log_${year}_${month}_${day}_${hours}_${minutes}_${seconds}.xlsx`;
+      const fileName = `production_log_${year}_${month}_${day}_${hours}_${minutes}_${seconds}.xlsx`;
       
-      // 使用第二种格式导出
-      XLSX.writeFile(wb, fileName2);
+      XLSX.writeFile(wb, fileName);
     }
 
     // Format data for export
