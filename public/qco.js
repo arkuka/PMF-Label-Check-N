@@ -24,6 +24,7 @@ let sannedHCode = ""
 let matchingProducts = [];
 let currentMatchingIndex = 0;
 let isCheckingFillingAuthority = false;
+let theAuthorizedProductName = ""
 
 // 全局函数
 const validateScan = (field, scannedCode) => {
@@ -214,6 +215,7 @@ const resetForm = () => {
   // Reset the Product Name dropdown to the default value (empty string or any default value)
   const productNameSelect = document.getElementById("productNameSelect");
   productNameSelect.value = "";  // Reset to default (empty or first option)
+  theAuthorizedProductName = ""
 };
 
 // 更新 showModalWithButtons 函数以支持 HTML 内容
@@ -493,8 +495,6 @@ document.addEventListener("DOMContentLoaded", () => {
  * @returns {Promise<boolean>} - Returns true if check passes or no record found, false if mismatch
  */
 function checkFillingAuthoritySync(lineNumber, modal2Message) {
-  console.debug('[1] Starting checkFillingAuthority for line:', lineNumber);
-  
   // Convert line number to standardized format
   const lineMap = {
     '1': 'L01', '2': 'L02', '3': 'L03', '4': 'L04',
@@ -508,16 +508,13 @@ function checkFillingAuthoritySync(lineNumber, modal2Message) {
     console.error('[2] Invalid line number:', lineNumber);
     return true;
   }
-  console.debug('[3] Standardized line number:', standardizedLine);
 
   try {
-      console.debug('[4] Fetching complete file list...');
-      
       // Synchronous XMLHttpRequest for file list
       const listRequest = new XMLHttpRequest();
       listRequest.open('GET', '/api/logviewer?method=LIST', false); // false makes it synchronous
       listRequest.send(null);
-      
+    
       if (listRequest.status !== 200) {
         console.debug('[5] Failed to get file list, status:', listRequest.status);
         return true;
@@ -531,10 +528,10 @@ function checkFillingAuthoritySync(lineNumber, modal2Message) {
       console.debug('[7] Total files available:', listResult.files.length);
   
       // Function to extract date from filename (format: DD-MM-YYYY)
-      const extractDate = (filename) => {
-        const match = filename.match(/(\d{2})-(\d{2})-(\d{4})/);
-        return match ? `${match[3]}${match[2]}${match[1]}` : null;
-      };
+      // const extractDate = (filename) => {
+      //   const match = filename.match(/(\d{2})-(\d{2})-(\d{4})/);
+      //   return match ? `${match[3]}${match[2]}${match[1]}` : null;
+      // };
   
       // Function to check if filename matches our pattern
       const matchesPattern = (filename, line) => {
@@ -564,71 +561,73 @@ function checkFillingAuthoritySync(lineNumber, modal2Message) {
       const matchingFiles = listResult.files.filter(file => {
         const matches = matchesPattern(file.fileName, standardizedLine) &&
                        dateStrings.some(dateStr => file.fileName.includes(dateStr));
-        if (matches) {
-          console.debug('[9] Found matching file:', file.fileName);
-        }
+        // if (matches) {
+        //   console.debug('[9] Found matching file:', file.fileName);
+        // }
         return matches;
       });
   
-      console.debug('[10] Total matching files found:', matchingFiles.length);
+      // console.debug('[10] Total matching files found:', matchingFiles.length);
   
       // Sort files by upload date (newest first)
       matchingFiles.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-      if (matchingFiles.length > 0) {
-        console.debug('[11] Sorted files (newest first):', matchingFiles.map(f => f.fileName));
-      }
+      // if (matchingFiles.length > 0) {
+      //   console.debug('[11] Sorted files (newest first):', matchingFiles.map(f => f.fileName));
+      // }
   
       // Process matching files - we only need to check the most recent one
       if (matchingFiles.length > 0) {
-        mostRecentFile = matchingFiles[0];
-        console.debug('[12] Processing most recent file:', mostRecentFile.fileName);
-        
-        console.debug('[14] Fetching file content...');
-        
-        // Synchronous XMLHttpRequest for file content
-        const fileRequest = new XMLHttpRequest();
-        fileRequest.open('GET', mostRecentFile.url, false); // false makes it synchronous
-        fileRequest.send(null);
-        
-        if (fileRequest.status === 200) {
-          console.debug('[15] File content fetched successfully');
-          const fileResult = JSON.parse(fileRequest.responseText);
-          console.log('fileResult=', fileResult);
+          mostRecentFile = matchingFiles[0];
+          // console.debug('[12] Processing most recent file:', mostRecentFile.fileName);
           
-          if (Array.isArray(fileResult)) {
-            console.debug('[16] File contains', fileResult.length, 'records');
+          // console.debug('[14] Fetching file content...');
+          
+          // Synchronous XMLHttpRequest for file content
+          const fileRequest = new XMLHttpRequest();
+          fileRequest.open('GET', mostRecentFile.url, false); // false makes it synchronous
+          fileRequest.send(null);
+          
+          if (fileRequest.status === 200) {
+            // console.debug('[15] File content fetched successfully');
+            const fileResult = JSON.parse(fileRequest.responseText);
+            // console.log('fileResult=', fileResult);
             
-            // Find records for our specific production line
-            const lineRecords = fileResult.filter(record => 
-              record["production Line"] === standardizedLine
-            );
-            console.debug('[17] Found', lineRecords.length, 'records for line', standardizedLine);
-            
-            if (lineRecords.length > 0) {
-              mostRecentRecord = lineRecords[0];
-              console.debug('[18] Most recent record:', mostRecentRecord);
+            if (Array.isArray(fileResult)) {
+              // console.debug('[16] File contains', fileResult.length, 'records');
+              
+              // Find records for our specific production line
+              const lineRecords = fileResult.filter(record => 
+                record["production Line"] === standardizedLine
+              );
+              // console.debug('[17] Found', lineRecords.length, 'records for line', standardizedLine);
+              
+              if (lineRecords.length > 0) {
+                mostRecentRecord = lineRecords[0];
+                // console.debug('[18] Most recent record:', mostRecentRecord);
+              } else {
+                console.debug('[19] No records found for this production line');
+              }
             } else {
-              console.debug('[19] No records found for this production line');
+              console.debug('[20] File content is not in expected array format');
             }
           } else {
-            console.debug('[20] File content is not in expected array format');
+            console.debug('[21] Failed to fetch file content, status:', fileRequest.status);
           }
-        } else {
-          console.debug('[21] Failed to fetch file content, status:', fileRequest.status);
-        }
       }
   
       if (!mostRecentRecord) {
         console.debug('[22] No matching records found in the most recent file');
         return true;
       }
-  
+
+      // ProductID = Pallet Label
       const currentPalletLabel = document.getElementById("pallet label").value.trim();
-      console.debug('[23] Current pallet label:', currentPalletLabel);
-      console.debug('[24] Record product ID:', mostRecentRecord["product ID"]);
+      // console.debug('[23] Current pallet label:', currentPalletLabel);
+      // console.debug('[24] Record product ID:', mostRecentRecord["product ID"]);
+      theAuthorizedProductName = mostRecentRecord["product Name"]
       
       // Check if product IDs match
-      if (mostRecentRecord["product ID"] !== currentPalletLabel) {
+      if (theMostRecentAuthorizedProductID !== currentPalletLabel) {
         console.debug('[25] Product ID mismatch detected');
         return false;
       }
@@ -747,7 +746,9 @@ function checkFillingAuthoritySync(lineNumber, modal2Message) {
           <div style="color: red; text-align: left;">          
             <p>The product you are trying to submit:</p>
             <p><strong>${productName}</strong></p>
-            <p> is not the one authorized by the filling department </p>            
+            <p>The product authorized by the Filling department is:</p>
+            <p><strong>${theAuthorizedProductName}</strong></p>
+            <p> Please confirm with the Filling department </p>            
           </div>
         `;
         modal2Message.style.display = "block";
