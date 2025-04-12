@@ -5,9 +5,7 @@ const getFormattedFileName = (data) => {
   console.log("Formatting filename from data:", data)
 
   // Extract the timestamp from the data
-  // Handle both direct data object and nested data object
   const timestamp = data.timestamp || (data.data && data.data.timestamp)
-
   console.log("timestamp:", timestamp)
 
   if (!timestamp) {
@@ -21,20 +19,22 @@ const getFormattedFileName = (data) => {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false, // Use 24-hour format
+      hour12: false,
     };
-  
     const now = new Date()
-
     const sydneyDate = new Date(now.toLocaleString('en-US', options));    
-    
     return getFormattedFileNameFromDate(sydneyDate, data)
   }
 
-  // Parse the timestamp string into a Date object
-  // Format example: "3/21/2025, 2:50:33 AM"
-  const date = new Date(timestamp)
-  console.log("date=",date)
+  // Parse the DD-MM-YYYY format correctly
+  const [datePart, timePart] = timestamp.split(' ')
+  const [day, month, year] = datePart.split('-')
+  const [hours, minutes, seconds] = timePart.split(':')
+  
+  // Create date in YYYY-MM-DD format which Date can parse reliably
+  const isoFormatted = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
+  const date = new Date(isoFormatted)
+  console.log("date=", date)
 
   return getFormattedFileNameFromDate(date, data)
 }
