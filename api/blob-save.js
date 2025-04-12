@@ -24,7 +24,7 @@ const getFormattedFileName = (data) => {
   
     const now = new Date()
 
-    const sydneyDate = new Date(now.toLocaleString('en-US', options));
+    const sydneyDate = new Date(now.toLocaleString('en-US', options));    
     
     return getFormattedFileNameFromDate(sydneyDate, data)
   }
@@ -32,6 +32,7 @@ const getFormattedFileName = (data) => {
   // Parse the timestamp string into a Date object
   // Format example: "3/21/2025, 2:50:33 AM"
   const date = new Date(timestamp)
+  console.log("date=",date)
 
   return getFormattedFileNameFromDate(date, data)
 }
@@ -45,6 +46,11 @@ const getFormattedFileNameFromDate = (date, data) => {
   const hours = String(date.getHours()).padStart(2, "0")
   const minutes = String(date.getMinutes()).padStart(2, "0")
   const seconds = String(date.getSeconds()).padStart(2, "0")
+
+  console.log("year=",year)
+  console.log("month=",month)
+  console.log("day=",day)
+  
 
   // Handle both direct data object and nested data object
   const actualData = data.data || data
