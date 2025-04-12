@@ -8,6 +8,8 @@ const getFormattedFileName = (data) => {
   // Handle both direct data object and nested data object
   const timestamp = data.timestamp || (data.data && data.data.timestamp)
 
+  console.log("timestamp:", timestamp)
+
   if (!timestamp) {
     console.warn("No timestamp found in data, using current time")
     // Fallback to current time if no timestamp is found
