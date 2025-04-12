@@ -744,11 +744,11 @@ function checkFillingAuthoritySync(lineNumber, modal2Message) {
           // Show warning message      
           modal2Message.innerHTML = `
           <div style="color: red; text-align: left;">          
-            <p>The product you are trying to submit:</p>
+            <p>The product you are trying to submit is:</p>
             <p><strong>${productName}</strong></p>
             <p>The product authorized by the Filling department is:</p>
             <p><strong>${theAuthorizedProductName}</strong></p>
-            <p> Please confirm with the Filling department </p>            
+            <p> Please confirm with the Filling department</p>            
           </div>
         `;
         modal2Message.style.display = "block";
