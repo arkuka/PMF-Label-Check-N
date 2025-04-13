@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
     
-            console.log(data); // Log the data to see its structure
+            // console.log(data); // Log the data to see its structure
     
             const products = data.slice(1).map(row => ({
                 name: row[0],
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
     
-            console.log(data); // Log the data to see its structure
+            // console.log(data); // Log the data to see its structure
     
             const production_lines = data.slice(1).map(row => ({
                 name: row[0],
@@ -121,10 +121,10 @@ function updateSubmitButton() {
     submitButton.disabled = !(lineSelected && productSelected && dateSelected);
     
     // Debugging logs (you can remove these after testing)
-    console.log('Line selected:', lineSelected);
-    console.log('Product selected:', productSelected);
-    console.log('Date selected:', dateSelected);
-    console.log('Button should be disabled:', !(lineSelected && productSelected && dateSelected));
+    // console.log('Line selected:', lineSelected);
+    // console.log('Product selected:', productSelected);
+    // console.log('Date selected:', dateSelected);
+    // console.log('Button should be disabled:', !(lineSelected && productSelected && dateSelected));
 }
 
 // 提交数据
