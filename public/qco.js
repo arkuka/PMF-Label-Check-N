@@ -687,6 +687,14 @@ function checkFillingAuthoritySync(lineNumber, modal2Message) {
       modal2Message.style.display = "block";
       return;
     }
+
+    // 验证 Line Number 是否有效
+    const validLineNumbers = ["1", "2", "3", "4", "5A", "5B", "6", "7", "8", "9", "11", "12", "13", "14", "15"];
+    if (!validLineNumbers.includes(lineNumber)) {
+      modal2Message.textContent = "Invalid Line Number. Please enter one of: 1,2,3,4,5A,5B,6,7,8,9,11,12,13,14,15";
+      modal2Message.style.display = "block";
+      return;
+    }
     
     if (scannedHCode !== hcode.toUpperCase()) {
       modal2Message.textContent = "Label hcode does not match the hcode on the pallet label. Please double check it!";
