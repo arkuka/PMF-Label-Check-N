@@ -119,6 +119,12 @@ function updateSubmitButton() {
     const dateSelected = document.querySelector('input[name="productionDate"]:checked') !== null;
     
     submitButton.disabled = !(lineSelected && productSelected && dateSelected);
+    
+    // Debugging logs (you can remove these after testing)
+    console.log('Line selected:', lineSelected);
+    console.log('Product selected:', productSelected);
+    console.log('Date selected:', dateSelected);
+    console.log('Button should be disabled:', !(lineSelected && productSelected && dateSelected));
 }
 
 // 提交数据
