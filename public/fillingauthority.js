@@ -160,7 +160,9 @@ async function submitSelection() {
         });
 
         if (!response.ok) throw new Error('Failed to save selection');
-        alert('Selection saved successfully!');
+
+        showSuccessModal();
+
         productionLineSelect.value = '';
         productNameSelect.value = '';
         submitButton.disabled = true;
@@ -170,6 +172,29 @@ async function submitSelection() {
         alert('Failed to save selection. Please try again.');
     }
 }
+
+// Modal functions
+function showSuccessModal() {
+    const modal = document.getElementById('successModal');
+    modal.style.display = 'flex';
+}
+
+function closeModal() {
+    const modal = document.getElementById('successModal');
+    modal.style.display = 'none';
+}
+
+// Event listeners for modal
+document.querySelector('.close-modal').addEventListener('click', closeModal);
+document.querySelector('.modal-button').addEventListener('click', closeModal);
+
+// Close modal when clicking outside of it
+window.addEventListener('click', (event) => {
+    const modal = document.getElementById('successModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+});
 
 // 事件监听
 productionLineSelect.addEventListener('change', updateSubmitButton);
