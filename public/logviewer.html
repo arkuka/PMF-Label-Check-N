@@ -537,9 +537,9 @@
 
       return {
         timestamp: data.timestamp || "",
-        lineNumber: data.lineNumber || "",
-        palletLabel: barcodes[4] || "",
-        productName: data.productName || "",
+        lineNumber: data.lineNumber || data["production Line"] || "",
+        palletLabel: barcodes[4] || data["product ID"] || "",
+        productName: data.productName || data["product Name"] ||"",
         palletNumber: data.palletNumber || "",
         cartonCount: data.cartonCount || "",
         hcode: data.hcode || "",
