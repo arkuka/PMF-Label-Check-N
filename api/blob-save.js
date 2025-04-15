@@ -81,7 +81,7 @@ const getFormattedFileNameFromDate = (date, data) => {
   const fileNameParts = [
     `${day}-${month}-${year}`,    
     standardizedLine || "unknown",
-    "Packing-LablCheck",
+    "Label-Check",
     palletLabel,
     actualData.productName || "unknown",
     actualData.hcode || "unknown",
