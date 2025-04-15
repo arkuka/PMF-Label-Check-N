@@ -64,18 +64,30 @@ const getFormattedFileNameFromDate = (date, data) => {
       ? barcodes[4] || "unknown" // palletLabel is the 5th item (index 4)
       : actualData.barcodes?.palletLabel || "unknown"
 
+  const lineMap = {
+    '1': 'L01', '2': 'L02', '3': 'L03', '4': 'L04',
+    '5A': 'L5A', '5B': 'L5B', '6': 'L06', '7': 'L07',
+    '8': 'L08', '9': 'L09', '10': 'L10', '11': 'L11',
+    '12': 'L12', '13': 'L13', '14': 'L14', '15': 'L15'
+  };
+
+  const standardizedLine = lineMap[lineNumber.toUpperCase()];
+  if (!standardizedLine) {
+    console.error('[2] Invalid line number:', lineNumber);
+    return true;
+  }
+
   // Construct filename parts
   const fileNameParts = [
-    `${year}${month}${day}`,
-    `${hours}${minutes}${seconds}`,
-    actualData.lineNumber || "unknown",
+    `${day}-${month}-${year}`,    
+    standardizedLine || "unknown",
+    "Packing-LablCheck",
     palletLabel,
+    actualData.productName || "unknown",
+    actualData.hcode || "unknown",
     actualData.palletNumber || "unknown",
     actualData.cartonCount || "unknown",
-    actualData.hcode || "unknown",
-    actualData.productName || "unknown",
   ]
-
   return `${fileNameParts.join("-")}.json`
 }
 
