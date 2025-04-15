@@ -13,7 +13,7 @@ export default async function handler(req, res) {
       
       // Create a unique filename with timestamp
       
-      const fileName = `${productionDate}-${productionLine}-Filling-${productID}-${productName}.json`;
+      const fileName = `${productionDate}-${productionLine}-Filling-Authority-${productID}-${productName}.json`;
 
       // Save the new data as a standalone file
       const jsonData = JSON.stringify([data], null, 2); // Wrap in array for consistency
