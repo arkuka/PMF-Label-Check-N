@@ -8,13 +8,12 @@ export default async function handler(req, res) {
 
       const productionLine = data['production Line'] || "unknown";
       const productionDate = data['production Date'] || "unknown";
-      const productID = data['product ID'] || "unknown";
-
-      console.log("Production Date:", productionDate);
+      const productName = data['product Name'] || "unknown";
+      const productID = data['product ID'] || "unknown";      
       
       // Create a unique filename with timestamp
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const fileName = `${productionDate}-${productionLine}-Filling-Authority-${productID}-${timestamp}.json`;
+      
+      const fileName = `${productionDate}-${productionLine}-Filling-Authority-${productID}-${productName}.json`;
 
       // Save the new data as a standalone file
       const jsonData = JSON.stringify([data], null, 2); // Wrap in array for consistency
