@@ -71,9 +71,9 @@ const getFormattedFileNameFromDate = (date, data) => {
     '12': 'L12', '13': 'L13', '14': 'L14', '15': 'L15'
   };
 
-  const standardizedLine = lineMap[lineNumber.toUpperCase()];
+  const standardizedLine = lineMap[actualData.lineNumber.toUpperCase()];
   if (!standardizedLine) {
-    console.error('[2] Invalid line number:', lineNumber);
+    console.error('[2] Invalid line number:', actualData.lineNumber);
     return true;
   }
 
