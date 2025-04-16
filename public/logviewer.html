@@ -122,14 +122,6 @@
     th:hover {
       background-color: #e9e9e9;
     }
-    th.sort-asc::after {
-      content: " ↑";
-      color: #0066cc;
-    }
-    th.sort-desc::after {
-      content: " ↓";
-      color: #0066cc;
-    }
     tr:nth-child(even) {
       background-color: #fafafa;
     }
@@ -156,6 +148,29 @@
       z-index: 999;
       display: none;
     }
+
+    th.sort-asc::after {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: 5px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%230066cc"><path d="M7 14l5-5 5 5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  
+  th.sort-desc::after {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: 5px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%230066cc"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+    
   </style>
 </head>
 <body>
@@ -298,7 +313,6 @@
       
       renderFileList(sortedFiles);
     }
-
     // Render file list
     function renderFileList(files) {
       const tbody = document.getElementById('fileList');
