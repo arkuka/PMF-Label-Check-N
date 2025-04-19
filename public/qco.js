@@ -746,7 +746,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     if (g_scannedHCode !== hcode.toUpperCase()) {
-      modal2Message.textContent = "Hcode("& hcode.toUpperCase &") on the product label does not match the hcode("& g_scannedHCode &") on the pallet label. Please double check it!";
+      modal2Message.textContent = `Hcode( ${hcode} ) on the product label does not match the hcode( ${g_scannedHCode} ) on the pallet label. Please double check it!`;
       modal2Message.style.display = "block";
       return;
     }
