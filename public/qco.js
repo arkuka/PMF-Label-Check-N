@@ -26,7 +26,68 @@ let currentMatchingIndex = 0;
 let isCheckingFillingAuthority = false;
 let theAuthorizedProductName = ""
 
+let lastReceivedDataCache = null;
+let lastSettings = null;
+let currentVersion = null;
+let updateCheckFrequency = 3600; // Default value in seconds
+let lastUpdateCheckTime = 0;
+let pendingUpdates = false;
+
 // 全局函数
+const loadSettings = async () => {
+  try {
+    const response = await fetch("/settings.json");
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const settings = await response.json();
+    
+    console.log('loadSettingsFile');
+    console.log('Settings loaded:', settings);
+
+    // Extract the values from settings.json
+    currentVersion = settings.ver;
+    updateCheckFrequency = parseInt(settings["update check frequency"]) || 3600;
+    const checkFillingAuthority = settings["check filling authority"] === "yes";
+
+    // Update UI with version information
+    const versionInfoElement = document.getElementById("versionInfo");
+    if (versionInfoElement) {
+      versionInfoElement.textContent = `ver: ${currentVersion}`;
+    }
+
+    // Update the filling authority check status
+    isCheckingFillingAuthority = checkFillingAuthority;
+    console.log("isCheckingFillingAuthority is ", isCheckingFillingAuthority ? "true" : "false");
+
+    return {
+      success: true,
+      version: currentVersion,
+      checkFrequency: updateCheckFrequency,
+      checkFillingAuthority: isCheckingFillingAuthority
+    };
+  } catch (error) {
+    console.error("Failed to load or parse the settings file:", error);
+    
+    // Fallback to default values
+    currentVersion = "2025.4.19.1";
+    updateCheckFrequency = 3600;
+    isCheckingFillingAuthority = false;
+
+    return {
+      success: false,
+      error: error.message,
+      version: currentVersion,
+      checkFrequency: updateCheckFrequency,
+      checkFillingAuthority: isCheckingFillingAuthority
+    };
+  }
+};
+
+loadSettings();
+
 const validateScan = (field, scannedCode) => {
     if (!configData || !productName) return;
   
@@ -41,6 +102,7 @@ const validateScan = (field, scannedCode) => {
     const isMatch = processedScannedCode === correctCode.trim();
     checkSubmitAvailability(isMatch);
 };
+
 
 // 提取 allFieldsValid 为独立函数
 const allFieldsValid = () => {
@@ -456,18 +518,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
         renderInputFields();
 
-        // 读取第二个工作表（版本信息）
-        const sheet2 = workbook.Sheets[workbook.SheetNames[1]];
-        const settings = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
-        const versionInfo = settings[1][0]; // 获取第二行第一列的值（A2）
+        // // 读取第二个工作表（版本信息）
+        // const sheet2 = workbook.Sheets[workbook.SheetNames[1]];
+        // const settings = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
+        // const versionInfo = settings[1][0]; // 获取第二行第一列的值（A2）
     
-        // 显示版本号
-        const versionInfoElement = document.getElementById("versionInfo");
-        if (versionInfoElement) {
-          versionInfoElement.textContent = "ver:"+versionInfo;        
-        }        
-        isCheckingFillingAuthority = settings[1][1] ? true : false; // 获取第二行第一列的值（B2）
-        console.log ("isCheckingFillingAuthority is ", isCheckingFillingAuthority?"true":"false")
+        // // 显示版本号
+        // const versionInfoElement = document.getElementById("versionInfo");
+        // if (versionInfoElement) {
+        //   versionInfoElement.textContent = "ver:"+versionInfo;        
+        // }        
+        // isCheckingFillingAuthority = settings[1][1] ? true : false; // 获取第二行第一列的值（B2）
+        // console.log ("isCheckingFillingAuthority is ", isCheckingFillingAuthority?"true":"false")
       } catch (error) {
         console.error("Failed to load or parse the Excel file:", error);
       }
@@ -490,150 +552,150 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /**
- * Checks filling authority record for the given production line
- * @param {string} lineNumber - The production line number entered by user (e.g., "1", "5A", etc.)
- * @returns {Promise<boolean>} - Returns true if check passes or no record found, false if mismatch
- */
-function checkFillingAuthoritySync(lineNumber) {
-  // Convert line number to standardized format
-  const lineMap = {
-    '1': 'L01', '2': 'L02', '3': 'L03', '4': 'L04',
-    '5A': 'L05', '5B': 'L05', '6': 'L06', '7': 'L07',
-    '8': 'L08', '9': 'L09', '10': 'L10', '11': 'L11',
-    '12': 'L12', '13': 'L13', '14': 'L14', '15': 'L15'
-  };
-  
-  const standardizedLine = lineMap[lineNumber.toUpperCase()];
-  if (!standardizedLine) {
-    console.error('[2] Invalid line number:', lineNumber);
-    return true;
-  }
-
-  try {
-      // Synchronous XMLHttpRequest for file list
-      const listRequest = new XMLHttpRequest();
-      listRequest.open('GET', '/api/logviewer?method=LIST', false); // false makes it synchronous
-      listRequest.send(null);
-    
-      if (listRequest.status !== 200) {
-        console.debug('[5] Failed to get file list, status:', listRequest.status);
-        return true;
-      }
-  
-      const listResult = JSON.parse(listRequest.responseText);
-      if (!listResult.success || !listResult.files || listResult.files.length === 0) {
-        console.debug('[6] No files available in response');
-        return true;
-      }
-      console.debug('[7] Total files available:', listResult.files.length);
-  
-      // Function to check if filename matches our pattern
-      const matchesPattern = (filename, line) => {
-        const pattern = new RegExp(`^\\d{2}-\\d{2}-\\d{4}-${line}-Filling-Authority-.*\\.json$`, 'i');
-        return pattern.test(filename);
+   * Checks filling authority record for the given production line
+   * @param {string} lineNumber - The production line number entered by user (e.g., "1", "5A", etc.)
+   * @returns {Promise<boolean>} - Returns true if check passes or no record found, false if mismatch
+   */
+  function checkFillingAuthoritySync(lineNumber) {
+      // Convert line number to standardized format
+      const lineMap = {
+        '1': 'L01', '2': 'L02', '3': 'L03', '4': 'L04',
+        '5A': 'L05', '5B': 'L05', '6': 'L06', '7': 'L07',
+        '8': 'L08', '9': 'L09', '10': 'L10', '11': 'L11',
+        '12': 'L12', '13': 'L13', '14': 'L14', '15': 'L15'
       };
-  
-      // Get today's and yesterday's dates in DD-MM-YYYY format
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
       
-      const formatDate = (date) => {
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}-${month}-${year}`;
-      };
-  
-      const dateStrings = [formatDate(today), formatDate(yesterday)];
-      console.debug('[8] Checking dates:', dateStrings);
-  
-      let mostRecentRecord = null;
-      let mostRecentFile = null;
-  
-      // Find all matching files for our dates and line
-      const matchingFiles = listResult.files.filter(file => {
-        const matches = matchesPattern(file.fileName, standardizedLine) &&
-                       dateStrings.some(dateStr => file.fileName.includes(dateStr));
-        // if (matches) {
-        //   console.debug('[9] Found matching file:', file.fileName);
+      const standardizedLine = lineMap[lineNumber.toUpperCase()];
+      if (!standardizedLine) {
+        console.error('[2] Invalid line number:', lineNumber);
+        return true;
+      }
+
+    try {
+        // Synchronous XMLHttpRequest for file list
+        const listRequest = new XMLHttpRequest();
+        listRequest.open('GET', '/api/logviewer?method=LIST', false); // false makes it synchronous
+        listRequest.send(null);
+      
+        if (listRequest.status !== 200) {
+          console.debug('[5] Failed to get file list, status:', listRequest.status);
+          return true;
+        }
+    
+        const listResult = JSON.parse(listRequest.responseText);
+        if (!listResult.success || !listResult.files || listResult.files.length === 0) {
+          console.debug('[6] No files available in response');
+          return true;
+        }
+        console.debug('[7] Total files available:', listResult.files.length);
+    
+        // Function to check if filename matches our pattern
+        const matchesPattern = (filename, line) => {
+          const pattern = new RegExp(`^\\d{2}-\\d{2}-\\d{4}-${line}-Filling-Authority-.*\\.json$`, 'i');
+          return pattern.test(filename);
+        };
+    
+        // Get today's and yesterday's dates in DD-MM-YYYY format
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const formatDate = (date) => {
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const year = date.getFullYear();
+          return `${day}-${month}-${year}`;
+        };
+    
+        const dateStrings = [formatDate(today), formatDate(yesterday)];
+        console.debug('[8] Checking dates:', dateStrings);
+    
+        let mostRecentRecord = null;
+        let mostRecentFile = null;
+    
+        // Find all matching files for our dates and line
+        const matchingFiles = listResult.files.filter(file => {
+          const matches = matchesPattern(file.fileName, standardizedLine) &&
+                        dateStrings.some(dateStr => file.fileName.includes(dateStr));
+          // if (matches) {
+          //   console.debug('[9] Found matching file:', file.fileName);
+          // }
+          return matches;
+        });
+    
+        // console.debug('[10] Total matching files found:', matchingFiles.length);
+    
+        // Sort files by upload date (newest first)
+        matchingFiles.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+        // if (matchingFiles.length > 0) {
+        //   console.debug('[11] Sorted files (newest first):', matchingFiles.map(f => f.fileName));
         // }
-        return matches;
-      });
-  
-      // console.debug('[10] Total matching files found:', matchingFiles.length);
-  
-      // Sort files by upload date (newest first)
-      matchingFiles.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-      // if (matchingFiles.length > 0) {
-      //   console.debug('[11] Sorted files (newest first):', matchingFiles.map(f => f.fileName));
-      // }
-  
-      // Process matching files - we only need to check the most recent one
-      if (matchingFiles.length > 0) {
-          mostRecentFile = matchingFiles[0];
-          // console.debug('[12] Processing most recent file:', mostRecentFile.fileName);
-          
-          // console.debug('[14] Fetching file content...');
-          
-          // Synchronous XMLHttpRequest for file content
-          const fileRequest = new XMLHttpRequest();
-          fileRequest.open('GET', mostRecentFile.url, false); // false makes it synchronous
-          fileRequest.send(null);
-          
-          if (fileRequest.status === 200) {
-            // console.debug('[15] File content fetched successfully');
-            const fileResult = JSON.parse(fileRequest.responseText);
-            // console.log('fileResult=', fileResult);
+    
+        // Process matching files - we only need to check the most recent one
+        if (matchingFiles.length > 0) {
+            mostRecentFile = matchingFiles[0];
+            // console.debug('[12] Processing most recent file:', mostRecentFile.fileName);
             
-            if (Array.isArray(fileResult)) {
-              // console.debug('[16] File contains', fileResult.length, 'records');
+            // console.debug('[14] Fetching file content...');
+            
+            // Synchronous XMLHttpRequest for file content
+            const fileRequest = new XMLHttpRequest();
+            fileRequest.open('GET', mostRecentFile.url, false); // false makes it synchronous
+            fileRequest.send(null);
+            
+            if (fileRequest.status === 200) {
+              // console.debug('[15] File content fetched successfully');
+              const fileResult = JSON.parse(fileRequest.responseText);
+              // console.log('fileResult=', fileResult);
               
-              // Find records for our specific production line
-              const lineRecords = fileResult.filter(record => 
-                record["production Line"] === standardizedLine
-              );
-              // console.debug('[17] Found', lineRecords.length, 'records for line', standardizedLine);
-              
-              if (lineRecords.length > 0) {
-                mostRecentRecord = lineRecords[0];
-                // console.debug('[18] Most recent record:', mostRecentRecord);
+              if (Array.isArray(fileResult)) {
+                // console.debug('[16] File contains', fileResult.length, 'records');
+                
+                // Find records for our specific production line
+                const lineRecords = fileResult.filter(record => 
+                  record["production Line"] === standardizedLine
+                );
+                // console.debug('[17] Found', lineRecords.length, 'records for line', standardizedLine);
+                
+                if (lineRecords.length > 0) {
+                  mostRecentRecord = lineRecords[0];
+                  // console.debug('[18] Most recent record:', mostRecentRecord);
+                } else {
+                  console.debug('[19] No records found for this production line');
+                }
               } else {
-                console.debug('[19] No records found for this production line');
+                console.debug('[20] File content is not in expected array format');
               }
             } else {
-              console.debug('[20] File content is not in expected array format');
+              console.debug('[21] Failed to fetch file content, status:', fileRequest.status);
             }
-          } else {
-            console.debug('[21] Failed to fetch file content, status:', fileRequest.status);
-          }
-      }
-  
-      if (!mostRecentRecord) {
-        console.debug('[22] No matching records found in the most recent file');
-        theAuthorizedProductName = "n/a"
-        return false;
-      }
+        }
+    
+        if (!mostRecentRecord) {
+          console.debug('[22] No matching records found in the most recent file');
+          theAuthorizedProductName = "n/a"
+          return false;
+        }
 
-      // ProductID = Pallet Label
-      const currentPalletLabel = document.getElementById("pallet label").value.trim();
-      // console.debug('[23] Current pallet label:', currentPalletLabel);
-      // console.debug('[24] Record product ID:', mostRecentRecord["product ID"]);
-      theAuthorizedProductName = mostRecentRecord["product Name"]
-      
-      // Check if product IDs match
-      if (mostRecentRecord["product ID"] !== currentPalletLabel) {
-        console.debug('[25] Product ID mismatch detected');
-        return false;
-      }
-      
-      console.debug('[26] Product ID matches - proceeding');
+        // ProductID = Pallet Label
+        const currentPalletLabel = document.getElementById("pallet label").value.trim();
+        // console.debug('[23] Current pallet label:', currentPalletLabel);
+        // console.debug('[24] Record product ID:', mostRecentRecord["product ID"]);
+        theAuthorizedProductName = mostRecentRecord["product Name"]
+        
+        // Check if product IDs match
+        if (mostRecentRecord["product ID"] !== currentPalletLabel) {
+          console.debug('[25] Product ID mismatch detected');
+          return false;
+        }
+        
+        console.debug('[26] Product ID matches - proceeding');
+        return true;
+    } catch (error) {
+      console.error('[ERROR] in checkFillingAuthority:', error);
       return true;
-  } catch (error) {
-    console.error('[ERROR] in checkFillingAuthority:', error);
-    return true;
+    }
   }
-}
 
   
   // 提交按钮点击事件
@@ -904,4 +966,5 @@ function checkFillingAuthoritySync(lineNumber) {
 
   // 初始化
   loadExcelFile();
+  loadSettings();
 });
