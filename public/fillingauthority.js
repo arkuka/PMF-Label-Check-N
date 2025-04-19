@@ -111,6 +111,65 @@ const loadSettings = async () => {
 
 document.addEventListener("DOMContentLoaded", () => {
     setupDateSelection();    
+
+    const loadExcelFile = async () => {
+        try {
+            const response = await fetch("/label_library.xlsx");
+            const arrayBuffer = await response.arrayBuffer();
+    
+            const workbook = XLSX.read(arrayBuffer, { type: "array" });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    
+            // console.log(data); // Log the data to see its structure
+    
+            const products = data.slice(1).map(row => ({
+                name: row[0],
+                id: row[5] // pallet label as ID
+            }));
+    
+            productNameSelect.innerHTML = '<option value="">Select Product</option>' +
+                products.map(product => `<option value="${product.name}" data-id="${product.id}">${product.name}</option>`).join('');
+
+            // // 读取第二个工作表（版本信息）
+            // const sheet2 = workbook.Sheets[workbook.SheetNames[1]];
+            // const versionData = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
+            // const versionInfo = versionData[1][0]; // 获取第二行第一列的值（A2）
+        
+            // // 显示版本号
+            // const versionInfoElement = document.getElementById("versionInfo");
+            // if (versionInfoElement) {
+            // versionInfoElement.textContent = "ver:"+versionInfo;        
+            // }
+
+        } catch (error) {
+            console.error("Failed to load or parse the Excel file:", error);
+        }
+
+        try {
+            const response = await fetch("/production_lines.xlsx");
+            const arrayBuffer = await response.arrayBuffer();
+    
+            const workbook = XLSX.read(arrayBuffer, { type: "array" });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    
+            // console.log(data); // Log the data to see its structure
+    
+            const production_lines = data.slice(1).map(row => ({
+                name: row[0],
+                id: row[1]
+            }));
+    
+            productionLineSelect.innerHTML = '<option value="">Select Production Line</option>' +
+                production_lines.map(production_line => `<option value="${production_line.name}" data-id="${production_line.id}">${production_line.name}</option>`).join('');
+
+        } catch (error) {
+            console.error("Failed to load or parse the Excel file:", error);
+        }
+    }
+
+    loadExcelFile();
     loadSettings();
 });
 
