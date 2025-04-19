@@ -494,7 +494,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * @param {string} lineNumber - The production line number entered by user (e.g., "1", "5A", etc.)
  * @returns {Promise<boolean>} - Returns true if check passes or no record found, false if mismatch
  */
-function checkFillingAuthoritySync(lineNumber, modal2Message) {
+function checkFillingAuthoritySync(lineNumber) {
   // Convert line number to standardized format
   const lineMap = {
     '1': 'L01', '2': 'L02', '3': 'L03', '4': 'L04',
@@ -526,12 +526,6 @@ function checkFillingAuthoritySync(lineNumber, modal2Message) {
         return true;
       }
       console.debug('[7] Total files available:', listResult.files.length);
-  
-      // Function to extract date from filename (format: DD-MM-YYYY)
-      // const extractDate = (filename) => {
-      //   const match = filename.match(/(\d{2})-(\d{2})-(\d{4})/);
-      //   return match ? `${match[3]}${match[2]}${match[1]}` : null;
-      // };
   
       // Function to check if filename matches our pattern
       const matchesPattern = (filename, line) => {
@@ -633,7 +627,7 @@ function checkFillingAuthoritySync(lineNumber, modal2Message) {
       }
       
       console.debug('[26] Product ID matches - proceeding');
-      return true;
+      return false;
   } catch (error) {
     console.error('[ERROR] in checkFillingAuthority:', error);
     return true;
