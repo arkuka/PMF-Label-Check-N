@@ -628,7 +628,7 @@ function checkFillingAuthoritySync(lineNumber) {
       }
       
       console.debug('[26] Product ID matches - proceeding');
-      return false;
+      return true;
   } catch (error) {
     console.error('[ERROR] in checkFillingAuthority:', error);
     return true;
