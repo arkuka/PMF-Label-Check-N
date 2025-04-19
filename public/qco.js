@@ -1,7 +1,7 @@
-// 全局变量
-let configData = null;
-let productName = "";
-let fields = {
+// Global variables
+let g_configData = null;
+let g_productName = "";
+let g_fields = {
   topLabel: "",
   sideLabel: "",
   bottomLabel: "",
@@ -9,31 +9,30 @@ let fields = {
   palletLabel: "",
   watermark: "",
 };
-let shelfLifeDays = 0; // 保质期天数
-let headers = [];
-let productNames = [];  // 产品名称列表
-let productNameLabel = "";
-let isSubmitEnabled = false;
-let prompted = false;
-let showModal = false;
-let possibleProduct = "";
-let barcode = "";
-let scannedBarcode = "";
-let currentField = "";  // 用于记录当前输入的字段
-let sannedHCode = ""
-let matchingProducts = [];
-let currentMatchingIndex = 0;
-let isCheckingFillingAuthority = false;
-let theAuthorizedProductName = ""
+let g_shelfLifeDays = 0; // Shelf life in days
+let g_headers = [];
+let g_productNames = [];  // List of product names
+let g_productNameLabel = "";
+let g_isSubmitEnabled = false;
+let g_prompted = false;
+let g_showModal = false;
+let g_possibleProduct = "";
+let g_barcode = "";
+let g_scannedBarcode = "";
+let g_currentField = "";  // Tracks the currently input field
+let g_scannedHCode = "";
+let g_matchingProducts = [];
+let g_currentMatchingIndex = 0;
+let g_isCheckingFillingAuthority = false;
+let g_theAuthorizedProductName = "";
+let g_lastReceivedDataCache = null;
+let g_lastSettings = null;
+let g_currentVersion = null;
+let g_updateCheckFrequency = 3600; // Default value in seconds
+let g_lastUpdateCheckTime = 0;
+let g_pendingUpdates = false;
 
-let lastReceivedDataCache = null;
-let lastSettings = null;
-let currentVersion = null;
-let updateCheckFrequency = 3600; // Default value in seconds
-let lastUpdateCheckTime = 0;
-let pendingUpdates = false;
-
-// 全局函数
+// Global functions
 const loadSettings = async () => {
   try {
     const response = await fetch("/settings.json");
@@ -48,149 +47,153 @@ const loadSettings = async () => {
     console.log('Settings loaded:', settings);
 
     // Extract the values from settings.json
-    currentVersion = settings.ver;
-    updateCheckFrequency = parseInt(settings["update check frequency"]) || 3600;
+    g_currentVersion = settings.ver;
+    g_updateCheckFrequency = parseInt(settings["update check frequency"]) || 3600;
     const checkFillingAuthority = settings["check filling authority"] === "yes";
 
     // Update UI with version information
     const versionInfoElement = document.getElementById("versionInfo");
     if (versionInfoElement) {
-      versionInfoElement.textContent = `ver: ${currentVersion}`;
+      versionInfoElement.textContent = `ver: ${g_currentVersion}`;
     }
 
     // Update the filling authority check status
-    isCheckingFillingAuthority = checkFillingAuthority;
-    console.log("isCheckingFillingAuthority is ", isCheckingFillingAuthority ? "true" : "false");
+    g_isCheckingFillingAuthority = checkFillingAuthority;
+    console.log("isCheckingFillingAuthority is ", g_isCheckingFillingAuthority ? "true" : "false");
 
     return {
       success: true,
-      version: currentVersion,
-      checkFrequency: updateCheckFrequency,
-      checkFillingAuthority: isCheckingFillingAuthority
+      version: g_currentVersion,
+      checkFrequency: g_updateCheckFrequency,
+      checkFillingAuthority: g_isCheckingFillingAuthority
     };
   } catch (error) {
     console.error("Failed to load or parse the settings file:", error);
     
     // Fallback to default values
-    currentVersion = "2025.4.19.1";
-    updateCheckFrequency = 3600;
-    isCheckingFillingAuthority = false;
+    g_currentVersion = "2025.4.19.1";
+    g_updateCheckFrequency = 3600;
+    g_isCheckingFillingAuthority = false;
 
     return {
       success: false,
       error: error.message,
-      version: currentVersion,
-      checkFrequency: updateCheckFrequency,
-      checkFillingAuthority: isCheckingFillingAuthority
+      version: g_currentVersion,
+      checkFrequency: g_updateCheckFrequency,
+      checkFillingAuthority: g_isCheckingFillingAuthority
     };
   }
+  // End of loadSettings
 };
 
 loadSettings();
 
 const validateScan = (field, scannedCode) => {
-    if (!configData || !productName) return;
+    if (!g_configData || !g_productName) return;
   
-    const productRow = configData.find((row) => row[0] === productName);
+    const productRow = g_configData.find((row) => row[0] === g_productName);
     if (!productRow) return;
   
-    const fieldIndex = headers.indexOf(field);
+    const fieldIndex = g_headers.indexOf(field);
     const correctCode = productRow[fieldIndex];
 
     const processedScannedCode = processScannedCode(scannedCode, fieldIndex);
   
     const isMatch = processedScannedCode === correctCode.trim();
     checkSubmitAvailability(isMatch);
+    // End of validateScan
 };
 
-
-// 提取 allFieldsValid 为独立函数
+// Extract allFieldsValid as a separate function
 const allFieldsValid = () => {
-  if (!productName || !configData) return false;
+  if (!g_productName || !g_configData) return false;
 
-  const productRow = configData.find((row) => row[0] === productName);
+  const productRow = g_configData.find((row) => row[0] === g_productName);
   if (!productRow) return false;
 
-  return headers.slice(1).every((field) => {
-    const fieldIndex = headers.indexOf(field);
+  return g_headers.slice(1).every((field) => {
+    const fieldIndex = g_headers.indexOf(field);
     if (isFieldDisabled(field)) return true;
 
-    const fieldValue = fields[field.toLowerCase()] || "";
+    const fieldValue = g_fields[field.toLowerCase()] || "";
     const correctCode = productRow[fieldIndex];
 
     const processedScannedCode = processScannedCode(fieldValue, fieldIndex);
     
     return processedScannedCode === correctCode;
   });
+  // End of allFieldsValid
 };
 
-
 const checkSubmitAvailability = (isMatch) => {
-  if (!productName || !configData || !isMatch) {
-    isSubmitEnabled = false;
+  if (!g_productName || !g_configData || !isMatch) {
+    g_isSubmitEnabled = false;
     submitButton.disabled = true;  
     return;
   }
 
-  const productRow = configData.find((row) => row[0] === productName);
+  const productRow = g_configData.find((row) => row[0] === g_productName);
   if (!productRow) {
-    isSubmitEnabled = false;
+    g_isSubmitEnabled = false;
     submitButton.disabled = true;
     return;
   }
 
-  isSubmitEnabled = allFieldsValid(); // 调用独立的 allFieldsValid 函数
-  submitButton.disabled = !isSubmitEnabled;
+  g_isSubmitEnabled = allFieldsValid(); // Call the separate allFieldsValid function
+  submitButton.disabled = !g_isSubmitEnabled;
+  // End of checkSubmitAvailability
 };
 
 const isFieldDisabled = (field) => {
-  if (!productName) return false;
-  if (!configData) return false;
-  const productRow = configData.find((row) => row[0] === productName);
-  const fieldIndex = headers.indexOf(field);
+  if (!g_productName) return false;
+  if (!g_configData) return false;
+  const productRow = g_configData.find((row) => row[0] === g_productName);
+  const fieldIndex = g_headers.indexOf(field);
   return !productRow || !productRow[fieldIndex];
+  // End of isFieldDisabled
 };
 
-// 针对两种特殊情况，对输入的信息进行处理
+// Process input for special cases
 const processScannedCode = (fieldValue, fieldOrIndex) => {
   let processedScannedCode = fieldValue.trim();
 
-  // 判断传入的是 fieldIndex（数字）还是 field（字符串）
+  // Check if fieldOrIndex is a number (fieldIndex) or string (field)
   if (
     (typeof fieldOrIndex === "number" && fieldOrIndex == 4) ||
     (typeof fieldOrIndex === "string" && fieldOrIndex == "carton label")
   ) {
-    // 检查 scannedCode 的前五位是否为 '01193'
+    // Check if scannedCode starts with '01193'
     if (processedScannedCode.startsWith('01193')) {
-      processedScannedCode = processedScannedCode.slice(2); // 去掉前两位 '01'
+      processedScannedCode = processedScannedCode.slice(2); // Remove first two characters '01'
       console.log("processedScannedCode =", processedScannedCode);
     }
   } else if (
     (typeof fieldOrIndex === "number" && fieldOrIndex == 5) ||
     (typeof fieldOrIndex === "string" && fieldOrIndex == "pallet label")
   ) {
-    // 检查是否包含 "---"
+    // Check if it contains "---"
     const [codePart, hCodePart] = processedScannedCode.split("---");
-    processedScannedCode = codePart.trim(); // 只保留 "---" 前面的部分
+    processedScannedCode = codePart.trim(); // Keep only the part before "---"
     console.log("processedScannedCode =", processedScannedCode);
 
-    // 将 "---" 后面的部分存储到全局变量 scannedHCode
+    // Store the part after "---" in global variable g_scannedHCode
     if (hCodePart !== undefined) {
-      window.scannedHCode = hCodePart.trim();
-      console.log("scannedHCode =", window.scannedHCode);
+      window.g_scannedHCode = hCodePart.trim();
+      console.log("g_scannedHCode =", window.g_scannedHCode);
     }
   }
 
   return processedScannedCode;
+  // End of processScannedCode
 };
 
-// 获取输入框背景颜色
+// Get input field background color
 const getInputBackgroundColor = (field) => {
-  if (!configData || !productName) return "#FFFFFF";
+  if (!g_configData || !g_productName) return "#FFFFFF";
 
-  const fieldValue = fields[field] || "";
-  const productRow = configData.find((row) => row[0] === productName);
-  const fieldIndex = headers.findIndex((header) => header.toLowerCase() === field.toLowerCase());
+  const fieldValue = g_fields[field] || "";
+  const productRow = g_configData.find((row) => row[0] === g_productName);
+  const fieldIndex = g_headers.findIndex((header) => header.toLowerCase() === field.toLowerCase());
 
   if (fieldIndex === -1 || !productRow || !productRow[fieldIndex]) return "#DDDDDD";
   if (fieldValue === "") return "#F0B9B9";
@@ -199,15 +202,16 @@ const getInputBackgroundColor = (field) => {
   const processedScannedCode = processScannedCode(fieldValue, fieldIndex);
 
   return processedScannedCode === correctCode ? "#d3f8d3" : "#F0B9B9";
+  // End of getInputBackgroundColor
 };
 
-// 获取字段图标
+// Get field icon
 const getFieldIcon = (field) => {
-  const fieldValue = fields[field] || "";
+  const fieldValue = g_fields[field] || "";
   if (fieldValue === "") return "";
 
-  const productRow = configData.find((row) => row[0] === productName);
-  const fieldIndex = headers.findIndex((header) => header.toLowerCase() === field.toLowerCase());
+  const productRow = g_configData.find((row) => row[0] === g_productName);
+  const fieldIndex = g_headers.findIndex((header) => header.toLowerCase() === field.toLowerCase());
   const correctCode = productRow ? productRow[fieldIndex] : "";
 
   const processedScannedCode = processScannedCode(fieldValue, fieldIndex);
@@ -215,19 +219,19 @@ const getFieldIcon = (field) => {
   return processedScannedCode === correctCode
     ? '<span style="color: green">✅</span>'
     : '<span style="color: red">❌</span>';
+  // End of getFieldIcon
 };
 
 const renderInputFields = () => {
-  
   const inputFieldsContainer = document.getElementById("inputFields");
-  inputFieldsContainer.innerHTML = headers.slice(1).map((header) => `
+  inputFieldsContainer.innerHTML = g_headers.slice(1).map((header) => `
     <div class="form-group">
       <label>${header}: </label>
       <div class="input-wrapper">
         <input
           type="text"
           id="${header.toLowerCase()}"
-          value="${fields[header.toLowerCase()] || ""}"
+          value="${g_fields[header.toLowerCase()] || ""}"
           oninput="handleInputChange('${header.toLowerCase()}', this.value, event)"
           onkeydown="handleInputChange('${header.toLowerCase()}', this.value, event)"
           ${isFieldDisabled(header) ? "disabled" : ""}
@@ -237,27 +241,29 @@ const renderInputFields = () => {
       </div>
     </div>
   `).join("");
+  // End of renderInputFields
 };
 
 const updateFieldAvailability = (selectedProductName) => {
-  const productRow = configData.find((row) => row[0] === selectedProductName);
+  const productRow = g_configData.find((row) => row[0] === selectedProductName);
   if (!productRow) return;
 
-  fields = {
-    topLabel: productRow[headers.indexOf("topLabel")] ? fields.topLabel : "",
-    sideLabel: productRow[headers.indexOf("sideLabel")] ? fields.sideLabel : "",
-    bottomLabel: productRow[headers.indexOf("bottomLabel")] ? fields.bottomLabel : "",
-    cartonLabel: productRow[headers.indexOf("cartonLabel")] ? fields.cartonLabel : "",
-    palletLabel: productRow[headers.indexOf("palletLabel")] ? fields.palletLabel : "",
-    waterMark: productRow[headers.indexOf("waterMark")] ? fields.waterMark : "",
+  g_fields = {
+    topLabel: productRow[g_headers.indexOf("topLabel")] ? g_fields.topLabel : "",
+    sideLabel: productRow[g_headers.indexOf("sideLabel")] ? g_fields.sideLabel : "",
+    bottomLabel: productRow[g_headers.indexOf("bottomLabel")] ? g_fields.bottomLabel : "",
+    cartonLabel: productRow[g_headers.indexOf("cartonLabel")] ? g_fields.cartonLabel : "",
+    palletLabel: productRow[g_headers.indexOf("palletLabel")] ? g_fields.palletLabel : "",
+    waterMark: productRow[g_headers.indexOf("waterMark")] ? g_fields.waterMark : "",
   };
 
-  shelfLifeDays = productRow[7] || 0;  // shelfLifeDays 为第 8 列
+  g_shelfLifeDays = productRow[7] || 0;  // shelfLifeDays is in the 8th column
+  // End of updateFieldAvailability
 };
 
 const resetForm = () => {
-  productName = "";
-  fields = {
+  g_productName = "";
+  g_fields = {
     topLabel: "",
     sideLabel: "",
     bottomLabel: "",
@@ -266,26 +272,27 @@ const resetForm = () => {
     waterMark: "",
   };
 
-  shelfLifeDays = 0; // 保质期天数
-  scannedHCode = ""
-  scannedBarcode = ""
+  g_shelfLifeDays = 0; // Shelf life in days
+  g_scannedHCode = "";
+  g_scannedBarcode = "";
 
-  isSubmitEnabled = false;
+  g_isSubmitEnabled = false;
   renderInputFields();  
-  submitButton.disabled = !isSubmitEnabled;
+  submitButton.disabled = !g_isSubmitEnabled;
   
   // Reset the Product Name dropdown to the default value (empty string or any default value)
   const productNameSelect = document.getElementById("productNameSelect");
   productNameSelect.value = "";  // Reset to default (empty or first option)
-  theAuthorizedProductName = ""
+  g_theAuthorizedProductName = "";
+  // End of resetForm
 };
 
-// 更新 showModalWithButtons 函数以支持 HTML 内容
+// Update showModalWithButtons to support HTML content
 const showModalWithButtons = (message, showConfirmCancel = true, imageUrl = "") => {
     const modalMessage = document.getElementById("modalMessage");
-    modalMessage.innerHTML = message; // 使用 innerHTML 以支持 HTML 内容
+    modalMessage.innerHTML = message; // Use innerHTML to support HTML content
 
-    // 设置图片
+    // Set image
     const modalImage = document.getElementById("modalImage");
     if (showConfirmCancel && imageUrl) {
         modalImage.src = imageUrl;
@@ -310,7 +317,7 @@ const showModalWithButtons = (message, showConfirmCancel = true, imageUrl = "") 
         modalImage.style.display = "none";
     }
 
-    // 设置按钮显示状态
+    // Set button display status
     const modalConfirmButton = document.getElementById("modalConfirmButton");
     const modalCancelButton = document.getElementById("modalCancelButton");
     const modalOkButton = document.getElementById("modalOkButton");
@@ -325,13 +332,13 @@ const showModalWithButtons = (message, showConfirmCancel = true, imageUrl = "") 
         modalOkButton.style.display = "inline-block";
     }
 
-    // 显示模态窗口
+    // Show modal
     const modal = document.getElementById("modal");
     modal.style.display = "flex";
+    // End of showModalWithButtons
 };
 
-
-// 全局 handleInputChange 函数
+// Global handleInputChange function
 const handleInputChange = (field, value, event) => {
   value = value.toUpperCase();
   value = value.trim();
@@ -346,19 +353,19 @@ const handleInputChange = (field, value, event) => {
   console.log("handleInputChange(); value=", value);
   
   processedScannedCode = processScannedCode(value, field);
-  fields[field] = processedScannedCode;
+  g_fields[field] = processedScannedCode;
   
   if (event.key === "Enter") {   
-    if (!productName && value.trim() !== "") {
+    if (!g_productName && value.trim() !== "") {
       // Find all products that match this barcode in the specified field
-      matchingProducts = configData.filter((row) => {
-        const fieldIndex = headers.indexOf(field);
+      g_matchingProducts = g_configData.filter((row) => {
+        const fieldIndex = g_headers.indexOf(field);
         return row[fieldIndex] === processedScannedCode;
       });
 
-      if (matchingProducts.length > 0) {
+      if (g_matchingProducts.length > 0) {
         // Start with the first matching product
-        currentMatchingIndex = 0;
+        g_currentMatchingIndex = 0;
         promptForProductConfirmation(field, processedScannedCode);
       } else {
         // No matching products found
@@ -370,21 +377,22 @@ const handleInputChange = (field, value, event) => {
     }
 
     renderInputFields();
-    currentField = field;
+    g_currentField = field;
   }
+  // End of handleInputChange
 };
 
 const promptForProductConfirmation = (field, scannedCode) => {
-    if (matchingProducts.length === 0) {
+    if (g_matchingProducts.length === 0) {
         showModalWithButtons("No matching product information found for this barcode.", false);
         return;
     }
 
-    // 存储扫描的条码
-    scannedBarcode = scannedCode;
+    // Store scanned barcode
+    g_scannedBarcode = scannedCode;
 
-    // 创建产品选择列表的 HTML，单选按钮和产品名称在同一行
-    const productListHtml = matchingProducts
+    // Create HTML for product selection list, radio buttons and product names on the same line
+    const productListHtml = g_matchingProducts
         .map((product, index) => `
             <div style="display: flex; align-items: center; margin: 8px 0;">
                 <input type="radio" name="productSelection" id="product_${index}" value="${index}" ${index === 0 ? 'checked' : ''} style="width: 16px; height: 16px; min-width: 16px; margin-right: 8px; vertical-align: middle;">
@@ -393,7 +401,7 @@ const promptForProductConfirmation = (field, scannedCode) => {
         `)
         .join('');
 
-    // 创建模态窗口内容
+    // Create modal content
     const modalContent = `
         <div style="text-align: left;">
             <p style="margin-bottom: 10px;">Please select the product for processing</p>
@@ -401,11 +409,12 @@ const promptForProductConfirmation = (field, scannedCode) => {
         </div>
     `;
 
-    // 显示模态窗口
+    // Show modal
     showModalWithButtons(modalContent, true);
+    // End of promptForProductConfirmation
 };
 
-// 处理产品选择的函数
+// Handle product selection
 const handleProductSelection = (field) => {
     const selectedRadio = document.querySelector('input[name="productSelection"]:checked');
     const modal = document.getElementById("modal");
@@ -416,45 +425,49 @@ const handleProductSelection = (field) => {
     }
 
     const selectedIndex = parseInt(selectedRadio.value);
-    possibleProduct = matchingProducts[selectedIndex][0];
-    productName = possibleProduct;
-    updateFieldAvailability(possibleProduct);
+    g_possibleProduct = g_matchingProducts[selectedIndex][0];
+    g_productName = g_possibleProduct;
+    updateFieldAvailability(g_possibleProduct);
 
-    if (currentField) {
-        fields[currentField] = scannedBarcode;
+    if (g_currentField) {
+        g_fields[g_currentField] = g_scannedBarcode;
     }
 
-    // 更新产品下拉框
+    // Update product dropdown
     const productSelect = document.getElementById("productNameSelect");
     if (productSelect) {
-        productSelect.value = productName;
+        productSelect.value = g_productName;
     }
 
-    // 渲染输入字段并更新提交按钮状态
+    // Render input fields and update submit button status
     renderInputFields();
-    isSubmitEnabled = allFieldsValid();
-    submitButton.disabled = !isSubmitEnabled;
+    g_isSubmitEnabled = allFieldsValid();
+    submitButton.disabled = !g_isSubmitEnabled;
 
-    // 关闭模态窗口并重置匹配状态
+    // Close modal and reset matching state
     modal.style.display = "none";
     resetMatchingState();
+    // End of handleProductSelection
 };
 
-// 更新 modalConfirmButton 的事件监听器
+// Update modalConfirmButton event listener
 modalConfirmButton.addEventListener("click", () => {
-    handleProductSelection(currentField);
+    handleProductSelection(g_currentField);
+    // End of modalConfirmButton event listener
 });
 
-// 更新 modalCancelButton 的事件监听器
+// Update modalCancelButton event listener
 modalCancelButton.addEventListener("click", () => {
     const modal = document.getElementById("modal");
     modal.style.display = "none";
     resetMatchingState();
+    // End of modalCancelButton event listener
 });
 
 document.getElementById('resetButton').addEventListener('click', function() {
-  // 重置表单逻辑
-  resetForm()
+  // Reset form logic
+  resetForm();
+  // End of resetButton event listener
 });
 
 const resetModal2Inputs = () => {
@@ -464,17 +477,19 @@ const resetModal2Inputs = () => {
   document.getElementById("hcode").value = "";
   document.getElementById("ubd").value = "";
   const modal2Message = document.getElementById("modal2Message");
-  if (modal2Message) modal2Message.style.display = "none"; // 同时隐藏提示信息
+  if (modal2Message) modal2Message.style.display = "none"; // Hide message as well
+  // End of resetModal2Inputs
 };
 
 const resetMatchingState = () => {
-  matchingProducts = [];
-  currentMatchingIndex = 0;
-  possibleProduct = "";
-  scannedBarcode = "";
+  g_matchingProducts = [];
+  g_currentMatchingIndex = 0;
+  g_possibleProduct = "";
+  g_scannedBarcode = "";
+  // End of resetMatchingState
 };
 
-// DOMContentLoaded 事件
+// DOMContentLoaded event
 document.addEventListener("DOMContentLoaded", () => {
   const productNameSelect = document.getElementById("productNameSelect");
   const submitButton = document.getElementById("submitButton");
@@ -483,16 +498,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalConfirmButton = document.getElementById("modalConfirmButton");
   const modalCancelButton = document.getElementById("modalCancelButton");
 
-  submitButton.disabled = true; // 显式禁用按钮
+  submitButton.disabled = true; // Explicitly disable button
 
-  // 为下拉框添加 change 事件监听器
+  // Add change event listener for dropdown
   productNameSelect.addEventListener("change", (event) => {
-    productName = event.target.value; // 更新 productName
-    updateFieldAvailability(productName); // 更新字段可用性
-    renderInputFields(); // 重新渲染输入字段
+    g_productName = event.target.value; // Update g_productName
+    updateFieldAvailability(g_productName); // Update field availability
+    renderInputFields(); // Re-render input fields
+    // End of productNameSelect change event listener
   });
 
-  // 加载 Excel 文件
+  // Load Excel file
   const loadExcelFile = async () => {
       try {
         const response = await fetch("/label_library.xlsx");
@@ -505,50 +521,41 @@ document.addEventListener("DOMContentLoaded", () => {
         const stringData = data.map((row) => row.map((cell) => String(cell).trim()));
 
         console.log('loadExcelFile');
-        configData = stringData;
+        g_configData = stringData;
 
-        headers = stringData[0];
-        productNames = stringData.slice(1).map((row) => row[0]);
-        productNameLabel = stringData[0][0];
+        g_headers = stringData[0];
+        g_productNames = stringData.slice(1).map((row) => row[0]);
+        g_productNameLabel = stringData[0][0];
 
-        // 更新 UI
-        document.getElementById("productNameLabel").textContent = productNameLabel;
+        // Update UI
+        document.getElementById("productNameLabel").textContent = g_productNameLabel;
         productNameSelect.innerHTML = `<option value="">Select Product</option>` +
-        productNames.map((name) => `<option value="${name}">${name}</option>`).join("");
+        g_productNames.map((name) => `<option value="${name}">${name}</option>`).join("");
 
         renderInputFields();
-
-        // // 读取第二个工作表（版本信息）
-        // const sheet2 = workbook.Sheets[workbook.SheetNames[1]];
-        // const settings = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
-        // const versionInfo = settings[1][0]; // 获取第二行第一列的值（A2）
-    
-        // // 显示版本号
-        // const versionInfoElement = document.getElementById("versionInfo");
-        // if (versionInfoElement) {
-        //   versionInfoElement.textContent = "ver:"+versionInfo;        
-        // }        
-        // isCheckingFillingAuthority = settings[1][1] ? true : false; // 获取第二行第一列的值（B2）
-        // console.log ("isCheckingFillingAuthority is ", isCheckingFillingAuthority?"true":"false")
       } catch (error) {
         console.error("Failed to load or parse the Excel file:", error);
       }
+      // End of loadExcelFile
   };
 
   const convertToUpperCase = (inputId) => {
       const input = document.getElementById(inputId);
       input.addEventListener('input', (e) => {
           e.target.value = e.target.value.toUpperCase();
+          // End of input event listener
       });
+      // End of convertToUpperCase
   };
 
   modalOkButton.addEventListener("click", () => {
-    // 关闭模态窗口
-    showModal = false;
+    // Close modal
+    g_showModal = false;
     modal.style.display = "none";
   
-    // 重置表单
+    // Reset form
     resetForm();
+    // End of modalOkButton event listener
   });
 
   /**
@@ -617,26 +624,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const matchingFiles = listResult.files.filter(file => {
           const matches = matchesPattern(file.fileName, standardizedLine) &&
                         dateStrings.some(dateStr => file.fileName.includes(dateStr));
-          // if (matches) {
-          //   console.debug('[9] Found matching file:', file.fileName);
-          // }
           return matches;
         });
     
-        // console.debug('[10] Total matching files found:', matchingFiles.length);
-    
         // Sort files by upload date (newest first)
         matchingFiles.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-        // if (matchingFiles.length > 0) {
-        //   console.debug('[11] Sorted files (newest first):', matchingFiles.map(f => f.fileName));
-        // }
     
         // Process matching files - we only need to check the most recent one
         if (matchingFiles.length > 0) {
             mostRecentFile = matchingFiles[0];
-            // console.debug('[12] Processing most recent file:', mostRecentFile.fileName);
-            
-            // console.debug('[14] Fetching file content...');
             
             // Synchronous XMLHttpRequest for file content
             const fileRequest = new XMLHttpRequest();
@@ -644,22 +640,16 @@ document.addEventListener("DOMContentLoaded", () => {
             fileRequest.send(null);
             
             if (fileRequest.status === 200) {
-              // console.debug('[15] File content fetched successfully');
               const fileResult = JSON.parse(fileRequest.responseText);
-              // console.log('fileResult=', fileResult);
               
               if (Array.isArray(fileResult)) {
-                // console.debug('[16] File contains', fileResult.length, 'records');
-                
                 // Find records for our specific production line
                 const lineRecords = fileResult.filter(record => 
                   record["production Line"] === standardizedLine
                 );
-                // console.debug('[17] Found', lineRecords.length, 'records for line', standardizedLine);
                 
                 if (lineRecords.length > 0) {
                   mostRecentRecord = lineRecords[0];
-                  // console.debug('[18] Most recent record:', mostRecentRecord);
                 } else {
                   console.debug('[19] No records found for this production line');
                 }
@@ -673,15 +663,13 @@ document.addEventListener("DOMContentLoaded", () => {
     
         if (!mostRecentRecord) {
           console.debug('[22] No matching records found in the most recent file');
-          theAuthorizedProductName = "n/a"
+          g_theAuthorizedProductName = "n/a";
           return false;
         }
 
         // ProductID = Pallet Label
         const currentPalletLabel = document.getElementById("pallet label").value.trim();
-        // console.debug('[23] Current pallet label:', currentPalletLabel);
-        // console.debug('[24] Record product ID:', mostRecentRecord["product ID"]);
-        theAuthorizedProductName = mostRecentRecord["product Name"]
+        g_theAuthorizedProductName = mostRecentRecord["product Name"];
         
         // Check if product IDs match
         if (mostRecentRecord["product ID"] !== currentPalletLabel) {
@@ -695,16 +683,18 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error('[ERROR] in checkFillingAuthority:', error);
       return true;
     }
+    // End of checkFillingAuthoritySync
   }
 
   
-  // 提交按钮点击事件
-  submitButton.addEventListener("click", () => { // 主页面中的submit按钮
-    if (!productName || !configData) return;    
+  // Submit button click event
+  submitButton.addEventListener("click", () => { // Submit button in the main page
+    if (!g_productName || !g_configData) return;    
     modal2.style.display = "flex";
+    // End of submitButton event listener
   });
 
-  // 显示 modal2 模态窗口
+  // Show modal2
   const modal2 = document.getElementById("modal2");
   const modal2CloseIcon = document.getElementById("modal2CloseIcon"); // New close icon
 
@@ -712,20 +702,22 @@ document.addEventListener("DOMContentLoaded", () => {
     modal2CloseIcon.addEventListener("click", () => {
     modal2.style.display = "none";
     resetModal2Inputs();
+    // End of modal2CloseIcon event listener
   });
 
   // Add uppercase conversion for all Modal2 inputs
   const modal2Inputs = ['lineNumber', 'palletNumber', 'cartonCount', 'hcode', 'ubd'];
   modal2Inputs.forEach(inputId => convertToUpperCase(inputId));
 
-  // click handler for modal2Message
+  // Click handler for modal2Message
   const modal2Message = document.getElementById("modal2Message");
   modal2Message.addEventListener("click", () => {
       modal2Message.textContent = "";
       modal2Message.style.display = "none"; // Optional: hide it after clearing
+      // End of modal2Message click event listener
   });
   
-  // modal2中的提交按钮点击事件
+  // Submit button in modal2 click event
   const modalSubmitButton = document.getElementById("modalSubmitButton");
   
   modalSubmitButton.addEventListener("click", async () => {
@@ -735,17 +727,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const hcode = document.getElementById("hcode").value;
     const ubd = document.getElementById("ubd").value;
 
-    // 获取 modal2 的消息区域
+    // Get modal2 message area
     const modal2Message = document.getElementById("modal2Message");
 
-    // 检查所有字段是否已填写
+    // Check if all fields are filled
     if (!lineNumber || !palletNumber || !cartonCount || !hcode || !ubd) {      
       modal2Message.textContent = "Please fill in all fields.";
       modal2Message.style.display = "block";
       return;
     }
 
-    // 验证 Line Number 是否有效
+    // Validate Line Number
     const validLineNumbers = ["1", "2", "3", "4", "5A", "5B", "6", "7", "8", "9", "11", "12", "13", "14", "15"];
     if (!validLineNumbers.includes(lineNumber)) {
       modal2Message.textContent = "Invalid Line Number. Please enter one of: 1,2,3,4,5A,5B,6,7,8,9,11,12,13,14,15";
@@ -753,21 +745,21 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     
-    if (scannedHCode !== hcode.toUpperCase()) {
+    if (g_scannedHCode !== hcode.toUpperCase()) {
       modal2Message.textContent = "Label hcode does not match the hcode on the pallet label. Please double check it!";
       modal2Message.style.display = "block";
       return;
     }
     
-    // 验证 HCODE 格式
-    const hcodeRegex = /^H\d{4}$/; // H 开头，后跟 4 位数字
+    // Validate HCODE format
+    const hcodeRegex = /^H\d{4}$/; // H followed by 4 digits
     if (!hcodeRegex.test(hcode)) {
       modal2Message.textContent = "Invalid HCODE format. Please enter in the format HDDMM (e.g., H1903).";
       modal2Message.style.display = "block";
       return;
     }
 
-    // 验证 UBD 格式
+    // Validate UBD format
     const ubdRegex = /^\d{2}[A-Z]{3}$/; // NNMMM format (e.g., 01MAY)
     if (!ubdRegex.test(ubd)) {
         modal2Message.textContent = "Invalid UBD format. Please enter in the format NNMMM (e.g., 01MAY).";
@@ -775,56 +767,54 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // 计算 HCODE 到 UBD 的天数
-    const hcodeDate = parseHCODE(hcode); // 解析 HCODE 为日期
-    const ubdDate = parseUBD(ubd); // 解析 UBD 为日期
-    const daysDifference = Math.floor((ubdDate - hcodeDate) / (1000 * 60 * 60 * 24)); // 计算天数差
+    // Calculate days between HCODE and UBD
+    const hcodeDate = parseHCODE(hcode); // Parse HCODE to date
+    const ubdDate = parseUBD(ubd); // Parse UBD to date
+    let daysDifference = Math.floor((ubdDate - hcodeDate) / (1000 * 60 * 60 * 24)); // Calculate difference in days
 
-    // 如果不是整数，转换为整数
+    // If not an integer, convert to integer
     if (!Number.isInteger(daysDifference)) {
       daysDifference = parseInt(daysDifference, 10);
       console.warn("daysDifference was not an integer, converted to:", daysDifference);
     }
-    if (!Number.isInteger(shelfLifeDays)) {
-      shelfLifeDays = parseInt(shelfLifeDays, 10);
-      console.warn("shelfLifeDays was not an integer, converted to:", shelfLifeDays);
+    if (!Number.isInteger(g_shelfLifeDays)) {
+      g_shelfLifeDays = parseInt(g_shelfLifeDays, 10);
+      console.warn("g_shelfLifeDays was not an integer, converted to:", g_shelfLifeDays);
     }
 
-    // 检查天数差是否等于保质期天数
-    if (daysDifference !== shelfLifeDays) {
-      // 显示提示信息
-      modal2Message.textContent = `The difference between HCODE and UBD is ${daysDifference} days, which does not match the shelf life of ${shelfLifeDays} days. Please confirm HCODE and UBD.`;
+    // Check if the difference matches shelf life
+    if (daysDifference !== g_shelfLifeDays) {
+      // Show warning message
+      modal2Message.textContent = `The difference between HCODE and UBD is ${daysDifference} days, which does not match the shelf life of ${g_shelfLifeDays} days. Please confirm HCODE and UBD.`;
       modal2Message.style.display = "block";
       return;
     } else {
-      // 如果匹配，隐藏提示信息
+      // If matched, hide warning message
       modal2Message.style.display = "none";
     }
 
-    //如果当前要提交的产品不是Filling授权生产的产品，则返回
-    console.log("submit button, isCheckingFillingAuthority =", isCheckingFillingAuthority ? "true" : "false")
-    if(isCheckingFillingAuthority){
-        console.log("going to call checkFillingAuthority")
-        if(checkFillingAuthoritySync(lineNumber,modal2Message)==false){
+    // If the product to be submitted is not authorized by Filling, return
+    console.log("submit button, isCheckingFillingAuthority =", g_isCheckingFillingAuthority ? "true" : "false");
+    if (g_isCheckingFillingAuthority) {
+        console.log("going to call checkFillingAuthority");
+        if (checkFillingAuthoritySync(lineNumber, modal2Message) === false) {
           // Show warning message      
           modal2Message.innerHTML = `
           <div style="color: red; text-align: left;">          
             <p>The product you are trying to submit is:</p>
-            <p><strong>${productName}</strong></p>
+            <p><strong>${g_productName}</strong></p>
             <p>The product authorized by the Filling department is:</p>
-            <p><strong>${theAuthorizedProductName}</strong></p>
+            <p><strong>${g_theAuthorizedProductName}</strong></p>
             <p> Please confirm with the Filling department</p>            
           </div>
         `;
         modal2Message.style.display = "block";
-        console.log("modal2Message.innerHTML=",modal2Message.innerHTML)
+        console.log("modal2Message.innerHTML=", modal2Message.innerHTML);
         return;
       }
     }
       
-    
-
-    // 如果验证通过，提交数据
+    // If validation passes, submit data
     const timeFormatter = new Intl.DateTimeFormat("en-AU", {
       timeZone: "Australia/Sydney",
       day: '2-digit',
@@ -839,13 +829,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const parts = timeFormatter.formatToParts(new Date());
     const formattedTimestamp = `${parts[0].value}-${parts[2].value}-${parts[4].value} ${parts[6].value}:${parts[8].value}:${parts[10].value}`;
 
-    const productRow = configData.find((row) => row[0] === productName);
+    const productRow = g_configData.find((row) => row[0] === g_productName);
     const submittedData = {
       timestamp: formattedTimestamp,
-      productName,
-      barcodes: headers.slice(1).map((header) => {
-        const value = fields[header.toLowerCase()] || "";
-        return `${value}` //`(${header})`; // 在值后添加备注，格式为 "值 (字段名)"
+      productName: g_productName,
+      barcodes: g_headers.slice(1).map((header) => {
+        const value = g_fields[header.toLowerCase()] || "";
+        return `${value}`; // Format as "value (field name)"
       }),
       lineNumber,
       palletNumber,
@@ -855,27 +845,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     try {
-      // const response =await fetch("/api/bolb-save", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(submittedData),
-      // });
-
-      // const response =await fetch("/api/index", {
-      //  method: "POST",
-      //  headers: { "Content-Type": "application/json" },
-      //  body: JSON.stringify(submittedData),
-      // });
-
-      // if (!response.ok) {
-      //  throw new Error(`HTTP error! status: ${response.status}`);
-      // }
-      // else{        
-      //  console.log("提交成功-信息存储成功, response", response);
-      // }
-
-
-      const response2 =await fetch("/api/blob-save", {
+      const response2 = await fetch("/api/blob-save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submittedData),
@@ -884,53 +854,56 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!response2.ok) {
         throw new Error(`HTTP error! status: ${response2.status}`);
       }
-      else{        
-        console.log("提交成功2");        
+      else {        
+        console.log("Submission successful");
       }
       
-      // 关闭 modal2
+      // Close modal2
       const modal2 = document.getElementById("modal2");
       modal2.style.display = "none";
 
-      // 提交成功后重置Modal2的文本框
+      // Reset Modal2 inputs after successful submission
       resetModal2Inputs(); 
 
-      // 重置表单
+      // Reset form
       resetForm();
 
-      // Show success message - NEW CODE
+      // Show success message
       showModalWithButtons("Data submitted successfully!", false);
       
     } catch (error) {
       console.error("Error submitting data:", error);
     }
+    // End of modalSubmitButton event listener
   });
 
-  // 解析 HCODE 为日期
+  // Parse HCODE to date
   function parseHCODE(hcode) {
-    const day = parseInt(hcode.slice(1, 3), 10); // 提取 DD
-    const month = parseInt(hcode.slice(3, 5), 10) - 1; // 提取 MM（月份从 0 开始）
+    const day = parseInt(hcode.slice(1, 3), 10); // Extract DD
+    const month = parseInt(hcode.slice(3, 5), 10) - 1; // Extract MM (months are 0-based)
     const currentYear = new Date().getFullYear();
     return new Date(currentYear, month, day);
+    // End of parseHCODE
   }
 
-  // 解析 UBD "DDMMM"
+  // Parse UBD "DDMMM"
   function parseUBD(ubd) {
         const day = parseInt(ubd.slice(0, 2), 10); // First 2 digits
         const monthStr = ubd.slice(2, 5); // Last 3 letters
         const month = new Date(Date.parse(`01 ${monthStr} 2000`)).getMonth();
         const currentYear = new Date().getFullYear();
         return new Date(currentYear, month, day);
-    }
+    // End of parseUBD
+  }
 
-  // 显示确认提示框
+  // Show confirmation modal
   function showConfirmationModal(message) {
     const modal = document.createElement("div");
     modal.style.position = "fixed";
     modal.style.top = "50%";
     modal.style.left = "50%";
     modal.style.transform = "translate(-50%, -50%)";
-    modal.style.backgroundColor = "#ffcccc"; // 浅红色背景
+    modal.style.backgroundColor = "#ffcccc"; // Light red background
     modal.style.padding = "20px";
     modal.style.borderRadius = "10px";
     modal.style.cartonShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
@@ -944,27 +917,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.body.appendChild(modal);
 
-    // 添加闪烁效果
+    // Add blinking effect
     let isRed = true;
     const interval = setInterval(() => {
       modal.style.backgroundColor = isRed ? "#ffcccc" : "#ff9999";
       isRed = !isRed;
     }, 500);
 
-    // 确认按钮点击事件
+    // Confirm button click event
     document.getElementById("confirmButton").addEventListener("click", () => {
       clearInterval(interval);
       document.body.removeChild(modal);
+      // End of confirmButton event listener
     });
 
-    // 取消按钮点击事件
+    // Cancel button click event
     document.getElementById("cancelButton").addEventListener("click", () => {
       clearInterval(interval);
       document.body.removeChild(modal);
+      // End of cancelButton event listener
     });
+    // End of showConfirmationModal
   }
 
-  // 初始化
+  // Initialize
   loadExcelFile();
   loadSettings();
+  // End of DOMContentLoaded event listener
 });
