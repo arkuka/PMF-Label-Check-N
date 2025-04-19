@@ -1,5 +1,8 @@
 import { put, get, list } from "@vercel/blob"
 
+// Cache to store the last received data
+let lastReceivedDataCache = null;
+
 // Generate formatted filename using the timestamp from the data
 const getFormattedFileName = (data) => {
   console.log("Formatting filename from data:", data)
@@ -97,6 +100,19 @@ export default async function handler(req, res) {
       // In Pages Router, req.body is already parsed if Content-Type is application/json
       const data = req.body
 
+      // Check if this data is identical to the last received data
+      if (lastReceivedDataCache && JSON.stringify(lastReceivedDataCache) === JSON.stringify(data)) {
+        console.log("Received duplicate data, skipping save operation");
+        return res.status(200).json({
+          success: true,
+          message: "Duplicate data received, no action taken",
+          skipped: true
+        });
+      }
+
+      // Cache the new data
+      lastReceivedDataCache = data;
+
       // Log the received data to verify we have it
       console.log("Received data:", JSON.stringify(data, null, 2))
 
@@ -137,7 +153,7 @@ export default async function handler(req, res) {
       if (!fileName) {
         return res.status(400).json({
           success: false,
-          message: "请提供文件名",
+          message: "Please provide a filename",
         });
       }
 
@@ -145,7 +161,7 @@ export default async function handler(req, res) {
       if (!blob) {
         return res.status(404).json({
           success: false,
-          message: `文件 ${fileName} 不存在`,
+          message: `File ${fileName} not found`,
         });
       }
 
@@ -158,10 +174,10 @@ export default async function handler(req, res) {
         fileName: fileName,
       });
     } catch (error) {
-      console.error("获取数据失败:", error);
+      console.error("Failed to retrieve data:", error);
       return res.status(500).json({
         success: false,
-        message: "服务器错误",
+        message: "Server error",
       });
     }
   } else if (req.method === "LIST") {
@@ -178,16 +194,16 @@ export default async function handler(req, res) {
         })),
       });
     } catch (error) {
-      console.error("列出文件失败:", error);
+      console.error("Failed to list files:", error);
       return res.status(500).json({
         success: false,
-        message: "服务器错误",
+        message: "Server error",
       });
     }
   }
 
   return res.status(405).json({
     success: false,
-    message: "方法不允许",
+    message: "Method not allowed",
   });
 }
