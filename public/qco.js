@@ -611,7 +611,8 @@ function checkFillingAuthoritySync(lineNumber) {
   
       if (!mostRecentRecord) {
         console.debug('[22] No matching records found in the most recent file');
-        return true;
+        theAuthorizedProductName = "n/a"
+        return false;
       }
 
       // ProductID = Pallet Label
