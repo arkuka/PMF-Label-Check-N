@@ -424,7 +424,7 @@ const handleProductSelection = (field) => {
     const modal = document.getElementById("modal");
 
     if (!selectedRadio) {
-        showModalWithButtons("Please select a product before confirming.", true);
+        showModalWithButtons("Please select a product before confirming.", false);
         return;
     }
 
@@ -980,7 +980,7 @@ document.addEventListener("DOMContentLoaded", () => {
           
           // Show the update notification
           if (g_showVersionUpdateNotification) {
-            showModalWithButtons("New version updated! Please redo the current check", true);
+            showModalWithButtons("New version updated! Please redo the current check", false);
             g_showVersionUpdateNotification = false;
           }
           
