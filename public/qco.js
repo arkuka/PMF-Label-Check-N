@@ -31,6 +31,7 @@ let g_currentVersion = null;
 let g_updateCheckFrequency = 60; // Default value in seconds
 let g_lastUpdateCheckTime = 0;
 let g_pendingUpdates = false;
+let g_showVersionUpdateNotification = false;
 
 // Global functions
 const loadSettings = async () => {
@@ -947,28 +948,51 @@ document.addEventListener("DOMContentLoaded", () => {
   loadExcelFile();
   loadSettings();
 
-  setInterval(() => {
-    loadSettings();
-    if(g_pendingUpdates){
-      showVersionUpdateNotification = false;
-      if(modal2.style.display!== "none"){
-        modal2.style.display = "none";
-        showVersionUpdateNotification = true;
-      }
-
-      if(modal.style.display!== "none"){
-        modal.style.display = "none";
-        showVersionUpdateNotification = true;
-      }
-
-      loadExcelFile()
-      resetForm();
-
-      modalMessage.innerHTML = `<p style="color: red;">New version updated! Please redo the current check.</p>`;
-      g_pendingUpdates = false;
+  setInterval(async () => {
+    try {
+      const settings = await loadSettings();
       
-    }    
-  }, g_updateCheckFrequency*1000);
+      // Only proceed if settings loaded successfully
+      if (settings.success) {
+        // Check if version changed
+        if (g_currentVersion !== null && g_currentVersion !== settings.version) {
+          console.log("Version changed from", g_currentVersion, "to", settings.version);
+          g_pendingUpdates = true;
+          g_showVersionUpdateNotification = true;
+        }
+        
+        // If there's a pending update
+        if (g_pendingUpdates) {
+          // Close any open modals
+          if (document.getElementById("modal2").style.display !== "none") {
+            document.getElementById("modal2").style.display = "none";
+            resetModal2Inputs();
+          }
+          
+          if (document.getElementById("modal").style.display !== "none") {
+            document.getElementById("modal").style.display = "none";
+          }
+          
+          // Reload the Excel file
+          await loadExcelFile();
+          resetForm();
+          
+          // Show the update notification
+          if (g_showVersionUpdateNotification) {
+            showModalWithButtons(
+              "<p style='color: red; font-weight: bold;'>New version updated! Please redo the current check.</p>", 
+              false
+            );
+            g_showVersionUpdateNotification = false;
+          }
+          
+          g_pendingUpdates = false;
+        }
+      }
+    } catch (error) {
+      console.error("Error during version check:", error);
+    }
+  }, g_updateCheckFrequency * 1000);
 
 
   // End of DOMContentLoaded event listener
