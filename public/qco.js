@@ -957,8 +957,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Check if version changed
         if (g_currentVersion !== null && g_currentVersion !== settings.version) {
           console.log("Version changed from", g_currentVersion, "to", settings.version);
-          g_pendingUpdates = true;
-          g_showVersionUpdateNotification = true;
+          g_pendingUpdates = true;          
         }
         
         // If there's a pending update
@@ -967,10 +966,12 @@ document.addEventListener("DOMContentLoaded", () => {
           if (document.getElementById("modal2").style.display !== "none") {
             document.getElementById("modal2").style.display = "none";
             resetModal2Inputs();
+            g_showVersionUpdateNotification = true;
           }
           
           if (document.getElementById("modal").style.display !== "none") {
             document.getElementById("modal").style.display = "none";
+            g_showVersionUpdateNotification = true;
           }
           
           // Reload the Excel file
