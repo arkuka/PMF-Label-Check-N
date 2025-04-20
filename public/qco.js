@@ -73,7 +73,7 @@ const loadSettings = async () => {
     // Fallback to default values
     g_currentVersion = "2025.0.0.1";
     g_updateCheckFrequency = 3600;
-    g_isCheckingFillingAuthority = false;
+    g_isCheckingFillingAuthority = true;
 
     return {
       success: false,
@@ -85,8 +85,6 @@ const loadSettings = async () => {
   }
   // End of loadSettings
 };
-
-loadSettings();
 
 const validateScan = (field, scannedCode) => {
     if (!g_configData || !g_productName) return;
