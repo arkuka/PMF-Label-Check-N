@@ -28,7 +28,7 @@ let g_theAuthorizedProductName = "";
 let g_lastReceivedDataCache = null;
 let g_lastSettings = null;
 let g_currentVersion = null;
-let g_updateCheckFrequency = 3600; // Default value in seconds
+let g_updateCheckFrequency = 60; // Default value in seconds
 let g_lastUpdateCheckTime = 0;
 let g_pendingUpdates = false;
 
@@ -45,6 +45,11 @@ const loadSettings = async () => {
     
     console.log('loadSettingsFile');
     console.log('Settings loaded:', settings);
+    
+    if(g_currentVersion !== null && g_currentVersion !== settings.ver) {
+      console.log("Version changed from", g_currentVersion, "to", settings.ver);  
+      g_pendingUpdates = true;
+    }
 
     // Extract the values from settings.json
     g_currentVersion = settings.ver;
@@ -941,5 +946,30 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize
   loadExcelFile();
   loadSettings();
+
+  setInterval(() => {
+    loadSettings();
+    if(g_pendingUpdates){
+      showVersionUpdateNotification = false;
+      if(modal2.style.display!== "none"){
+        modal2.style.display = "none";
+        showVersionUpdateNotification = true;
+      }
+
+      if(modal.style.display!== "none"){
+        modal.style.display = "none";
+        showVersionUpdateNotification = true;
+      }
+
+      loadExcelFile()
+      resetForm();
+
+      modalMessage.innerHTML = `<p style="color: red;">New version updated! Please redo the current check.</p>`;
+      g_pendingUpdates = false;
+      
+    }    
+  }, g_updateCheckFrequency*1000);
+
+
   // End of DOMContentLoaded event listener
 });
