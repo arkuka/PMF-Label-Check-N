@@ -979,10 +979,7 @@ document.addEventListener("DOMContentLoaded", () => {
           
           // Show the update notification
           if (g_showVersionUpdateNotification) {
-            showModalWithButtons(
-              "<p style='color: red; font-weight: bold;'>New version updated! Please redo the current check.</p>", 
-              false
-            );
+            showModalWithButtons("New version updated! Please redo the current check", true);
             g_showVersionUpdateNotification = false;
           }
           
