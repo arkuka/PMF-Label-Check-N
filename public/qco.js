@@ -71,7 +71,7 @@ const loadSettings = async () => {
     console.error("Failed to load or parse the settings file:", error);
     
     // Fallback to default values
-    g_currentVersion = "2025.4.19.1";
+    g_currentVersion = "2025.0.0.1";
     g_updateCheckFrequency = 3600;
     g_isCheckingFillingAuthority = false;
 
