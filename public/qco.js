@@ -976,6 +976,9 @@ document.addEventListener("DOMContentLoaded", () => {
           
           // Reload the Excel file
           await loadExcelFile();
+          if (g_productName!== "") {
+            g_showVersionUpdateNotification = true;
+          }
           resetForm();
           
           // Show the update notification
