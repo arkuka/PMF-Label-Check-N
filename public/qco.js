@@ -54,7 +54,7 @@ const loadSettings = async () => {
 
     // Extract the values from settings.json
     g_currentVersion = settings.ver;
-    g_updateCheckFrequency = parseInt(settings["update check frequency"]) || 3600;
+    g_updateCheckFrequency = parseInt(settings["update check frequency"]) || 60;
     const checkFillingAuthority = settings["check filling authority"] === "yes";
 
     // Update UI with version information
@@ -955,10 +955,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // Only proceed if settings loaded successfully
       if (settings.success) {
         // Check if version changed
-        if (g_currentVersion !== null && g_currentVersion !== settings.version) {
-          console.log("Version changed from", g_currentVersion, "to", settings.version);
-          g_pendingUpdates = true;          
-        }
+        // if (g_currentVersion !== null && g_currentVersion !== settings.version) {
+        //   console.log("Version changed from", g_currentVersion, "to", settings.version);
+        //   g_pendingUpdates = true;          
+        // }
         
         // If there's a pending update
         if (g_pendingUpdates) {

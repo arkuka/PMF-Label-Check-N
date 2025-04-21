@@ -6,7 +6,7 @@ const g_dateOptionsContainer = document.getElementById('dateOptions');
 let g_lastReceivedDataCache = null;
 let g_lastSettings = null;
 let g_currentVersion = null;
-let g_updateCheckFrequency = 3600; // Default value in seconds
+let g_updateCheckFrequency = 60; // Default value in seconds
 let g_lastUpdateCheckTime = 0;
 let g_pendingUpdates = false;
 
@@ -80,7 +80,7 @@ const loadSettings = async () => {
 
         // Extract the values from settings.json
         g_currentVersion = settings.ver;
-        g_updateCheckFrequency = parseInt(settings["update check frequency"]) || 3600;
+        g_updateCheckFrequency = parseInt(settings["update check frequency"]) || 60;
         const checkFillingAuthority = settings["check filling authority"] === "yes";
 
         // Update UI with version information
@@ -103,9 +103,9 @@ const loadSettings = async () => {
         console.error("Failed to load or parse the settings file:", error);
         
         // Fallback to default values
-        g_currentVersion = "2025.4.19.1";
+        g_currentVersion = "2025.0.0.1";
         g_updateCheckFrequency = 3600;
-        g_isCheckingFillingAuthority = false;
+        g_isCheckingFillingAuthority = true;
 
         return {
             success: false,
@@ -173,31 +173,31 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // Only proceed if settings loaded successfully
             if (settings.success) {
-            // Check if version changed
-            if (g_currentVersion !== null && g_currentVersion !== settings.version) {
-                console.log("Version changed from", g_currentVersion, "to", settings.version);
-                g_pendingUpdates = true;          
-            }
-            
-            // If there's a pending update
-            if (g_pendingUpdates) {
-                // Close any open modals
-                if (g_productNameSelect.value !== "" || g_productionLineSelect.value !== "") {
-                    g_showVersionUpdateNotification = true;
+                // Check if version changed
+                // if (g_currentVersion !== null && g_currentVersion !== settings.version) {
+                //     console.log("Version changed from", g_currentVersion, "to", settings.version);
+                //     g_pendingUpdates = true;          
+                // }
+                
+                // If there's a pending update
+                if (g_pendingUpdates) {
+                    // Close any open modals
+                    if (g_productNameSelect.value !== "" || g_productionLineSelect.value !== "") {
+                        g_showVersionUpdateNotification = true;
+                    }
+                    // Reload the Excel file
+                    await loadExcelFile();
+                    
+                    resetForm();
+                    
+                    // Show the update notification
+                    if (g_showVersionUpdateNotification) {
+                        showModalWithButtons("New version updated! <br> Please redo the current check", false);
+                        g_showVersionUpdateNotification = false;
+                    }
+                    
+                    g_pendingUpdates = false;
                 }
-                // Reload the Excel file
-                await loadExcelFile();
-                
-                resetForm();
-                
-                // Show the update notification
-                if (g_showVersionUpdateNotification) {
-                    showModalWithButtons("New version updated! <br> Please redo the current check", false);
-                    g_showVersionUpdateNotification = false;
-                }
-                
-                g_pendingUpdates = false;
-            }
             }
         } catch (error) {
             console.error("Error during version check:", error);
