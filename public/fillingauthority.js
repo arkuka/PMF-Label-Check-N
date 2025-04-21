@@ -191,8 +191,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     resetForm();
                     
                     // Show the update notification
-                    if (g_showVersionUpdateNotification) {
-                        showModalWithButtons("New version updated! <br> Please redo the current check", false);
+                    if (g_showVersionUpdateNotification) {                        
+                        showNoticeModal("New version updated! <br> Please redo the current check");
                         g_showVersionUpdateNotification = false;
                     }
                     
@@ -263,7 +263,7 @@ async function submitSelection() {
 
         if (!response.ok) throw new Error('Failed to save selection');
 
-        showSuccessModal();
+        showNoticeModal("Selection saved successfully!");
 
         resetForm();
 
@@ -282,14 +282,16 @@ function resetForm() {
 }
 
 // Modal functions
-function showSuccessModal() {
-    const modal = document.getElementById('successModal');
+function showNoticeModal(message) {
+    const modal = document.getElementById('noticeModal');
+    const modalMessage = document.getElementById("modalMessage");
+    modalMessage.innerHTML = message; // Use innerHTML to support HTML content
     modal.style.display = 'flex';
     // End of showSuccessModal
 }
 
 function closeModal() {
-    const modal = document.getElementById('successModal');
+    const modal = document.getElementById('noticeModal');
     modal.style.display = 'none';
     // End of closeModal
 }
@@ -307,7 +309,7 @@ document.querySelector('.modal-button').addEventListener('click', () => {
 
 // Close modal when clicking outside of it
 window.addEventListener('click', (event) => {
-    const modal = document.getElementById('successModal');
+    const modal = document.getElementById('noticeModal');
     if (event.target === modal) {
         closeModal();
     }
