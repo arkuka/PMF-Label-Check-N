@@ -1,14 +1,14 @@
-const productionLineSelect = document.getElementById('productionLineSelect');
-const productNameSelect = document.getElementById('productNameSelect');
-const submitButton = document.getElementById('submitButton');
-const dateOptionsContainer = document.getElementById('dateOptions');
+const g_productionLineSelect = document.getElementById('productionLineSelect');
+const g_productNameSelect = document.getElementById('productNameSelect');
+const g_submitButton = document.getElementById('submitButton');
+const g_dateOptionsContainer = document.getElementById('dateOptions');
 
-let lastReceivedDataCache = null;
-let lastSettings = null;
-let currentVersion = null;
-let updateCheckFrequency = 3600; // Default value in seconds
-let lastUpdateCheckTime = 0;
-let pendingUpdates = false;
+let g_lastReceivedDataCache = null;
+let g_lastSettings = null;
+let g_currentVersion = null;
+let g_updateCheckFrequency = 3600; // Default value in seconds
+let g_lastUpdateCheckTime = 0;
+let g_pendingUpdates = false;
 
 // Function to format date as YYYY-MM-DD (Weekday)
 function formatDateWithWeekday(date) {
@@ -18,6 +18,7 @@ function formatDateWithWeekday(date) {
     const day = String(date.getDate()).padStart(2, '0');
     const weekday = days[date.getDay()];
     return `${day}-${month}-${year} (${weekday})`;
+    // End of formatDateWithWeekday
 }
 
 // Set up date radio buttons
@@ -27,7 +28,7 @@ function setupDateSelection() {
     yesterday.setDate(yesterday.getDate() - 1);
     
     // Clear any existing options
-    dateOptionsContainer.innerHTML = '';
+    g_dateOptionsContainer.innerHTML = '';
     
     // Add yesterday option
     const yesterdayOption = document.createElement('div');
@@ -36,7 +37,7 @@ function setupDateSelection() {
         <input type="radio" name="productionDate" value="${formatDate(yesterday)}" id="yesterdayDate">
         <label for="yesterdayDate">${formatDateWithWeekday(yesterday)}</label>
     `;
-    dateOptionsContainer.appendChild(yesterdayOption);
+    g_dateOptionsContainer.appendChild(yesterdayOption);
     
     // Add today option
     const todayOption = document.createElement('div');
@@ -45,7 +46,7 @@ function setupDateSelection() {
         <input type="radio" name="productionDate" value="${formatDate(today)}" id="todayDate" checked>
         <label for="todayDate">${formatDateWithWeekday(today)}</label>
     `;
-    dateOptionsContainer.appendChild(todayOption);
+    g_dateOptionsContainer.appendChild(todayOption);
     
     // Helper function to format date for value attribute (without weekday)
     function formatDate(date) {
@@ -53,60 +54,68 @@ function setupDateSelection() {
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${day}-${month}-${year}`;
+        // End of formatDate
     }
+    // End of setupDateSelection
 }
 
-// 全局函数
+// Load settings
 const loadSettings = async () => {
     try {
-    const response = await fetch("/settings.json");
-    
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const settings = await response.json();
-    
-    console.log('loadSettingsFile');
-    console.log('Settings loaded:', settings);
+        const response = await fetch("/settings.json");
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const settings = await response.json();
+        
+        console.log('loadSettingsFile');
+        console.log('Settings loaded:', settings);
 
-    // Extract the values from settings.json
-    currentVersion = settings.ver;
-    updateCheckFrequency = parseInt(settings["update check frequency"]) || 3600;
-    const checkFillingAuthority = settings["check filling authority"] === "yes";
+        if(g_currentVersion !== null && g_currentVersion !== settings.ver) {
+            console.log("Version changed from", g_currentVersion, "to", settings.ver);  
+            g_pendingUpdates = true;
+        }
 
-    // Update UI with version information
-    const versionInfoElement = document.getElementById("versionInfo");
-    if (versionInfoElement) {
-        versionInfoElement.textContent = `ver: ${currentVersion}`;
-    }
+        // Extract the values from settings.json
+        g_currentVersion = settings.ver;
+        g_updateCheckFrequency = parseInt(settings["update check frequency"]) || 3600;
+        const checkFillingAuthority = settings["check filling authority"] === "yes";
 
-    // Update the filling authority check status
-    isCheckingFillingAuthority = checkFillingAuthority;
-    console.log("isCheckingFillingAuthority is ", isCheckingFillingAuthority ? "true" : "false");
+        // Update UI with version information
+        const versionInfoElement = document.getElementById("versionInfo");
+        if (versionInfoElement) {
+            versionInfoElement.textContent = `ver: ${g_currentVersion}`;
+        }
 
-    return {
-        success: true,
-        version: currentVersion,
-        checkFrequency: updateCheckFrequency,
-        checkFillingAuthority: isCheckingFillingAuthority
-    };
+        // Update the filling authority check status
+        g_isCheckingFillingAuthority = checkFillingAuthority;
+        console.log("isCheckingFillingAuthority is ", g_isCheckingFillingAuthority ? "true" : "false");
+
+        return {
+            success: true,
+            version: g_currentVersion,
+            checkFrequency: g_updateCheckFrequency,
+            checkFillingAuthority: g_isCheckingFillingAuthority
+        };
     } catch (error) {
-    console.error("Failed to load or parse the settings file:", error);
-    
-    // Fallback to default values
-    currentVersion = "2025.4.19.1";
-    updateCheckFrequency = 3600;
-    isCheckingFillingAuthority = false;
+        console.error("Failed to load or parse the settings file:", error);
+        
+        // Fallback to default values
+        g_currentVersion = "2025.4.19.1";
+        g_updateCheckFrequency = 3600;
+        g_isCheckingFillingAuthority = false;
 
-    return {
-        success: false,
-        error: error.message,
-        version: currentVersion,
-        checkFrequency: updateCheckFrequency,
-        checkFillingAuthority: isCheckingFillingAuthority
-    };
+        return {
+            success: false,
+            error: error.message,
+            version: g_currentVersion,
+            checkFrequency: g_updateCheckFrequency,
+            checkFillingAuthority: g_isCheckingFillingAuthority
+        };
     }
+    // End of loadSettings
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -121,26 +130,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
     
-            // console.log(data); // Log the data to see its structure
-    
             const products = data.slice(1).map(row => ({
                 name: row[0],
                 id: row[5] // pallet label as ID
             }));
     
-            productNameSelect.innerHTML = '<option value="">Select Product</option>' +
+            g_productNameSelect.innerHTML = '<option value="">Select Product</option>' +
                 products.map(product => `<option value="${product.name}" data-id="${product.id}">${product.name}</option>`).join('');
-
-            // // 读取第二个工作表（版本信息）
-            // const sheet2 = workbook.Sheets[workbook.SheetNames[1]];
-            // const versionData = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
-            // const versionInfo = versionData[1][0]; // 获取第二行第一列的值（A2）
-        
-            // // 显示版本号
-            // const versionInfoElement = document.getElementById("versionInfo");
-            // if (versionInfoElement) {
-            // versionInfoElement.textContent = "ver:"+versionInfo;        
-            // }
 
         } catch (error) {
             console.error("Failed to load or parse the Excel file:", error);
@@ -154,45 +150,84 @@ document.addEventListener("DOMContentLoaded", () => {
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
     
-            // console.log(data); // Log the data to see its structure
-    
             const production_lines = data.slice(1).map(row => ({
                 name: row[0],
                 id: row[1]
             }));
     
-            productionLineSelect.innerHTML = '<option value="">Select Production Line</option>' +
+            g_productionLineSelect.innerHTML = '<option value="">Select Production Line</option>' +
                 production_lines.map(production_line => `<option value="${production_line.name}" data-id="${production_line.id}">${production_line.name}</option>`).join('');
 
         } catch (error) {
             console.error("Failed to load or parse the Excel file:", error);
         }
+        // End of loadExcelFile
     }
 
     loadExcelFile();
     loadSettings();
+
+    setInterval(async () => {
+        try {
+            const settings = await loadSettings();
+            
+            // Only proceed if settings loaded successfully
+            if (settings.success) {
+            // Check if version changed
+            if (g_currentVersion !== null && g_currentVersion !== settings.version) {
+                console.log("Version changed from", g_currentVersion, "to", settings.version);
+                g_pendingUpdates = true;          
+            }
+            
+            // If there's a pending update
+            if (g_pendingUpdates) {
+                // Close any open modals
+                if (g_productNameSelect.value !== "" || g_productionLineSelect.value !== "") {
+                    g_showVersionUpdateNotification = true;
+                }
+                // Reload the Excel file
+                await loadExcelFile();
+                
+                resetForm();
+                
+                // Show the update notification
+                if (g_showVersionUpdateNotification) {
+                    showModalWithButtons("New version updated! <br> Please redo the current check", false);
+                    g_showVersionUpdateNotification = false;
+                }
+                
+                g_pendingUpdates = false;
+            }
+            }
+        } catch (error) {
+            console.error("Error during version check:", error);
+        }
+    }, g_updateCheckFrequency * 1000);
+
+    // End of DOMContentLoaded event listener
 });
 
-// 检查提交按钮状态
+// Update submit button status
 function updateSubmitButton() {
-    const lineSelected = productionLineSelect.value !== '';
-    const productSelected = productNameSelect.value !== '';
+    const lineSelected = g_productionLineSelect.value !== '';
+    const productSelected = g_productNameSelect.value !== '';
     const dateSelected = document.querySelector('input[name="productionDate"]:checked') !== null;
     
-    submitButton.disabled = !(lineSelected && productSelected && dateSelected);
+    g_submitButton.disabled = !(lineSelected && productSelected && dateSelected);
     
     // Debugging logs (you can remove these after testing)
     // console.log('Line selected:', lineSelected);
     // console.log('Product selected:', productSelected);
     // console.log('Date selected:', dateSelected);
     // console.log('Button should be disabled:', !(lineSelected && productSelected && dateSelected));
+    // End of updateSubmitButton
 }
 
-// 提交数据
+// Submit data
 async function submitSelection() {
-    const line = productionLineSelect.value;
-    const productName = productNameSelect.value;
-    const productId = productNameSelect.selectedOptions[0].dataset.id;
+    const line = g_productionLineSelect.value;
+    const productName = g_productNameSelect.value;
+    const productId = g_productNameSelect.selectedOptions[0].dataset.id;
     const productionDate = document.querySelector('input[name="productionDate"]:checked').value;
 
     const timeFormatter = new Intl.DateTimeFormat("en-AU", {
@@ -204,10 +239,10 @@ async function submitSelection() {
         minute: '2-digit',
         second: '2-digit',
         hour12: false
-      });
+    });
       
-      const parts = timeFormatter.formatToParts(new Date());
-      const formattedTimestamp = `${parts[0].value}-${parts[2].value}-${parts[4].value} ${parts[6].value}:${parts[8].value}:${parts[10].value}`;
+    const parts = timeFormatter.formatToParts(new Date());
+    const formattedTimestamp = `${parts[0].value}-${parts[2].value}-${parts[4].value} ${parts[6].value}:${parts[8].value}:${parts[10].value}`;
 
     const data = {
         timestamp: formattedTimestamp,
@@ -230,30 +265,45 @@ async function submitSelection() {
 
         showSuccessModal();
 
-        productionLineSelect.value = '';
-        productNameSelect.value = '';
-        submitButton.disabled = true;
+        resetForm();
 
     } catch (error) {
         console.error('Error saving selection:', error);
         alert('Failed to save selection. Please try again.');
     }
+    // End of submitSelection
+}
+
+function resetForm() {
+    g_productionLineSelect.value = '';
+    g_productNameSelect.value = '';
+    g_submitButton.disabled = true;    
+    // End of resetForm
 }
 
 // Modal functions
 function showSuccessModal() {
     const modal = document.getElementById('successModal');
     modal.style.display = 'flex';
+    // End of showSuccessModal
 }
 
 function closeModal() {
     const modal = document.getElementById('successModal');
     modal.style.display = 'none';
+    // End of closeModal
 }
 
 // Event listeners for modal
-document.querySelector('.close-modal').addEventListener('click', closeModal);
-document.querySelector('.modal-button').addEventListener('click', closeModal);
+document.querySelector('.close-modal').addEventListener('click', () => {
+    closeModal();
+    // End of close-modal event listener
+});
+
+document.querySelector('.modal-button').addEventListener('click', () => {
+    closeModal();
+    // End of modal-button event listener
+});
 
 // Close modal when clicking outside of it
 window.addEventListener('click', (event) => {
@@ -261,14 +311,28 @@ window.addEventListener('click', (event) => {
     if (event.target === modal) {
         closeModal();
     }
+    // End of window click event listener
 });
 
-// 事件监听
-productionLineSelect.addEventListener('change', updateSubmitButton);
-productNameSelect.addEventListener('change', updateSubmitButton);
+// Event listeners
+g_productionLineSelect.addEventListener('change', () => {
+    updateSubmitButton();
+    // End of productionLineSelect change event listener
+});
+
+g_productNameSelect.addEventListener('change', () => {
+    updateSubmitButton();
+    // End of productNameSelect change event listener
+});
+
 document.addEventListener('change', function(e) {
     if (e.target.name === 'productionDate') {
         updateSubmitButton();
     }
+    // End of document change event listener
 });
-submitButton.addEventListener('click', submitSelection);
+
+g_submitButton.addEventListener('click', () => {
+    submitSelection();
+    // End of submitButton click event listener
+});
