@@ -192,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     
                     // Show the update notification
                     if (g_showVersionUpdateNotification) {                        
-                        showNoticeModal("New version updated <br> Please redo the Authority.");
+                        showNoticeModal("New version updated <br> Please redo the Authority");
                         g_showVersionUpdateNotification = false;
                     }
                     
