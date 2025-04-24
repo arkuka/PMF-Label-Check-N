@@ -33,7 +33,102 @@ let g_lastUpdateCheckTime = 0;
 let g_pendingUpdates = false;
 let g_showVersionUpdateNotification = false;
 
-// Global functions
+// slow down the version checking frequency when page is inactive
+let g_lastUserActivityTime = Date.now();
+let g_inactiveCheckInterval = 3600; // 1小时（秒）
+let g_isUserActive = true;
+let g_versionCheckIntervalId = null;
+
+// Add user activity monitoring function
+const monitorUserActivity = () => {
+  // Listen for all possible user activity events
+  const activityEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+  
+  const handleActivity = () => {
+    g_lastUserActivityTime = Date.now();
+    
+    // If previously inactive, restore active state and normal check frequency
+    if (!g_isUserActive) {
+      g_isUserActive = true;
+      console.log('User became active, restoring normal check frequency');
+      setupVersionCheckInterval();
+    }
+  };
+  
+  // Add event listeners
+  activityEvents.forEach(event => {
+    document.addEventListener(event, handleActivity, { passive: true });
+  });
+};
+
+// Modified version check interval setup function
+const setupVersionCheckInterval = () => {
+  // Clear existing interval
+  if (g_versionCheckIntervalId) {
+    clearInterval(g_versionCheckIntervalId);
+  }
+  
+  // Determine check interval based on user activity state
+  const checkInterval = g_isUserActive 
+    ? g_updateCheckFrequency * 1000 
+    : g_inactiveCheckInterval * 1000;
+  
+  console.log(`Setting version check interval to ${checkInterval/1000} seconds`);
+  
+  // Set up new interval
+  g_versionCheckIntervalId = setInterval(async () => {
+    try {
+      // Check for user inactivity (more than 30 minutes)
+      const inactiveThreshold = 30 * 60 * 1000; // 30 minutes (in milliseconds)
+      const timeSinceLastActivity = Date.now() - g_lastUserActivityTime;
+      
+      if (timeSinceLastActivity > inactiveThreshold && g_isUserActive) {
+        console.log('User inactive for 30+ minutes, reducing check frequency');
+        g_isUserActive = false;
+        setupVersionCheckInterval(); // Reset to longer interval
+        return;
+      }
+      
+      const settings = await loadSettings();
+      
+      // Only process if settings loaded successfully
+      if (settings.success) {
+        // If there are pending updates
+        if (g_pendingUpdates) {
+          // Close any open modals
+          if (document.getElementById("modal2").style.display !== "none") {
+            document.getElementById("modal2").style.display = "none";
+            resetModal2Inputs();
+            g_showVersionUpdateNotification = true;
+          }
+          
+          if (document.getElementById("modal").style.display !== "none") {
+            document.getElementById("modal").style.display = "none";
+            g_showVersionUpdateNotification = true;
+          }
+          
+          // Reload Excel file
+          await loadExcelFile();
+          if (g_productName !== "") {
+            g_showVersionUpdateNotification = true;
+          }
+          resetForm();
+          
+          // Show update notification
+          if (g_showVersionUpdateNotification) {
+            showModalWithButtons("New version updated <br> Please redo the current check", false);
+            g_showVersionUpdateNotification = false;
+          }
+          
+          g_pendingUpdates = false;
+        }
+      }
+    } catch (error) {
+      console.error("Error during version check:", error);
+    }
+  }, checkInterval);
+};
+
 const loadSettings = async () => {
   try {
     const response = await fetch("/settings.json");
@@ -948,53 +1043,10 @@ document.addEventListener("DOMContentLoaded", () => {
   loadExcelFile();
   loadSettings();
 
-  setInterval(async () => {
-    try {
-      const settings = await loadSettings();
-      
-      // Only proceed if settings loaded successfully
-      if (settings.success) {
-        // Check if version changed
-        // if (g_currentVersion !== null && g_currentVersion !== settings.version) {
-        //   console.log("Version changed from", g_currentVersion, "to", settings.version);
-        //   g_pendingUpdates = true;          
-        // }
-        
-        // If there's a pending update
-        if (g_pendingUpdates) {
-          // Close any open modals
-          if (document.getElementById("modal2").style.display !== "none") {
-            document.getElementById("modal2").style.display = "none";
-            resetModal2Inputs();
-            g_showVersionUpdateNotification = true;
-          }
-          
-          if (document.getElementById("modal").style.display !== "none") {
-            document.getElementById("modal").style.display = "none";
-            g_showVersionUpdateNotification = true;
-          }
-          
-          // Reload the Excel file
-          await loadExcelFile();
-          if (g_productName!== "") {
-            g_showVersionUpdateNotification = true;
-          }
-          resetForm();
-          
-          // Show the update notification
-          if (g_showVersionUpdateNotification) {
-            showModalWithButtons("New version updated <br> Please redo the current check", false);
-            g_showVersionUpdateNotification = false;
-          }
-          
-          g_pendingUpdates = false;
-        }
-      }
-    } catch (error) {
-      console.error("Error during version check:", error);
-    }
-  }, g_updateCheckFrequency * 1000);
+  monitorUserActivity();
 
+  // Set initial version check interval
+  setupVersionCheckInterval();
 
   // End of DOMContentLoaded event listener
 });
