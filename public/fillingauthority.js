@@ -10,6 +10,12 @@ let g_updateCheckFrequency = 60; // Default value in seconds
 let g_lastUpdateCheckTime = 0;
 let g_pendingUpdates = false;
 
+// Track user activity state
+let g_lastUserActivityTime = Date.now();
+let g_inactiveCheckInterval = 3600; // 1 hour (in seconds)
+let g_isUserActive = true;
+let g_versionCheckIntervalId = null;
+
 // Function to format date as YYYY-MM-DD (Weekday)
 function formatDateWithWeekday(date) {
     const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -18,7 +24,6 @@ function formatDateWithWeekday(date) {
     const day = String(date.getDate()).padStart(2, '0');
     const weekday = days[date.getDay()];
     return `${day}-${month}-${year} (${weekday})`;
-    // End of formatDateWithWeekday
 }
 
 // Set up date radio buttons
@@ -54,12 +59,96 @@ function setupDateSelection() {
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${day}-${month}-${year}`;
-        // End of formatDate
     }
-    // End of setupDateSelection
 }
 
-// Load settings
+// Monitor user activity to adjust version check frequency
+function monitorUserActivity() {
+    // Listen for all possible user activity events
+    const activityEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+    
+    const handleActivity = () => {
+        g_lastUserActivityTime = Date.now();
+        
+        // If previously inactive, restore active state and normal check frequency
+        if (!g_isUserActive) {
+            g_isUserActive = true;
+            console.log('User became active, restoring normal check frequency');
+            setupVersionCheckInterval();
+        }
+    };
+    
+    // Add event listeners
+    activityEvents.forEach(event => {
+        document.addEventListener(event, handleActivity, { passive: true });
+    });
+}
+
+// Set up version check interval based on user activity state
+function setupVersionCheckInterval() {
+    // Clear existing interval
+    if (g_versionCheckIntervalId) {
+        clearInterval(g_versionCheckIntervalId);
+    }
+    
+    // Determine check interval based on user activity state
+    const checkInterval = g_isUserActive 
+        ? g_updateCheckFrequency * 1000 
+        : g_inactiveCheckInterval * 1000;
+    
+    console.log(`Setting version check interval to ${checkInterval/1000} seconds`);
+    
+    // Set up new interval
+    g_versionCheckIntervalId = setInterval(async () => {
+        try {
+            // Check for user inactivity (more than 30 minutes)
+            const inactiveThreshold = 30 * 60 * 1000; // 30 minutes (in milliseconds)
+            const timeSinceLastActivity = Date.now() - g_lastUserActivityTime;
+            
+            if (timeSinceLastActivity > inactiveThreshold && g_isUserActive) {
+                console.log('User inactive for 30+ minutes, reducing check frequency');
+                g_isUserActive = false;
+                setupVersionCheckInterval(); // Reset to longer interval
+                return;
+            }
+            
+            await performVersionCheck();
+        } catch (error) {
+            console.error("Error during version check:", error);
+        }
+    }, checkInterval);
+}
+
+// Perform the actual version check logic
+async function performVersionCheck() {
+    const settings = await loadSettings();
+    
+    // Only proceed if settings loaded successfully
+    if (settings.success) {
+        // If there's a pending update
+        if (g_pendingUpdates) {
+            // Close any open modals
+            if (g_productNameSelect.value !== "" || g_productionLineSelect.value !== "") {
+                g_showVersionUpdateNotification = true;
+            }
+            
+            // Reload the Excel file
+            await loadExcelFile();
+            
+            resetForm();
+            
+            // Show the update notification
+            if (g_showVersionUpdateNotification) {                        
+                showNoticeModal("New version updated <br> Please redo the Authority");
+                g_showVersionUpdateNotification = false;
+            }
+            
+            g_pendingUpdates = false;
+        }
+    }
+}
+
+// Load settings from server
 const loadSettings = async () => {
     try {
         const response = await fetch("/settings.json");
@@ -115,115 +204,61 @@ const loadSettings = async () => {
             checkFillingAuthority: g_isCheckingFillingAuthority
         };
     }
-    // End of loadSettings
 };
 
-document.addEventListener("DOMContentLoaded", () => {
-    setupDateSelection();    
+// Load Excel data from server
+const loadExcelFile = async () => {
+    try {
+        const response = await fetch("/label_library.xlsx");
+        const arrayBuffer = await response.arrayBuffer();
 
-    const loadExcelFile = async () => {
-        try {
-            const response = await fetch("/label_library.xlsx");
-            const arrayBuffer = await response.arrayBuffer();
-    
-            const workbook = XLSX.read(arrayBuffer, { type: "array" });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    
-            const products = data.slice(1).map(row => ({
-                name: row[0],
-                id: row[5] // pallet label as ID
-            }));
-    
-            g_productNameSelect.innerHTML = '<option value="">Select Product</option>' +
-                products.map(product => `<option value="${product.name}" data-id="${product.id}">${product.name}</option>`).join('');
+        const workbook = XLSX.read(arrayBuffer, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-        } catch (error) {
-            console.error("Failed to load or parse the Excel file:", error);
-        }
+        const products = data.slice(1).map(row => ({
+            name: row[0],
+            id: row[5] // pallet label as ID
+        }));
 
-        try {
-            const response = await fetch("/production_lines.xlsx");
-            const arrayBuffer = await response.arrayBuffer();
-    
-            const workbook = XLSX.read(arrayBuffer, { type: "array" });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    
-            const production_lines = data.slice(1).map(row => ({
-                name: row[0],
-                id: row[1]
-            }));
-    
-            g_productionLineSelect.innerHTML = '<option value="">Select Production Line</option>' +
-                production_lines.map(production_line => `<option value="${production_line.name}" data-id="${production_line.id}">${production_line.name}</option>`).join('');
+        g_productNameSelect.innerHTML = '<option value="">Select Product</option>' +
+            products.map(product => `<option value="${product.name}" data-id="${product.id}">${product.name}</option>`).join('');
 
-        } catch (error) {
-            console.error("Failed to load or parse the Excel file:", error);
-        }
-        // End of loadExcelFile
+    } catch (error) {
+        console.error("Failed to load or parse the Excel file:", error);
     }
 
-    loadExcelFile();
-    loadSettings();
+    try {
+        const response = await fetch("/production_lines.xlsx");
+        const arrayBuffer = await response.arrayBuffer();
 
-    setInterval(async () => {
-        try {
-            const settings = await loadSettings();
-            
-            // Only proceed if settings loaded successfully
-            if (settings.success) {
-                // Check if version changed
-                // if (g_currentVersion !== null && g_currentVersion !== settings.version) {
-                //     console.log("Version changed from", g_currentVersion, "to", settings.version);
-                //     g_pendingUpdates = true;          
-                // }
-                
-                // If there's a pending update
-                if (g_pendingUpdates) {
-                    // Close any open modals
-                    if (g_productNameSelect.value !== "" || g_productionLineSelect.value !== "") {
-                        g_showVersionUpdateNotification = true;
-                    }
-                    // Reload the Excel file
-                    await loadExcelFile();
-                    
-                    resetForm();
-                    
-                    // Show the update notification
-                    if (g_showVersionUpdateNotification) {                        
-                        showNoticeModal("New version updated <br> Please redo the Authority");
-                        g_showVersionUpdateNotification = false;
-                    }
-                    
-                    g_pendingUpdates = false;
-                }
-            }
-        } catch (error) {
-            console.error("Error during version check:", error);
-        }
-    }, g_updateCheckFrequency * 1000);
+        const workbook = XLSX.read(arrayBuffer, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    // End of DOMContentLoaded event listener
-});
+        const production_lines = data.slice(1).map(row => ({
+            name: row[0],
+            id: row[1]
+        }));
 
-// Update submit button status
+        g_productionLineSelect.innerHTML = '<option value="">Select Production Line</option>' +
+            production_lines.map(production_line => `<option value="${production_line.name}" data-id="${production_line.id}">${production_line.name}</option>`).join('');
+
+    } catch (error) {
+        console.error("Failed to load or parse the Excel file:", error);
+    }
+};
+
+// Update submit button status based on form completion
 function updateSubmitButton() {
     const lineSelected = g_productionLineSelect.value !== '';
     const productSelected = g_productNameSelect.value !== '';
     const dateSelected = document.querySelector('input[name="productionDate"]:checked') !== null;
     
     g_submitButton.disabled = !(lineSelected && productSelected && dateSelected);
-    
-    // Debugging logs (you can remove these after testing)
-    // console.log('Line selected:', lineSelected);
-    // console.log('Product selected:', productSelected);
-    // console.log('Date selected:', dateSelected);
-    // console.log('Button should be disabled:', !(lineSelected && productSelected && dateSelected));
-    // End of updateSubmitButton
 }
 
-// Submit data
+// Submit form data to server
 async function submitSelection() {
     const line = g_productionLineSelect.value;
     const productName = g_productNameSelect.value;
@@ -264,77 +299,61 @@ async function submitSelection() {
         if (!response.ok) throw new Error('Failed to save selection');
 
         showNoticeModal("Selection saved successfully!");
-
         resetForm();
 
     } catch (error) {
         console.error('Error saving selection:', error);
         alert('Failed to save selection. Please try again.');
     }
-    // End of submitSelection
 }
 
+// Reset form to initial state
 function resetForm() {
     g_productionLineSelect.value = '';
     g_productNameSelect.value = '';
     g_submitButton.disabled = true;    
-    // End of resetForm
 }
 
-// Modal functions
+// Show modal with message
 function showNoticeModal(message) {
     const modal = document.getElementById('noticeModal');
     const modalMessage = document.getElementById("modalMessage");
-    modalMessage.innerHTML = message; // Use innerHTML to support HTML content
+    modalMessage.innerHTML = message;
     modal.style.display = 'flex';
-    // End of showSuccessModal
 }
 
+// Close modal
 function closeModal() {
     const modal = document.getElementById('noticeModal');
     modal.style.display = 'none';
-    // End of closeModal
 }
 
-// Event listeners for modal
-document.querySelector('.close-modal').addEventListener('click', () => {
-    closeModal();
-    // End of close-modal event listener
-});
+// Initialize application when DOM is loaded
+document.addEventListener("DOMContentLoaded", () => {
+    setupDateSelection();    
+    monitorUserActivity();
+    setupVersionCheckInterval();
+    
+    loadExcelFile();
+    loadSettings();
 
-document.querySelector('.modal-button').addEventListener('click', () => {
-    closeModal();
-    // End of modal-button event listener
-});
+    // Event listeners for form elements
+    g_productionLineSelect.addEventListener('change', updateSubmitButton);
+    g_productNameSelect.addEventListener('change', updateSubmitButton);
+    document.addEventListener('change', function(e) {
+        if (e.target.name === 'productionDate') {
+            updateSubmitButton();
+        }
+    });
+    g_submitButton.addEventListener('click', submitSelection);
 
-// Close modal when clicking outside of it
-window.addEventListener('click', (event) => {
-    const modal = document.getElementById('noticeModal');
-    if (event.target === modal) {
-        closeModal();
-    }
-    // End of window click event listener
-});
-
-// Event listeners
-g_productionLineSelect.addEventListener('change', () => {
-    updateSubmitButton();
-    // End of productionLineSelect change event listener
-});
-
-g_productNameSelect.addEventListener('change', () => {
-    updateSubmitButton();
-    // End of productNameSelect change event listener
-});
-
-document.addEventListener('change', function(e) {
-    if (e.target.name === 'productionDate') {
-        updateSubmitButton();
-    }
-    // End of document change event listener
-});
-
-g_submitButton.addEventListener('click', () => {
-    submitSelection();
-    // End of submitButton click event listener
+    // Event listeners for modal
+    document.querySelector('.close-modal').addEventListener('click', closeModal);
+    document.querySelector('.modal-button').addEventListener('click', closeModal);
+    window.addEventListener('click', (event) => {
+        const modal = document.getElementById('noticeModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
 });
