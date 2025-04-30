@@ -977,6 +977,11 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Error submitting data:", error);
     }
+    finally {
+      // Re-enable the submit button after request completes or fails
+      modalSubmitButton.disabled = false;
+      modalSubmitButton.style.opacity = "1";
+    }
     // End of modalSubmitButton event listener
   });
 
