@@ -945,6 +945,9 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         modal2Message.style.display = "block";
         console.log("modal2Message.innerHTML=", modal2Message.innerHTML);
+
+        modalSubmitButton.disabled = false;
+        modalSubmitButton.style.opacity = "1";
         return;
       }
     }
