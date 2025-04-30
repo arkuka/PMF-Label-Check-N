@@ -846,6 +846,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!lineNumber || !palletNumber || !cartonCount || !hcode || !ubd) {      
       modal2Message.textContent = "Please fill in all fields.";
       modal2Message.style.display = "block";
+
+      modalSubmitButton.disabled = false;
+      modalSubmitButton.style.opacity = "1";
+      
       return;
     }
 
@@ -854,12 +858,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!validLineNumbers.includes(lineNumber)) {
       modal2Message.textContent = "Invalid Line Number. Please enter one of: 1,2,3,4,5A,5B,6,7,8,9,11,12,13,14,15";
       modal2Message.style.display = "block";
+
+      modalSubmitButton.disabled = false;
+      modalSubmitButton.style.opacity = "1";
+      
       return;
     }
     
     if (window.g_scannedHCode !== hcode.toUpperCase()) {
       modal2Message.textContent = `Hcode( ${hcode} ) on the product label does not match the hcode( ${window.g_scannedHCode} ) on the pallet label. Please double check it!`;
       modal2Message.style.display = "block";
+
+      modalSubmitButton.disabled = false;
+      modalSubmitButton.style.opacity = "1";
+      
       return;
     }
     
@@ -868,6 +880,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!hcodeRegex.test(hcode)) {
       modal2Message.textContent = "Invalid HCODE format. Please enter in the format HDDMM (e.g., H1903).";
       modal2Message.style.display = "block";
+
+      modalSubmitButton.disabled = false;
+      modalSubmitButton.style.opacity = "1";
+      
       return;
     }
 
@@ -876,6 +892,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!ubdRegex.test(ubd)) {
         modal2Message.textContent = "Invalid UBD format. Please enter in the format NNMMM (e.g., 01MAY).";
         modal2Message.style.display = "block";
+
+        modalSubmitButton.disabled = false;
+        modalSubmitButton.style.opacity = "1";
+      
         return;
     }
 
@@ -899,6 +919,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // Show warning message
       modal2Message.textContent = `The difference between HCODE and UBD is ${daysDifference} days, which does not match the shelf life of ${g_shelfLifeDays} days. Please confirm HCODE and UBD.`;
       modal2Message.style.display = "block";
+      
+      modalSubmitButton.disabled = false;
+      modalSubmitButton.style.opacity = "1";
       return;
     } else {
       // If matched, hide warning message
