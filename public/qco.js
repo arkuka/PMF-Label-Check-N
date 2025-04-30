@@ -820,6 +820,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalSubmitButton = document.getElementById("modalSubmitButton");
   
   modalSubmitButton.addEventListener("click", async () => {
+    // Disable the submit button to prevent multiple clicks
+    modalSubmitButton.disabled = true;
+    modalSubmitButton.style.opacity = "0.5"; // Optional: visual feedback
+    
     const lineNumber = document.getElementById("lineNumber").value;
     const palletNumber = document.getElementById("palletNumber").value;
     const cartonCount = document.getElementById("cartonCount").value;
