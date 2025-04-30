@@ -815,11 +815,20 @@ document.addEventListener("DOMContentLoaded", () => {
       modal2Message.style.display = "none"; // Optional: hide it after clearing
       // End of modal2Message click event listener
   });
+
+  // Debounce utility function
+  function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
   
   // Submit button in modal2 click event
   const modalSubmitButton = document.getElementById("modalSubmitButton");
   
-  modalSubmitButton.addEventListener("click", async () => {
+  modalSubmitButton.addEventListener("click", debounce(async () => {
     // Disable the submit button to prevent multiple clicks
     modalSubmitButton.disabled = true;
     modalSubmitButton.style.opacity = "0.5"; // Optional: visual feedback
@@ -983,7 +992,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modalSubmitButton.style.opacity = "1";
     }
     // End of modalSubmitButton event listener
-  });
+  },500));
 
   // Parse HCODE to date
   function parseHCODE(hcode) {
