@@ -1,5 +1,9 @@
 import { put, get, list } from "@vercel/blob"
 
+// In-memory cache for recent submissions with timestamps
+const recentSubmissions = new Map();
+const DEDUPE_WINDOW_MS = 5000; // 5-second window for deduplication
+
 // Cache to store the last received data
 let lastReceivedDataCache = null;
 
@@ -100,8 +104,17 @@ export default async function handler(req, res) {
       // In Pages Router, req.body is already parsed if Content-Type is application/json
       const data = req.body
 
+      // verify if received duplicate data, exclude the timestamp
+      newData =  JSON.stringify({        
+        productName: data.productName,
+        palletNumber: data.palletNumber,
+        lineNumber: data.lineNumber,
+        hcode: data.hcode,
+        ubd: data.ubd,
+      });
+
       // Check if this data is identical to the last received data
-      if (lastReceivedDataCache && JSON.stringify(lastReceivedDataCache) === JSON.stringify(data)) {
+      if (lastReceivedDataCache && lastReceivedDataCache === newData) {
         console.log("Received duplicate data, skipping save operation");
         return res.status(200).json({
           success: true,
@@ -111,7 +124,13 @@ export default async function handler(req, res) {
       }
 
       // Cache the new data
-      lastReceivedDataCache = data;
+      lastReceivedDataCache = JSON.stringify({        
+        productName: data.productName,
+        palletNumber: data.palletNumber,
+        lineNumber: data.lineNumber,
+        hcode: data.hcode,
+        ubd: data.ubd,
+      });
 
       // Log the received data to verify we have it
       console.log("Received data:", JSON.stringify(data, null, 2))
