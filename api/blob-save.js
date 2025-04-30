@@ -1,11 +1,8 @@
 import { put, get, list } from "@vercel/blob"
 
-// In-memory cache for recent submissions with timestamps
-const recentSubmissions = new Map();
-const DEDUPE_WINDOW_MS = 5000; // 5-second window for deduplication
-
 // Cache to store the last received data
 let lastReceivedDataCache = null;
+let newData = null;
 
 // Generate formatted filename using the timestamp from the data
 const getFormattedFileName = (data) => {
