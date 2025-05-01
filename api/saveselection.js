@@ -1,9 +1,37 @@
 import { put, list } from "@vercel/blob"
+let lastReceivedDataCache = null;
+let newData = null;
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
       const data = req.body;
+
+      newData = JSON.stringify({        
+        productionLine: data.productionLine,
+        productionDate: data.productionDate,
+        productName: data.productName,
+        productID: data.productID,        
+      });
+
+      // Check if this data is identical to the last received data
+      if (lastReceivedDataCache && lastReceivedDataCache === newData) {
+        console.log("Received duplicate data, skipping save operation");
+        return res.status(200).json({
+          success: true,
+          message: "Duplicate data received, no action taken",
+          skipped: true
+        });
+      }
+
+      // Cache the new data
+      lastReceivedDataCache = JSON.stringify({        
+        productionLine: data.productionLine,
+        productionDate: data.productionDate,
+        productName: data.productName,
+        productID: data.productID,        
+      });
+      
       console.log("Received data:", JSON.stringify(data, null, 2));
 
       const productionLine = data['production Line'] || "unknown";
