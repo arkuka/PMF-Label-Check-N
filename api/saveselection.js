@@ -7,6 +7,8 @@ export default async function handler(req, res) {
     try {
       const data = req.body;
 
+      console.log("Received data:", JSON.stringify(data, null, 2));
+
       newData = JSON.stringify({        
         productionLine: data.productionLine,
         productionDate: data.productionDate,
@@ -17,6 +19,8 @@ export default async function handler(req, res) {
       // Check if this data is identical to the last received data
       if (lastReceivedDataCache && lastReceivedDataCache === newData) {
         console.log("Received duplicate data, skipping save operation. data=",data);
+        console.log("lastReceivedDataCache=",lastReceivedDataCache);
+        console.log("newData=",newData);
         return res.status(200).json({
           success: true,
           message: "Duplicate data received, no action taken",
@@ -30,9 +34,7 @@ export default async function handler(req, res) {
         productionDate: data.productionDate,
         productName: data.productName,
         productID: data.productID,        
-      });
-      
-      console.log("Received data:", JSON.stringify(data, null, 2));
+      });      
 
       const productionLine = data['production Line'] || "unknown";
       const productionDate = data['production Date'] || "unknown";
