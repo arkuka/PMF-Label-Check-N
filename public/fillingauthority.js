@@ -15,6 +15,13 @@ let g_lastUserActivityTime = Date.now();
 let g_inactiveCheckInterval = 3600; // 1 hour (in seconds)
 let g_isUserActive = true;
 let g_versionCheckIntervalId = null;
+const g_activityHandlers = {};
+
+let g_showVersionUpdateNotification = false
+let g_isCheckingFillingAuthority = true;
+
+let g_debounceDuration = 500;
+
 
 // Function to format date as YYYY-MM-DD (Weekday)
 function formatDateWithWeekday(date) {
@@ -80,6 +87,8 @@ function monitorUserActivity() {
     
     // Add event listeners
     activityEvents.forEach(event => {
+        document.removeEventListener(event, g_activityHandlers[event]);
+        g_activityHandlers[event] = handleActivity;
         document.addEventListener(event, handleActivity, { passive: true });
     });
 }
@@ -119,32 +128,49 @@ function setupVersionCheckInterval() {
     }, checkInterval);
 }
 
+// Debounce utility function
+function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
 // Perform the actual version check logic
 async function performVersionCheck() {
-    const settings = await loadSettings();
-    
-    // Only proceed if settings loaded successfully
-    if (settings.success) {
-        // If there's a pending update
-        if (g_pendingUpdates) {
-            // Close any open modals
-            if (g_productNameSelect.value !== "" || g_productionLineSelect.value !== "") {
-                g_showVersionUpdateNotification = true;
+    try {
+        const settings = await loadSettings();
+        
+        // Only proceed if settings loaded successfully
+        if (settings.success) {
+            // If there's a pending update
+            if (g_pendingUpdates) {
+                // Close any open modals
+                if (g_productNameSelect.value !== "" || g_productionLineSelect.value !== "") {
+                    g_showVersionUpdateNotification = true;
+                }
+                
+                // Reload the Excel file
+                await loadExcelFile();
+                
+                resetForm();
+                
+                // Show the update notification
+                if (g_showVersionUpdateNotification) {                        
+                    showNoticeModal("New version updated <br> Please redo the Authority");
+                    g_showVersionUpdateNotification = false;
+                }
+                
+                g_pendingUpdates = false;
             }
-            
-            // Reload the Excel file
-            await loadExcelFile();
-            
-            resetForm();
-            
-            // Show the update notification
-            if (g_showVersionUpdateNotification) {                        
-                showNoticeModal("New version updated <br> Please redo the Authority");
-                g_showVersionUpdateNotification = false;
-            }
-            
-            g_pendingUpdates = false;
         }
+        else {
+            console.error("Failed to load settings:", settings.error);
+            return
+        }
+    } catch (error) {
+        console.error("Error during version check:", error);    
     }
 }
 
@@ -318,7 +344,7 @@ function resetForm() {
 function showNoticeModal(message) {
     const modal = document.getElementById('noticeModal');
     const modalMessage = document.getElementById("modalMessage");
-    modalMessage.innerHTML = message;
+    modalMessage.textContent  = message;
     modal.style.display = 'flex';
 }
 
@@ -329,13 +355,17 @@ function closeModal() {
 }
 
 // Initialize application when DOM is loaded
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     setupDateSelection();    
-    monitorUserActivity();
-    setupVersionCheckInterval();
+    monitorUserActivity();    
     
-    loadExcelFile();
-    loadSettings();
+    try {
+        await loadSettings()
+        await loadExcelFile();
+        setupVersionCheckInterval(); // Start the version check interval
+    }catch (error) {   
+        console.error("Error during initialization:", error);
+    }
 
     // Event listeners for form elements
     g_productionLineSelect.addEventListener('change', updateSubmitButton);
@@ -345,7 +375,8 @@ document.addEventListener("DOMContentLoaded", () => {
             updateSubmitButton();
         }
     });
-    g_submitButton.addEventListener('click', submitSelection);
+
+    g_submitButton.addEventListener('click', debounce(async () => await submitSelection(), g_debounceDuration));
 
     // Event listeners for modal
     document.querySelector('.close-modal').addEventListener('click', closeModal);

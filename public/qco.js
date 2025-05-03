@@ -39,6 +39,8 @@ let g_inactiveCheckInterval = 3600; // 1小时（秒）
 let g_isUserActive = true;
 let g_versionCheckIntervalId = null;
 
+let g_debounceDuration = 500;
+
 // Add user activity monitoring function
 const monitorUserActivity = () => {
   // Listen for all possible user activity events
@@ -1018,7 +1020,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modalSubmitButton.style.opacity = "1";
     }
     // End of modalSubmitButton event listener
-  },500));
+  },g_debounceDuration));
 
   // Parse HCODE to date
   function parseHCODE(hcode) {
