@@ -10,10 +10,10 @@ export default async function handler(req, res) {
       console.log("Received data:", JSON.stringify(data, null, 2));
 
       newData = JSON.stringify({        
-        ["production Line"]: data["production Line"],
-        ["production Date"]: data["production Date"],
-        ["product Name"]: data["product Name"],
-        ["product ID"]: data["product ID"],
+        ["production Line"]: data["production Line"] || "unknown",
+        ["production Date"]: data["production Date"] || "unknown",
+        ["product Name"]: data["product Name"] || "unknown",
+        ["product ID"]: data["product ID"] || "unknown",
       });
 
       // Check if this data is identical to the last received data
@@ -30,10 +30,10 @@ export default async function handler(req, res) {
 
       // Cache the new data
       lastReceivedDataCache = JSON.stringify({        
-        ["production Line"]: data["production Line"],
-        ["production Date"]: data["production Date"],
-        ["product Name"]: data["product Name"],
-        ["product ID"]: data["product ID"],       
+        ["production Line"]: data["production Line"] || "unknown",
+        ["production Date"]: data["production Date"] || "unknown",
+        ["product Name"]: data["product Name"] || "unknown",
+        ["product ID"]: data["product ID"] || "unknown",
       });      
 
       const productionLine = data['production Line'] || "unknown";
