@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 
       // Check if this data is identical to the last received data
       if (lastReceivedDataCache && lastReceivedDataCache === newData) {
-        console.log("Received duplicate data, skipping save operation");
+        console.log("Received duplicate data, skipping save operation. data=",data);
         return res.status(200).json({
           success: true,
           message: "Duplicate data received, no action taken",
