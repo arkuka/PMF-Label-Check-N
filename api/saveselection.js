@@ -16,6 +16,22 @@ export default async function handler(req, res) {
         ["product ID"]: data["product ID"] || "unknown",
       });
 
+      // Check if any field is "unknown"
+      const hasUnknownField = 
+        (data["production Line"] || "unknown") === "unknown" ||
+        (data["production Date"] || "unknown") === "unknown" ||
+        (data["product Name"] || "unknown") === "unknown" ||
+        (data["product ID"] || "unknown") === "unknown";
+      
+      if (hasUnknownField) {
+        console.log("Received data contains unknown fields, skipping save operation. data=", data);
+        return res.status(200).json({
+          success: true,
+          message: "Data contains unknown fields, file not saved",
+          skipped: true
+        });
+      }
+
       // Check if this data is identical to the last received data
       if (lastReceivedDataCache && lastReceivedDataCache === newData) {
         console.log("Received duplicate data, skipping save operation. data=",data);
