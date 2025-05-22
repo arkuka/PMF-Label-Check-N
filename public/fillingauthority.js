@@ -269,7 +269,7 @@ async function loadFillingStandards() {
 
 function showProductionStandard() {
     console.log('showProductionStandard(); selectedProduct = ',g_productNameSelect.value)
-    
+
     const selectedProduct = g_productNameSelect.value;
     
     if (!selectedProduct) return;
@@ -457,7 +457,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     g_submitButton.addEventListener('click', debounce(async () => await submitSelection(), g_debounceDuration));
-    g_showStandardButton.addEventListener('click',  showProductionStandard());
+    g_showStandardButton.addEventListener('click',  showProductionStandard);
 
     // Event listeners for modal
     document.querySelector('.close-modal').addEventListener('click', closeModal);
