@@ -86,6 +86,35 @@
             color: #666;
           }
 
+          .button-group {
+              display: flex;
+              gap: 10px;
+              margin-top: 15px;
+          }
+
+          #showStandardButton {
+              background-color: #4a6fa5;
+              color: white;
+          }
+
+          #showStandardButton:disabled {
+              background-color: #cccccc;
+              cursor: not-allowed;
+          }
+
+          #standardModal .modal-content {
+              max-width: 500px;
+          }
+
+          #standardDetails {
+              margin: 20px 0;
+              line-height: 1.6;
+          }
+
+          #standardDetails p {
+              margin: 10px 0;
+          }
+
           .modal {
             display: none;
             position: fixed;
