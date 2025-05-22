@@ -269,6 +269,7 @@ async function loadFillingStandards() {
 
 function showProductionStandard() {
     const selectedProduct = g_productNameSelect.value;
+    console.log('showProductionStandard(); selectedProduct = ',selectedProduct)
     if (!selectedProduct) return;
     
     // Find the product in our standards
