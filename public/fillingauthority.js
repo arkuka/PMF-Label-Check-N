@@ -239,7 +239,6 @@ const loadSettings = async () => {
 // Add this function to load the filling standards
 async function loadFillingStandards() {
     try {
-        console.log("Filling standards start to load:");
         const response = await fetch("/filling_standard_list.xlsx");
         const arrayBuffer = await response.arrayBuffer();
         const workbook = XLSX.read(arrayBuffer, { type: "array" });
@@ -453,6 +452,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     g_submitButton.addEventListener('click', debounce(async () => await submitSelection(), g_debounceDuration));
+    g_showStandardButton.addEventListener('click',  showProductionStandard());
 
     // Event listeners for modal
     document.querySelector('.close-modal').addEventListener('click', closeModal);
