@@ -270,7 +270,7 @@ async function loadFillingStandards() {
 function showProductionStandard() {
     console.log('showProductionStandard(); selectedProduct = ',g_productNameSelect)
 
-    const selectedProductCode= g_productNameSelect.productCode;
+    const selectedProductCode= g_productNameSelect.productcode;
     console.log('showProductionStandard(); selectedProductCode = ',selectedProductCode)
 
     
