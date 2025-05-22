@@ -13,6 +13,8 @@ let g_updateCheckFrequency = 60; // Default value in seconds
 let g_lastUpdateCheckTime = 0;
 let g_pendingUpdates = false;
 
+let g_lastRenderedDate = null;
+
 // Track user activity state
 let g_lastUserActivityTime = Date.now();
 let g_inactiveCheckInterval = 3600; // 1 hour (in seconds)
@@ -69,6 +71,8 @@ function setupDateSelection() {
         const day = String(date.getDate()).padStart(2, '0');
         return `${day}-${month}-${year}`;
     }
+
+    g_lastRenderedDate = formatDate(today);
 }
 
 // Monitor user activity to adjust version check frequency
@@ -119,6 +123,7 @@ function setupVersionCheckInterval() {
             if (timeSinceLastActivity > inactiveThreshold && g_isUserActive) {
                 console.log('User inactive for 30+ minutes, reducing check frequency');
                 g_isUserActive = false;
+                setupDateSelection();
                 setupVersionCheckInterval(); // Reset to longer interval
                 return;
             }
@@ -156,6 +161,10 @@ async function performVersionCheck() {
                 // Reload the Excel file
                 await loadExcelFile();
                 await loadFillingStandards();
+
+                if(!g_isUserActive){
+                    setupDateSelection();
+                }
                 
                 resetForm();
                 
@@ -414,6 +423,7 @@ async function submitSelection() {
 
 // Reset form to initial state
 function resetForm() {
+    setupDateSelection();
     g_productionLineSelect.value = '';
     g_productNameSelect.value = '';
     g_submitButton.disabled = true;
