@@ -268,8 +268,10 @@ async function loadFillingStandards() {
 }
 
 function showProductionStandard() {
-    const selectedProduct = g_productNameSelect.value;
     console.log('showProductionStandard(); selectedProduct = ',g_productNameSelect.value)
+    
+    const selectedProduct = g_productNameSelect.value;
+    
     if (!selectedProduct) return;
     
     // Find the product in our standards
@@ -351,6 +353,7 @@ function updateSubmitButton() {
     
     g_submitButton.disabled = !(lineSelected && productSelected && dateSelected);
     g_showStandardButton.disabled = !productSelected; // Enable if product is selected
+    console.log("updateSubmitButton(); g_showStandardButton.disabled=",!productSelected)
 }
 
 // Submit form data to server
@@ -408,6 +411,7 @@ function resetForm() {
     g_productionLineSelect.value = '';
     g_productNameSelect.value = '';
     g_submitButton.disabled = true;    
+    g_showStandardButton.disabled = true;
 }
 
 
