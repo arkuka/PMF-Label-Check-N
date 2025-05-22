@@ -26,26 +26,45 @@ body {
 
 .standard-display {
     background-color: white;
-    padding: 12px; /* 减小内边距 */
+    padding: 12px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 15px; /* 减小底部外边距 */
+    margin-bottom: 15px;
     width: 100%;
     box-sizing: border-box;
 }
 
 .standard-display h3 {
     margin-top: 0;
-    font-size: 16px; /* 减小标题字号 */
+    font-size: 16px;
     color: #4a6fa5;
     border-bottom: 1px solid #eee;
-    padding-bottom: 8px; /* 减小内边距 */
+    padding-bottom: 8px;
 }
 
 #standardDetails {
-    margin: 8px 0; /* 减小外边距 */
-    line-height: 1.5; /* 减小行高 */
-    font-size: 14px; /* 减小字号 */
+    margin: 8px 0;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+/* 新增标准项的布局样式 */
+.standard-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.standard-label {
+    font-weight: bold;
+    text-align: left;
+    flex: 1;
+}
+
+.standard-value {
+    text-align: right;
+    flex: 1;
+    margin-left: 10px;
 }
 
 .date-selection {
