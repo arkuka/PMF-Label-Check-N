@@ -404,7 +404,7 @@ async function submitSelection() {
         if (!response.ok) throw new Error('Failed to save selection');
 
         showNoticeModal("Selection saved successfully!");
-        resetForm();
+        //resetForm();
 
     } catch (error) {
         console.error('Error saving selection:', error);
