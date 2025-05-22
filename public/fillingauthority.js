@@ -312,7 +312,7 @@ function updateProductionStandardDisplay() {
         </div>
         <div class="standard-item">
             <span class="standard-label">Headcount:</span>
-            <span class="standard-value">${productStandard.headcount}P</span>
+            <span class="standard-value">${productStandard.headcount} P</span>
         </div>
         <div class="standard-item">
             <span class="standard-label">C/Over Time:</span>
