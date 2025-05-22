@@ -8,6 +8,13 @@
 </head>
 
 <body>
+
+  <div class="standard-display" id="standardDisplay">
+    <h3>Production Standard</h3>
+    <div id="standardDetails">
+      <p><strong>Select a product to view its standard</strong></p>
+    </div>
+  </div>
   
   <div class="container">
       <span id="versionInfo" style="font-size: 14px; color: #666; margin-left: 10px;"></span>
@@ -32,18 +39,7 @@
     <div class="modal-content">
             
       <h2 id="modalMessage"></h2>      
-      <button class="modal-button">OK</button>
-    </div>
-  </div>
-
-  <div id="standardModal" class="modal">
-    <div class="modal-content">
-      
-      <h2>Production Standard for <span id="standardProductName"></span></h2>
-      <div id="standardDetails">
-        <!-- Standard details will be populated here -->
-      </div>
-      <button class="modal-button">Close</button>
+      <button id="noticeCloseButton" class="modal-button">OK</button>
     </div>
   </div>
 

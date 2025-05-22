@@ -2,7 +2,6 @@ const g_productionLineSelect = document.getElementById('productionLineSelect');
 const g_productNameSelect = document.getElementById('productNameSelect');
 const g_submitButton = document.getElementById('submitButton');
 const g_dateOptionsContainer = document.getElementById('dateOptions');
-const g_showStandardButton = document.getElementById('showStandardButton');
 
 let g_fillingStandards = []; // To store the filling standards data
 
@@ -20,11 +19,10 @@ let g_isUserActive = true;
 let g_versionCheckIntervalId = null;
 const g_activityHandlers = {};
 
-let g_showVersionUpdateNotification = false
+let g_showVersionUpdateNotification = false;
 let g_isCheckingFillingAuthority = true;
 
 let g_debounceDuration = 500;
-
 
 // Function to format date as YYYY-MM-DD (Weekday)
 function formatDateWithWeekday(date) {
@@ -171,7 +169,7 @@ async function performVersionCheck() {
         }
         else {
             console.error("Failed to load settings:", settings.error);
-            return
+            return;
         }
     } catch (error) {
         console.error("Error during version check:", error);    
@@ -245,7 +243,6 @@ async function loadFillingStandards() {
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
         
-        
         // Process the data - we only want rows where column C (index 2) is "Fill"
         g_fillingStandards = data.slice(1) // Skip header row
             .filter(row => row[2] === "Fill")
@@ -267,15 +264,23 @@ async function loadFillingStandards() {
     }
 }
 
-function showProductionStandard() {
-    console.log('showProductionStandard(); selectedProduct = ',g_productNameSelect)
-
+// Update the production standard display
+function updateProductionStandardDisplay() {
     const selectedOption = g_productNameSelect.selectedOptions[0];
+    if (!selectedOption) {
+        document.getElementById('standardDetails').innerHTML = 
+            '<p><strong>Select a product to view its standard</strong></p>';
+        return;
+    }
+
     const selectedProductCode = selectedOption.getAttribute('productCode'); 
-    const selectedProductName = g_productNameSelect.value
-    console.log('showProductionStandard(); selectedProductCode = ', selectedProductCode);
+    const selectedProductName = g_productNameSelect.value;
     
-    if (!selectedProductCode) return;
+    if (!selectedProductCode) {
+        document.getElementById('standardDetails').innerHTML = 
+            '<p><strong>No product selected</strong></p>';
+        return;
+    }
     
     // Find the product in our standards
     const productStandard = g_fillingStandards.find(standard => 
@@ -283,24 +288,21 @@ function showProductionStandard() {
     );
     
     if (!productStandard) {
-        showNoticeModal("No production standard found for this product");
+        document.getElementById('standardDetails').innerHTML = 
+            '<p><strong>No production standard found for this product</strong></p>';
         return;
     }
     
-    // Update the modal content
-    document.getElementById('standardProductName').textContent = selectedProductName;
-    
+    // Update the standard display
     const detailsDiv = document.getElementById('standardDetails');
     detailsDiv.innerHTML = `
+        <p><strong>Product:</strong> ${selectedProductName}</p>
         <p><strong>Headcount:</strong> ${productStandard.headcount}</p>
         <p><strong>C/Over Time:</strong> ${productStandard.coverTime} minutes</p>
         <p><strong>Production Speed:</strong> ${productStandard.speed} Tubs/Min</p>
         <p><strong>Max Weight (G/Away):</strong> ${productStandard.maxWeight} g</p>
         <p><strong>Allowed Rework (R/Work):</strong> ${productStandard.reworkPercent}%</p>
     `;
-    
-    // Show the modal
-    document.getElementById('standardModal').style.display = 'flex';
 }
 
 // Load Excel data from server
@@ -315,11 +317,14 @@ const loadExcelFile = async () => {
 
         const products = data.slice(1).map(row => ({
             name: row[0],
-            id: row[5] // pallet label as ID
+            id: row[5], // pallet label as ID
+            code: row[5] // product code
         }));
 
         g_productNameSelect.innerHTML = '<option value="">Select Product</option>' +
-            products.map(product => `<option value="${product.name}" productCode="${product.id}">${product.name}</option>`).join('');
+            products.map(product => 
+                `<option value="${product.name}" productCode="${product.code}">${product.name}</option>`
+            ).join('');
 
     } catch (error) {
         console.error("Failed to load or parse the Excel file:", error);
@@ -339,14 +344,14 @@ const loadExcelFile = async () => {
         }));
 
         g_productionLineSelect.innerHTML = '<option value="">Select Production Line</option>' +
-            production_lines.map(production_line => `<option value="${production_line.name}" data-id="${production_line.id}">${production_line.name}</option>`).join('');
+            production_lines.map(production_line => 
+                `<option value="${production_line.name}" data-id="${production_line.id}">${production_line.name}</option>`
+            ).join('');
 
     } catch (error) {
         console.error("Failed to load or parse the Excel file:", error);
     }
 };
-
-
 
 // Update submit button status based on form completion
 function updateSubmitButton() {
@@ -355,15 +360,13 @@ function updateSubmitButton() {
     const dateSelected = document.querySelector('input[name="productionDate"]:checked') !== null;
     
     g_submitButton.disabled = !(lineSelected && productSelected && dateSelected);
-    g_showStandardButton.disabled = !productSelected; // Enable if product is selected
-    console.log("updateSubmitButton(); g_showStandardButton.disabled=",!productSelected)
 }
 
 // Submit form data to server
 async function submitSelection() {
     const line = g_productionLineSelect.value;
     const productName = g_productNameSelect.value;
-    const productId = g_productNameSelect.selectedOptions[0].dataset.id;
+    const productId = g_productNameSelect.selectedOptions[0].getAttribute('productCode');
     const productionDate = document.querySelector('input[name="productionDate"]:checked').value;
 
     const timeFormatter = new Intl.DateTimeFormat("en-AU", {
@@ -400,7 +403,6 @@ async function submitSelection() {
         if (!response.ok) throw new Error('Failed to save selection');
 
         showNoticeModal("Selection saved successfully!");
-        // showProductionStandard(); // Show the standard after successful submission
         resetForm();
 
     } catch (error) {
@@ -413,20 +415,16 @@ async function submitSelection() {
 function resetForm() {
     g_productionLineSelect.value = '';
     g_productNameSelect.value = '';
-    g_submitButton.disabled = true;    
-    g_showStandardButton.disabled = true;
-}
-
-
-function closeStandardModal() {
-    document.getElementById('standardModal').style.display = 'none';
+    g_submitButton.disabled = true;
+    document.getElementById('standardDetails').innerHTML = 
+        '<p><strong>Select a product to view its standard</strong></p>';
 }
 
 // Show modal with message
 function showNoticeModal(message) {
     const modal = document.getElementById('noticeModal');
     const modalMessage = document.getElementById("modalMessage");
-    modalMessage.textContent  = message;
+    modalMessage.innerHTML = message;
     modal.style.display = 'flex';
 }
 
@@ -442,17 +440,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     monitorUserActivity();    
     
     try {
-        await loadSettings()
+        await loadSettings();
         await loadExcelFile();
-        await loadFillingStandards(); // Load the standards
-        setupVersionCheckInterval(); // Start the version check interval
-    }catch (error) {   
+        await loadFillingStandards();
+        setupVersionCheckInterval();
+    } catch (error) {   
         console.error("Error during initialization:", error);
     }
 
-    // Event listeners for form elements
+    // Event listeners
     g_productionLineSelect.addEventListener('change', updateSubmitButton);
-    g_productNameSelect.addEventListener('change', updateSubmitButton);
+    g_productNameSelect.addEventListener('change', function() {
+        updateSubmitButton();
+        updateProductionStandardDisplay();
+    });
+    
     document.addEventListener('change', function(e) {
         if (e.target.name === 'productionDate') {
             updateSubmitButton();
@@ -460,26 +462,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     g_submitButton.addEventListener('click', debounce(async () => await submitSelection(), g_debounceDuration));
-    g_showStandardButton.addEventListener('click',  showProductionStandard);
 
-    // Event listeners for modal
-    document.querySelector('.close-modal').addEventListener('click', closeModal);
-    document.querySelector('.close-standard-modal').addEventListener('click', closeStandardModal);
-     document.querySelectorAll('.modal-button').forEach(button => {
-        if (button.parentElement.parentElement.id === 'noticeModal') {
-            button.addEventListener('click', closeModal);
-        } else if (button.parentElement.parentElement.id === 'standardModal') {
-            button.addEventListener('click', closeStandardModal);
-        }
-    });
+    // Modal event listeners
+    document.getElementById('noticeCloseButton').addEventListener('click', closeModal);
 
     window.addEventListener('click', (event) => {
-        const noticeModal = document.getElementById('noticeModal');
-        const standardModal = document.getElementById('standardModal');
-        if (event.target === noticeModal) {
+        if (event.target === document.getElementById('noticeModal')) {
             closeModal();
-        } else if (event.target === standardModal) {
-            closeStandardModal();
         }
     });
 });
