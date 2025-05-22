@@ -270,9 +270,9 @@ async function loadFillingStandards() {
 function showProductionStandard() {
     console.log('showProductionStandard(); selectedProduct = ',g_productNameSelect)
 
-    const selectedProductCode= g_productNameSelect.productcode;
-    console.log('showProductionStandard(); selectedProductCode = ',selectedProductCode)
-
+    const selectedOption = g_productNameSelect.selectedOptions[0];
+    const selectedProductCode = selectedOption.getAttribute('productCode'); 
+    console.log('showProductionStandard(); selectedProductCode = ', selectedProductCode);
     
     if (!selectedProductCode) return;
     
