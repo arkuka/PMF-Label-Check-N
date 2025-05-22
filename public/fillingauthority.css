@@ -9,12 +9,9 @@
         }
 
         .standard-display {
-            position: fixed;
-            top: 50px;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            min-width: 350px;
-            max-width: 90%;
             background-color: white;
             padding: 15px;
             border-radius: 8px;
