@@ -62,7 +62,7 @@ body {
 }
 
 .standard-value {
-    text-align: right;
+    text-align: left;
     flex: 1;
     margin-left: 10px;
 }
