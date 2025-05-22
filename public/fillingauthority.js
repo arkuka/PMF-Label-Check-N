@@ -269,7 +269,7 @@ async function loadFillingStandards() {
 
 function showProductionStandard() {
     const selectedProduct = g_productNameSelect.value;
-    console.log('showProductionStandard(); selectedProduct = ',g_productNameSelect)
+    console.log('showProductionStandard(); selectedProduct = ',g_productNameSelect.value)
     if (!selectedProduct) return;
     
     // Find the product in our standards
@@ -394,7 +394,7 @@ async function submitSelection() {
         if (!response.ok) throw new Error('Failed to save selection');
 
         showNoticeModal("Selection saved successfully!");
-        showProductionStandard(); // Show the standard after successful submission
+        // showProductionStandard(); // Show the standard after successful submission
         resetForm();
 
     } catch (error) {
