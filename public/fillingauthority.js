@@ -306,12 +306,30 @@ function updateProductionStandardDisplay() {
     // Update the standard display
     const detailsDiv = document.getElementById('standardDetails');
     detailsDiv.innerHTML = `
-        <p><strong>Product:</strong> ${selectedProductName}</p>
-        <p><strong>Headcount:</strong> ${productStandard.headcount}</p>
-        <p><strong>C/Over Time:</strong> ${productStandard.coverTime} minutes</p>
-        <p><strong>Production Speed:</strong> ${productStandard.speed} Tubs/Min</p>
-        <p><strong>Max Weight (G/Away):</strong> ${productStandard.maxWeight} g</p>
-        <p><strong>Allowed Rework (R/Work):</strong> ${productStandard.reworkPercent}</p>
+        <div class="standard-item">
+            <span class="standard-label">Product:</span>
+            <span class="standard-value">${selectedProductName}</span>
+        </div>
+        <div class="standard-item">
+            <span class="standard-label">Headcount:</span>
+            <span class="standard-value">${productStandard.headcount}</span>
+        </div>
+        <div class="standard-item">
+            <span class="standard-label">C/Over Time:</span>
+            <span class="standard-value">${productStandard.coverTime} minutes</span>
+        </div>
+        <div class="standard-item">
+            <span class="standard-label">Production Speed:</span>
+            <span class="standard-value">${productStandard.speed} Tubs/Min</span>
+        </div>
+        <div class="standard-item">
+            <span class="standard-label">Max Weight (G/Away):</span>
+            <span class="standard-value">${productStandard.maxWeight} g</span>
+        </div>
+        <div class="standard-item">
+            <span class="standard-label">Allowed Rework (R/Work):</span>
+            <span class="standard-value">${productStandard.reworkPercent}</span>
+        </div>
     `;
 }
 
