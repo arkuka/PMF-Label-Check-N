@@ -2,6 +2,7 @@ const g_productionLineSelect = document.getElementById('productionLineSelect');
 const g_productNameSelect = document.getElementById('productNameSelect');
 const g_submitButton = document.getElementById('submitButton');
 const g_dateOptionsContainer = document.getElementById('dateOptions');
+const g_noticeCloseButton = document.getElementById('noticeCloseButton')
 
 let g_fillingStandards = []; // To store the filling standards data
 
@@ -464,7 +465,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     g_submitButton.addEventListener('click', debounce(async () => await submitSelection(), g_debounceDuration));
 
     // Modal event listeners
-    document.getElementById('noticeCloseButton').addEventListener('click', closeModal);
+    g_noticeCloseButton.addEventListener('click', closeModal);
 
     window.addEventListener('click', (event) => {
         if (event.target === document.getElementById('noticeModal')) {
