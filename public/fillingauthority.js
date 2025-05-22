@@ -312,7 +312,7 @@ function updateProductionStandardDisplay() {
         </div>
         <div class="standard-item">
             <span class="standard-label">Headcount:</span>
-            <span class="standard-value">${productStandard.headcount}</span>
+            <span class="standard-value">${productStandard.headcount}P</span>
         </div>
         <div class="standard-item">
             <span class="standard-label">C/Over Time:</span>
@@ -320,7 +320,7 @@ function updateProductionStandardDisplay() {
         </div>
         <div class="standard-item">
             <span class="standard-label">Production Speed:</span>
-            <span class="standard-value">${productStandard.speed} Tubs/Min</span>
+            <span class="standard-value">${productStandard.speed} tubs/min</span>
         </div>
         <div class="standard-item">
             <span class="standard-label">Max Weight (G/Away):</span>
