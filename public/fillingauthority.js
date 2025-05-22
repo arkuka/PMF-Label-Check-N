@@ -272,6 +272,7 @@ function showProductionStandard() {
 
     const selectedOption = g_productNameSelect.selectedOptions[0];
     const selectedProductCode = selectedOption.getAttribute('productCode'); 
+    const selectedProductName = g_productNameSelect.value
     console.log('showProductionStandard(); selectedProductCode = ', selectedProductCode);
     
     if (!selectedProductCode) return;
@@ -287,7 +288,7 @@ function showProductionStandard() {
     }
     
     // Update the modal content
-    document.getElementById('standardProductName').textContent = selectedProduct;
+    document.getElementById('standardProductName').textContent = selectedProductName;
     
     const detailsDiv = document.getElementById('standardDetails');
     detailsDiv.innerHTML = `
