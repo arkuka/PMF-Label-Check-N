@@ -463,9 +463,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.querySelector('.close-modal').addEventListener('click', closeModal);
     document.querySelector('.close-standard-modal').addEventListener('click', closeStandardModal);
      document.querySelectorAll('.modal-button').forEach(button => {
-        if (button.parentElement.id === 'noticeModal') {
+        if (button.parentElement.parentElement.id === 'noticeModal') {
             button.addEventListener('click', closeModal);
-        } else if (button.parentElement.id === 'standardModal') {
+        } else if (button.parentElement.parentElement.id === 'standardModal') {
             button.addEventListener('click', closeStandardModal);
         }
     });
