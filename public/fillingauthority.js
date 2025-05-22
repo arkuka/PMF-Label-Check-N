@@ -268,15 +268,17 @@ async function loadFillingStandards() {
 }
 
 function showProductionStandard() {
-    console.log('showProductionStandard(); selectedProduct = ',g_productNameSelect.value)
+    console.log('showProductionStandard(); selectedProduct = ',g_productNameSelect)
 
-    const selectedProduct = g_productNameSelect.value;
+    const selectedProductCode= g_productNameSelect.productCode;
+    console.log('showProductionStandard(); selectedProductCode = ',selectedProductCode)
+
     
-    if (!selectedProduct) return;
+    if (!selectedProductCode) return;
     
     // Find the product in our standards
     const productStandard = g_fillingStandards.find(standard => 
-        standard.name === selectedProduct
+        standard.code === selectedProductCode
     );
     
     if (!productStandard) {
@@ -316,7 +318,7 @@ const loadExcelFile = async () => {
         }));
 
         g_productNameSelect.innerHTML = '<option value="">Select Product</option>' +
-            products.map(product => `<option value="${product.name}" data-id="${product.id}">${product.name}</option>`).join('');
+            products.map(product => `<option value="${product.name}" productCode="${product.id}">${product.name}</option>`).join('');
 
     } catch (error) {
         console.error("Failed to load or parse the Excel file:", error);
