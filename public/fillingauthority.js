@@ -302,7 +302,7 @@ function updateProductionStandardDisplay() {
         <p><strong>C/Over Time:</strong> ${productStandard.coverTime} minutes</p>
         <p><strong>Production Speed:</strong> ${productStandard.speed} Tubs/Min</p>
         <p><strong>Max Weight (G/Away):</strong> ${productStandard.maxWeight} g</p>
-        <p><strong>Allowed Rework (R/Work):</strong> ${productStandard.reworkPercent}%</p>
+        <p><strong>Allowed Rework (R/Work):</strong> ${productStandard.reworkPercent}</p>
     `;
 }
 
