@@ -548,6 +548,7 @@ const handleProductSelection = (field) => {
     // Close modal and reset matching state
     modal.style.display = "none";
     resetMatchingState();
+    resetModal2Inputs();
     // End of handleProductSelection
 };
 
@@ -802,7 +803,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Close icon event listener
     modal2CloseIcon.addEventListener("click", () => {
     modal2.style.display = "none";
-    resetModal2Inputs();
+    // resetModal2Inputs();
     // End of modal2CloseIcon event listener
   });
 
