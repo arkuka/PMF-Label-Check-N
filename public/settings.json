@@ -1,5 +1,5 @@
 {
-    "ver": "2025.07.10.2",
-    "check filling authority":"yes",
+    "ver": "2025.07.15.1",
+    "check filling authority":"no",
     "update check frequency":"60"
   }
