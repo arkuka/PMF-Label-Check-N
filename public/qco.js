@@ -16,7 +16,6 @@ let g_productNameLabel = "";
 let g_isSubmitEnabled = false;
 let g_prompted = false;
 let g_showModal = false;
-let g_possibleProduct = "";
 let g_barcode = "";
 let g_scannedBarcode = "";
 let g_currentField = "";  // Tracks the currently input field
@@ -525,10 +524,9 @@ const handleProductSelection = (field) => {
         return;
     }
 
-    const selectedIndex = parseInt(selectedRadio.value);
-    g_possibleProduct = g_matchingProducts[selectedIndex][0];
-    g_productName = g_possibleProduct;
-    updateFieldAvailability(g_possibleProduct);
+    const selectedIndex = parseInt(selectedRadio.value);    
+    g_productName = g_matchingProducts[selectedIndex][0];
+    updateFieldAvailability(g_productName);
 
     if (g_currentField) {
         g_fields[g_currentField] = g_scannedBarcode;
@@ -586,7 +584,6 @@ const resetModal2Inputs = () => {
 const resetMatchingState = () => {
   g_matchingProducts = [];
   g_currentMatchingIndex = 0;
-  g_possibleProduct = "";
   g_scannedBarcode = "";
   // End of resetMatchingState
 };
