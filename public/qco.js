@@ -111,7 +111,7 @@ const setupVersionCheckInterval = () => {
           
           // Show update notification
           if (g_showVersionUpdateNotification) {
-            showModalWithButtons("New version updated <br> Please redo the current check", false);
+            showModalWithButtons("New version updated <br> Please reload the page and redo the current check", false);
             g_showVersionUpdateNotification = false;
           }
           
