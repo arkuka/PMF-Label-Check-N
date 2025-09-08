@@ -14,7 +14,6 @@ let g_headers = [];
 let g_productNameList = [];  // List of product names
 let g_productNameLabel = "";
 let g_isSubmitEnabled = false;
-let g_showModal = false;
 let g_scannedBarcode = "";
 let g_currentField = "";  // Tracks the currently input field
 let g_scannedHCode = "";
@@ -641,7 +640,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   modalOkButton.addEventListener("click", () => {
     // Close modal
-    g_showModal = false;
     modal.style.display = "none";
   
     // Reset form
