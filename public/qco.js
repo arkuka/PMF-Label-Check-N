@@ -809,194 +809,194 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalSubmitButton = document.getElementById("modalSubmitButton");
   
   modalSubmitButton.addEventListener("click", debounce(async () => {
-    // Disable the submit button to prevent multiple clicks
-    modalSubmitButton.disabled = true;
-    modalSubmitButton.style.opacity = "0.5"; // Optional: visual feedback
-    
-    const lineNumber = document.getElementById("lineNumber").value;
-    const palletNumber = document.getElementById("palletNumber").value;
-    const cartonCount = document.getElementById("cartonCount").value;
-    const hcode = document.getElementById("hcode").value;
-    const ubd = document.getElementById("ubd").value;
+                          // Disable the submit button to prevent multiple clicks
+                          modalSubmitButton.disabled = true;
+                          modalSubmitButton.style.opacity = "0.5"; // Optional: visual feedback
+                          
+                          const lineNumber = document.getElementById("lineNumber").value;
+                          const palletNumber = document.getElementById("palletNumber").value;
+                          const cartonCount = document.getElementById("cartonCount").value;
+                          const hcode = document.getElementById("hcode").value;
+                          const ubd = document.getElementById("ubd").value;
 
-    // Get modal2 message area
-    const modal2Message = document.getElementById("modal2Message");
+                          // Get modal2 message area
+                          const modal2Message = document.getElementById("modal2Message");
 
-    // Check if all fields are filled
-    if (!lineNumber || !palletNumber || !cartonCount || !hcode || !ubd) {      
-      modal2Message.textContent = "Please fill in all fields.";
-      modal2Message.style.display = "block";
+                          // Check if all fields are filled
+                          if (!lineNumber || !palletNumber || !cartonCount || !hcode || !ubd) {      
+                            modal2Message.textContent = "Please fill in all fields.";
+                            modal2Message.style.display = "block";
 
-      modalSubmitButton.disabled = false;
-      modalSubmitButton.style.opacity = "1";
-      
-      return;
-    }
+                            modalSubmitButton.disabled = false;
+                            modalSubmitButton.style.opacity = "1";
+                            
+                            return;
+                          }
 
-    // Validate Line Number
-    const validLineNumbers = ["1", "2", "3", "4", "5A", "5B", "6", "7", "8", "9", "11", "12", "13", "14", "15"];
-    if (!validLineNumbers.includes(lineNumber)) {
-      modal2Message.textContent = "Invalid Line Number. Please enter one of: 1,2,3,4,5A,5B,6,7,8,9,11,12,13,14,15";
-      modal2Message.style.display = "block";
+                          // Validate Line Number
+                          const validLineNumbers = ["1", "2", "3", "4", "5A", "5B", "6", "7", "8", "9", "11", "12", "13", "14", "15"];
+                          if (!validLineNumbers.includes(lineNumber)) {
+                            modal2Message.textContent = "Invalid Line Number. Please enter one of: 1,2,3,4,5A,5B,6,7,8,9,11,12,13,14,15";
+                            modal2Message.style.display = "block";
 
-      modalSubmitButton.disabled = false;
-      modalSubmitButton.style.opacity = "1";
-      
-      return;
-    }
-    
-    if (window.g_scannedHCode !== hcode.toUpperCase()) {
-      modal2Message.textContent = `Hcode( ${hcode} ) on the product label does not match the hcode( ${window.g_scannedHCode} ) on the pallet label. Please double check it!`;
-      modal2Message.style.display = "block";
+                            modalSubmitButton.disabled = false;
+                            modalSubmitButton.style.opacity = "1";
+                            
+                            return;
+                          }
+                          
+                          if (window.g_scannedHCode !== hcode.toUpperCase()) {
+                            modal2Message.textContent = `Hcode( ${hcode} ) on the product label does not match the hcode( ${window.g_scannedHCode} ) on the pallet label. Please double check it!`;
+                            modal2Message.style.display = "block";
 
-      modalSubmitButton.disabled = false;
-      modalSubmitButton.style.opacity = "1";
-      
-      return;
-    }
-    
-    // Validate HCODE format
-    const hcodeRegex = /^H\d{4}$/; // H followed by 4 digits
-    if (!hcodeRegex.test(hcode)) {
-      modal2Message.textContent = "Invalid HCODE format. Please enter in the format HDDMM (e.g., H1903).";
-      modal2Message.style.display = "block";
+                            modalSubmitButton.disabled = false;
+                            modalSubmitButton.style.opacity = "1";
+                            
+                            return;
+                          }
+                          
+                          // Validate HCODE format
+                          const hcodeRegex = /^H\d{4}$/; // H followed by 4 digits
+                          if (!hcodeRegex.test(hcode)) {
+                            modal2Message.textContent = "Invalid HCODE format. Please enter in the format HDDMM (e.g., H1903).";
+                            modal2Message.style.display = "block";
 
-      modalSubmitButton.disabled = false;
-      modalSubmitButton.style.opacity = "1";
-      
-      return;
-    }
+                            modalSubmitButton.disabled = false;
+                            modalSubmitButton.style.opacity = "1";
+                            
+                            return;
+                          }
 
-    // Validate UBD format
-    const ubdRegex = /^\d{2}[A-Z]{3}$/; // NNMMM format (e.g., 01MAY)
-    if (!ubdRegex.test(ubd)) {
-        modal2Message.textContent = "Invalid UBD format. Please enter in the format NNMMM (e.g., 01MAY).";
-        modal2Message.style.display = "block";
+                          // Validate UBD format
+                          const ubdRegex = /^\d{2}[A-Z]{3}$/; // NNMMM format (e.g., 01MAY)
+                          if (!ubdRegex.test(ubd)) {
+                              modal2Message.textContent = "Invalid UBD format. Please enter in the format NNMMM (e.g., 01MAY).";
+                              modal2Message.style.display = "block";
 
-        modalSubmitButton.disabled = false;
-        modalSubmitButton.style.opacity = "1";
-      
-        return;
-    }
+                              modalSubmitButton.disabled = false;
+                              modalSubmitButton.style.opacity = "1";
+                            
+                              return;
+                          }
 
-    // Calculate days between HCODE and UBD
-    const hcodeDate = parseHCODE(hcode); // Parse HCODE to date
-    const ubdDate = parseUBD(ubd); // Parse UBD to date
-    let daysDifference = Math.floor((ubdDate - hcodeDate) / (1000 * 60 * 60 * 24)); // Calculate difference in days
+                          // Calculate days between HCODE and UBD
+                          const hcodeDate = parseHCODE(hcode); // Parse HCODE to date
+                          const ubdDate = parseUBD(ubd); // Parse UBD to date
+                          let daysDifference = Math.floor((ubdDate - hcodeDate) / (1000 * 60 * 60 * 24)); // Calculate difference in days
 
-    // If not an integer, convert to integer
-    if (!Number.isInteger(daysDifference)) {
-      daysDifference = parseInt(daysDifference, 10);
-      console.warn("daysDifference was not an integer, converted to:", daysDifference);
-    }
-    if (!Number.isInteger(g_shelfLifeDays)) {
-      g_shelfLifeDays = parseInt(g_shelfLifeDays, 10);
-      console.warn("g_shelfLifeDays was not an integer, converted to:", g_shelfLifeDays);
-    }
+                          // If not an integer, convert to integer
+                          if (!Number.isInteger(daysDifference)) {
+                            daysDifference = parseInt(daysDifference, 10);
+                            console.warn("daysDifference was not an integer, converted to:", daysDifference);
+                          }
+                          if (!Number.isInteger(g_shelfLifeDays)) {
+                            g_shelfLifeDays = parseInt(g_shelfLifeDays, 10);
+                            console.warn("g_shelfLifeDays was not an integer, converted to:", g_shelfLifeDays);
+                          }
 
-    // Check if the difference matches shelf life
-    if (daysDifference !== g_shelfLifeDays) {
-      // Show warning message
-      modal2Message.textContent = `The difference between HCODE and UBD is ${daysDifference} days, which does not match the shelf life of ${g_shelfLifeDays} days. Please confirm HCODE and UBD.`;
-      modal2Message.style.display = "block";
-      
-      modalSubmitButton.disabled = false;
-      modalSubmitButton.style.opacity = "1";
-      return;
-    } else {
-      // If matched, hide warning message
-      modal2Message.style.display = "none";
-    }
+                          // Check if the difference matches shelf life
+                          if (daysDifference !== g_shelfLifeDays) {
+                            // Show warning message
+                            modal2Message.textContent = `The difference between HCODE and UBD is ${daysDifference} days, which does not match the shelf life of ${g_shelfLifeDays} days. Please confirm HCODE and UBD.`;
+                            modal2Message.style.display = "block";
+                            
+                            modalSubmitButton.disabled = false;
+                            modalSubmitButton.style.opacity = "1";
+                            return;
+                          } else {
+                            // If matched, hide warning message
+                            modal2Message.style.display = "none";
+                          }
 
-    // If the product to be submitted is not authorized by Filling, return
-    console.log("submit button, isCheckingFillingAuthority =", g_isCheckingFillingAuthority ? "true" : "false");
-    if (g_isCheckingFillingAuthority) {
-        console.log("going to call checkFillingAuthority");
-        if (checkFillingAuthoritySync(lineNumber, modal2Message) === false) {
-          // Show warning message      
-          modal2Message.innerHTML = `
-          <div style="color: red; text-align: left;">          
-            <p>The product you are trying to submit is:</p>
-            <p><strong>${g_productName}</strong></p>
-            <p>The product authorized by the Filling department is:</p>
-            <p><strong>${g_theAuthorizedProductName}</strong></p>
-            <p> Please confirm with the Filling department</p>            
-          </div>
-        `;
-        modal2Message.style.display = "block";
-        console.log("modal2Message.innerHTML=", modal2Message.innerHTML);
+                          // If the product to be submitted is not authorized by Filling, return
+                          console.log("submit button, isCheckingFillingAuthority =", g_isCheckingFillingAuthority ? "true" : "false");
+                          if (g_isCheckingFillingAuthority) {
+                              console.log("going to call checkFillingAuthority");
+                              if (checkFillingAuthoritySync(lineNumber, modal2Message) === false) {
+                                // Show warning message      
+                                modal2Message.innerHTML = `
+                                <div style="color: red; text-align: left;">          
+                                  <p>The product you are trying to submit is:</p>
+                                  <p><strong>${g_productName}</strong></p>
+                                  <p>The product authorized by the Filling department is:</p>
+                                  <p><strong>${g_theAuthorizedProductName}</strong></p>
+                                  <p> Please confirm with the Filling department</p>            
+                                </div>
+                              `;
+                              modal2Message.style.display = "block";
+                              console.log("modal2Message.innerHTML=", modal2Message.innerHTML);
 
-        modalSubmitButton.disabled = false;
-        modalSubmitButton.style.opacity = "1";
-        return;
-      }
-    }
-      
-    // If validation passes, submit data
-    const timeFormatter = new Intl.DateTimeFormat("en-AU", {
-      timeZone: "Australia/Sydney",
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    });
-    
-    const parts = timeFormatter.formatToParts(new Date());
-    const formattedTimestamp = `${parts[0].value}-${parts[2].value}-${parts[4].value} ${parts[6].value}:${parts[8].value}:${parts[10].value}`;
+                              modalSubmitButton.disabled = false;
+                              modalSubmitButton.style.opacity = "1";
+                              return;
+                            }
+                          }
+                            
+                          // If validation passes, submit data
+                          const timeFormatter = new Intl.DateTimeFormat("en-AU", {
+                            timeZone: "Australia/Sydney",
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: false
+                          });
+                          
+                          const parts = timeFormatter.formatToParts(new Date());
+                          const formattedTimestamp = `${parts[0].value}-${parts[2].value}-${parts[4].value} ${parts[6].value}:${parts[8].value}:${parts[10].value}`;
 
-    const productRow = g_productLibrary.find((row) => row[0] === g_productName);
-    const submittedData = {
-      timestamp: formattedTimestamp,
-      productName: g_productName,
-      barcodes: g_headers.slice(1).map((header) => {
-        const value = g_productLabelFields[header.toLowerCase()] || "";
-        return `${value}`; // Format as "value (field name)"
-      }),
-      lineNumber,
-      palletNumber,
-      cartonCount,
-      hcode,
-      ubd,
-    };
+                          const productRow = g_productLibrary.find((row) => row[0] === g_productName);
+                          const submittedData = {
+                            timestamp: formattedTimestamp,
+                            productName: g_productName,
+                            barcodes: g_headers.slice(1).map((header) => {
+                              const value = g_productLabelFields[header.toLowerCase()] || "";
+                              return `${value}`; // Format as "value (field name)"
+                            }),
+                            lineNumber,
+                            palletNumber,
+                            cartonCount,
+                            hcode,
+                            ubd,
+                          };
 
-    try {
-      const response2 = await fetch("/api/blob-save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submittedData),
-      });
+                          try {
+                            const response2 = await fetch("/api/blob-save", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify(submittedData),
+                            });
 
-      if (!response2.ok) {
-        throw new Error(`HTTP error! status: ${response2.status}`);
-      }
-      else {        
-        console.log("Submission successful");
-      }
-      
-      // Close modal2
-      const modal2 = document.getElementById("modal2");
-      modal2.style.display = "none";
+                            if (!response2.ok) {
+                              throw new Error(`HTTP error! status: ${response2.status}`);
+                            }
+                            else {        
+                              console.log("Submission successful");
+                            }
+                            
+                            // Close modal2
+                            const modal2 = document.getElementById("modal2");
+                            modal2.style.display = "none";
 
-      // Reset Modal2 inputs after successful submission
-      resetModal2Inputs(); 
+                            // Reset Modal2 inputs after successful submission
+                            resetModal2Inputs(); 
 
-      // Reset form
-      resetForm();
+                            // Reset form
+                            resetForm();
 
-      // Show success message
-      showModalWithButtons("Data submitted successfully!", false);
-      
-    } catch (error) {
-      console.error("Error submitting data:", error);
-    }
-    finally {
-      // Re-enable the submit button after request completes or fails
-      modalSubmitButton.disabled = false;
-      modalSubmitButton.style.opacity = "1";
-    }
+                            // Show success message
+                            showModalWithButtons("Data submitted successfully!", false);
+                            
+                          } catch (error) {
+                            console.error("Error submitting data:", error);
+                          }
+                          finally {
+                            // Re-enable the submit button after request completes or fails
+                            modalSubmitButton.disabled = false;
+                            modalSubmitButton.style.opacity = "1";
+                          }
     // End of modalSubmitButton event listener
   },g_debounceDuration));
 
