@@ -1,7 +1,7 @@
 // Global variables
 let g_productLibrary = null;
 let g_productName = "";
-let g_fields = {
+let g_productLabelFields = {
   topLabel: "",
   sideLabel: "",
   bottomLabel: "",
@@ -214,7 +214,7 @@ const allFieldsValid = () => {
     const fieldIndex = g_headers.indexOf(field);
     if (isFieldDisabled(field)) return true;
 
-    const fieldValue = g_fields[field.toLowerCase()] || "";
+    const fieldValue = g_productLabelFields[field.toLowerCase()] || "";
     const correctCode = productRow[fieldIndex];
 
     const processedScannedCode = processScannedCode(fieldValue, fieldIndex);
@@ -290,7 +290,7 @@ const processScannedCode = (fieldValue, fieldOrIndex) => {
 const getInputBackgroundColor = (field) => {
   if (!g_productLibrary || !g_productName) return "#FFFFFF";
 
-  const fieldValue = g_fields[field] || "";
+  const fieldValue = g_productLabelFields[field] || "";
   const productRow = g_productLibrary.find((row) => row[0] === g_productName);
   const fieldIndex = g_headers.findIndex((header) => header.toLowerCase() === field.toLowerCase());
 
@@ -306,7 +306,7 @@ const getInputBackgroundColor = (field) => {
 
 // Get field icon
 const getFieldIcon = (field) => {
-  const fieldValue = g_fields[field] || "";
+  const fieldValue = g_productLabelFields[field] || "";
   if (fieldValue === "") return "";
 
   const productRow = g_productLibrary.find((row) => row[0] === g_productName);
@@ -330,7 +330,7 @@ const renderInputFields = () => {
         <input
           type="text"
           id="${header.toLowerCase()}"
-          value="${g_fields[header.toLowerCase()] || ""}"
+          value="${g_productLabelFields[header.toLowerCase()] || ""}"
           oninput="handleInputChange('${header.toLowerCase()}', this.value, event)"
           onkeydown="handleInputChange('${header.toLowerCase()}', this.value, event)"
           ${isFieldDisabled(header) ? "disabled" : ""}
@@ -347,13 +347,13 @@ const updateFieldAvailability = (selectedProductName) => {
   const productRow = g_productLibrary.find((row) => row[0] === selectedProductName);
   if (!productRow) return;
 
-  g_fields = {
-    topLabel: productRow[g_headers.indexOf("topLabel")] ? g_fields.topLabel : "",
-    sideLabel: productRow[g_headers.indexOf("sideLabel")] ? g_fields.sideLabel : "",
-    bottomLabel: productRow[g_headers.indexOf("bottomLabel")] ? g_fields.bottomLabel : "",
-    cartonLabel: productRow[g_headers.indexOf("cartonLabel")] ? g_fields.cartonLabel : "",
-    palletLabel: productRow[g_headers.indexOf("palletLabel")] ? g_fields.palletLabel : "",
-    waterMark: productRow[g_headers.indexOf("waterMark")] ? g_fields.waterMark : "",
+  g_productLabelFields = {
+    topLabel: productRow[g_headers.indexOf("topLabel")] ? g_productLabelFields.topLabel : "",
+    sideLabel: productRow[g_headers.indexOf("sideLabel")] ? g_productLabelFields.sideLabel : "",
+    bottomLabel: productRow[g_headers.indexOf("bottomLabel")] ? g_productLabelFields.bottomLabel : "",
+    cartonLabel: productRow[g_headers.indexOf("cartonLabel")] ? g_productLabelFields.cartonLabel : "",
+    palletLabel: productRow[g_headers.indexOf("palletLabel")] ? g_productLabelFields.palletLabel : "",
+    waterMark: productRow[g_headers.indexOf("waterMark")] ? g_productLabelFields.waterMark : "",
   };
 
   g_shelfLifeDays = productRow[7] || 0;  // shelfLifeDays is in the 8th column
@@ -362,7 +362,7 @@ const updateFieldAvailability = (selectedProductName) => {
 
 const resetForm = () => {
   g_productName = "";
-  g_fields = {
+  g_productLabelFields = {
     topLabel: "",
     sideLabel: "",
     bottomLabel: "",
@@ -452,7 +452,7 @@ const handleInputChange = (field, value, event) => {
   console.log("handleInputChange(); value=", value);
   
   processedScannedCode = processScannedCode(value, field);
-  g_fields[field] = processedScannedCode;
+  g_productLabelFields[field] = processedScannedCode;
   
   if (event.key === "Enter") {   
     if (!g_productName && value.trim() !== "") {
@@ -528,7 +528,7 @@ const handleProductSelection = (field) => {
     updateFieldAvailability(g_productName);
 
     if (g_currentField) {
-        g_fields[g_currentField] = g_scannedBarcode;
+        g_productLabelFields[g_currentField] = g_scannedBarcode;
     }
 
     // Update product dropdown
@@ -971,7 +971,7 @@ document.addEventListener("DOMContentLoaded", () => {
       timestamp: formattedTimestamp,
       productName: g_productName,
       barcodes: g_headers.slice(1).map((header) => {
-        const value = g_fields[header.toLowerCase()] || "";
+        const value = g_productLabelFields[header.toLowerCase()] || "";
         return `${value}`; // Format as "value (field name)"
       }),
       lineNumber,
