@@ -17,7 +17,7 @@ let g_isSubmitEnabled = false;
 let g_scannedBarcode = "";
 let g_currentField = "";  // Tracks the currently input field
 let g_scannedHCode = "";
-let g_matchingProducts = [];
+let g_matchingProductList = [];
 let g_isCheckingFillingAuthority = false;
 let g_theAuthorizedProductName = "";
 let g_currentVersion = null;
@@ -452,12 +452,12 @@ const handleInputChange = (field, value, event) => {
   if (event.key === "Enter") {   
     if (!g_productName && value.trim() !== "") {
       // Find all products that match this barcode in the specified field
-      g_matchingProducts = g_productLibrary.filter((row) => {
+      g_matchingProductList = g_productLibrary.filter((row) => {
         const fieldIndex = g_headers.indexOf(field);
         return row[fieldIndex] === processedScannedCode;
       });
 
-      if (g_matchingProducts.length > 0) {        
+      if (g_matchingProductList.length > 0) {        
         promptForProductConfirmation(field, processedScannedCode);
       } else {
         // No matching products found
@@ -475,7 +475,7 @@ const handleInputChange = (field, value, event) => {
 };
 
 const promptForProductConfirmation = (field, scannedCode) => {
-    if (g_matchingProducts.length === 0) {
+    if (g_matchingProductList.length === 0) {
         showModalWithButtons("No matching product information found for this barcode.", false);
         return;
     }
@@ -484,7 +484,7 @@ const promptForProductConfirmation = (field, scannedCode) => {
     g_scannedBarcode = scannedCode;
 
     // Create HTML for product selection list, radio buttons and product names on the same line
-    const productListHtml = g_matchingProducts
+    const productListHtml = g_matchingProductList
         .map((product, index) => `
             <div style="display: flex; align-items: center; margin: 8px 0;">
                 <input type="radio" name="productSelection" id="product_${index}" value="${index}" ${index === 0 ? 'checked' : ''} style="width: 16px; height: 16px; min-width: 16px; margin-right: 8px; vertical-align: middle;">
@@ -517,7 +517,7 @@ const handleProductSelection = (field) => {
     }
 
     const selectedIndex = parseInt(selectedRadio.value);    
-    g_productName = g_matchingProducts[selectedIndex][0];
+    g_productName = g_matchingProductList[selectedIndex][0];
     updateFieldAvailability(g_productName);
 
     if (g_currentField) {
@@ -574,7 +574,7 @@ const resetModal2Inputs = () => {
 };
 
 const resetMatchingState = () => {
-  g_matchingProducts = [];
+  g_matchingProductList = [];
   g_scannedBarcode = "";
   // End of resetMatchingState
 };
