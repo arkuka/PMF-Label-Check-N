@@ -11,7 +11,7 @@ let g_fields = {
 };
 let g_shelfLifeDays = 0; // Shelf life in days
 let g_headers = [];
-let g_productNames = [];  // List of product names
+let g_productNameList = [];  // List of product names
 let g_productNameLabel = "";
 let g_isSubmitEnabled = false;
 let g_prompted = false;
@@ -626,13 +626,13 @@ document.addEventListener("DOMContentLoaded", () => {
         g_productLibrary = stringData;
 
         g_headers = stringData[0];
-        g_productNames = stringData.slice(1).map((row) => row[0]);
+        g_productNameList = stringData.slice(1).map((row) => row[0]);
         g_productNameLabel = stringData[0][0];
 
         // Update UI
         document.getElementById("productNameLabel").textContent = g_productNameLabel;
         productNameSelect.innerHTML = `<option value="">Select Product</option>` +
-        g_productNames.map((name) => `<option value="${name}">${name}</option>`).join("");
+        g_productNameList.map((name) => `<option value="${name}">${name}</option>`).join("");
 
         renderInputFields();
       } catch (error) {
