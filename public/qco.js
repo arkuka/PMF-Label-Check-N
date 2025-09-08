@@ -132,9 +132,8 @@ const loadSettings = async () => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
-    const settings = await response.json();
+    const settings = await response.json();    
     
-    console.log('loadSettingsFile');
     console.log('Settings loaded:', settings);
     
     if(g_currentVersion !== null && g_currentVersion !== settings.ver) {
