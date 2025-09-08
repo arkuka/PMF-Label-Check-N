@@ -1,5 +1,5 @@
 // Global variables
-let g_configData = null;
+let g_productLibrary = null;
 let g_productName = "";
 let g_fields = {
   topLabel: "",
@@ -190,9 +190,9 @@ const loadSettings = async () => {
 };
 
 const validateScan = (field, scannedCode) => {
-    if (!g_configData || !g_productName) return;
+    if (!g_productLibrary || !g_productName) return;
   
-    const productRow = g_configData.find((row) => row[0] === g_productName);
+    const productRow = g_productLibrary.find((row) => row[0] === g_productName);
     if (!productRow) return;
   
     const fieldIndex = g_headers.indexOf(field);
@@ -207,9 +207,9 @@ const validateScan = (field, scannedCode) => {
 
 // Extract allFieldsValid as a separate function
 const allFieldsValid = () => {
-  if (!g_productName || !g_configData) return false;
+  if (!g_productName || !g_productLibrary) return false;
 
-  const productRow = g_configData.find((row) => row[0] === g_productName);
+  const productRow = g_productLibrary.find((row) => row[0] === g_productName);
   if (!productRow) return false;
 
   return g_headers.slice(1).every((field) => {
@@ -227,13 +227,13 @@ const allFieldsValid = () => {
 };
 
 const checkSubmitAvailability = (isMatch) => {
-  if (!g_productName || !g_configData || !isMatch) {
+  if (!g_productName || !g_productLibrary || !isMatch) {
     g_isSubmitEnabled = false;
     submitButton.disabled = true;  
     return;
   }
 
-  const productRow = g_configData.find((row) => row[0] === g_productName);
+  const productRow = g_productLibrary.find((row) => row[0] === g_productName);
   if (!productRow) {
     g_isSubmitEnabled = false;
     submitButton.disabled = true;
@@ -247,8 +247,8 @@ const checkSubmitAvailability = (isMatch) => {
 
 const isFieldDisabled = (field) => {
   if (!g_productName) return false;
-  if (!g_configData) return false;
-  const productRow = g_configData.find((row) => row[0] === g_productName);
+  if (!g_productLibrary) return false;
+  const productRow = g_productLibrary.find((row) => row[0] === g_productName);
   const fieldIndex = g_headers.indexOf(field);
   return !productRow || !productRow[fieldIndex];
   // End of isFieldDisabled
@@ -290,10 +290,10 @@ const processScannedCode = (fieldValue, fieldOrIndex) => {
 
 // Get input field background color
 const getInputBackgroundColor = (field) => {
-  if (!g_configData || !g_productName) return "#FFFFFF";
+  if (!g_productLibrary || !g_productName) return "#FFFFFF";
 
   const fieldValue = g_fields[field] || "";
-  const productRow = g_configData.find((row) => row[0] === g_productName);
+  const productRow = g_productLibrary.find((row) => row[0] === g_productName);
   const fieldIndex = g_headers.findIndex((header) => header.toLowerCase() === field.toLowerCase());
 
   if (fieldIndex === -1 || !productRow || !productRow[fieldIndex]) return "#DDDDDD";
@@ -311,7 +311,7 @@ const getFieldIcon = (field) => {
   const fieldValue = g_fields[field] || "";
   if (fieldValue === "") return "";
 
-  const productRow = g_configData.find((row) => row[0] === g_productName);
+  const productRow = g_productLibrary.find((row) => row[0] === g_productName);
   const fieldIndex = g_headers.findIndex((header) => header.toLowerCase() === field.toLowerCase());
   const correctCode = productRow ? productRow[fieldIndex] : "";
 
@@ -346,7 +346,7 @@ const renderInputFields = () => {
 };
 
 const updateFieldAvailability = (selectedProductName) => {
-  const productRow = g_configData.find((row) => row[0] === selectedProductName);
+  const productRow = g_productLibrary.find((row) => row[0] === selectedProductName);
   if (!productRow) return;
 
   g_fields = {
@@ -459,7 +459,7 @@ const handleInputChange = (field, value, event) => {
   if (event.key === "Enter") {   
     if (!g_productName && value.trim() !== "") {
       // Find all products that match this barcode in the specified field
-      g_matchingProducts = g_configData.filter((row) => {
+      g_matchingProducts = g_productLibrary.filter((row) => {
         const fieldIndex = g_headers.indexOf(field);
         return row[fieldIndex] === processedScannedCode;
       });
@@ -623,7 +623,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const stringData = data.map((row) => row.map((cell) => String(cell).trim()));
 
         console.log('loadExcelFile');
-        g_configData = stringData;
+        g_productLibrary = stringData;
 
         g_headers = stringData[0];
         g_productNames = stringData.slice(1).map((row) => row[0]);
@@ -791,7 +791,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Submit button click event
   submitButton.addEventListener("click", () => { // Submit button in the main page
-    if (!g_productName || !g_configData) return;    
+    if (!g_productName || !g_productLibrary) return;    
     modal2.style.display = "flex";
     // End of submitButton event listener
   });
@@ -970,7 +970,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const parts = timeFormatter.formatToParts(new Date());
     const formattedTimestamp = `${parts[0].value}-${parts[2].value}-${parts[4].value} ${parts[6].value}:${parts[8].value}:${parts[10].value}`;
 
-    const productRow = g_configData.find((row) => row[0] === g_productName);
+    const productRow = g_productLibrary.find((row) => row[0] === g_productName);
     const submittedData = {
       timestamp: formattedTimestamp,
       productName: g_productName,
