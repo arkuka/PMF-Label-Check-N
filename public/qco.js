@@ -16,7 +16,6 @@ let g_productNameLabel = "";
 let g_isSubmitEnabled = false;
 let g_prompted = false;
 let g_showModal = false;
-let g_barcode = "";
 let g_scannedBarcode = "";
 let g_currentField = "";  // Tracks the currently input field
 let g_scannedHCode = "";
