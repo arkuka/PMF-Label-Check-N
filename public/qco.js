@@ -22,7 +22,6 @@ let g_scannedHCode = "";
 let g_matchingProducts = [];
 let g_isCheckingFillingAuthority = false;
 let g_theAuthorizedProductName = "";
-let g_lastSettings = null;
 let g_currentVersion = null;
 let g_updateCheckFrequency = 60; // Default value in seconds
 let g_lastUpdateCheckTime = 0;
