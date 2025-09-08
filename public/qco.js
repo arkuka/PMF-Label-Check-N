@@ -20,7 +20,6 @@ let g_scannedBarcode = "";
 let g_currentField = "";  // Tracks the currently input field
 let g_scannedHCode = "";
 let g_matchingProducts = [];
-let g_currentMatchingIndex = 0;
 let g_isCheckingFillingAuthority = false;
 let g_theAuthorizedProductName = "";
 let g_lastReceivedDataCache = null;
@@ -462,9 +461,7 @@ const handleInputChange = (field, value, event) => {
         return row[fieldIndex] === processedScannedCode;
       });
 
-      if (g_matchingProducts.length > 0) {
-        // Start with the first matching product
-        g_currentMatchingIndex = 0;
+      if (g_matchingProducts.length > 0) {        
         promptForProductConfirmation(field, processedScannedCode);
       } else {
         // No matching products found
@@ -582,7 +579,6 @@ const resetModal2Inputs = () => {
 
 const resetMatchingState = () => {
   g_matchingProducts = [];
-  g_currentMatchingIndex = 0;
   g_scannedBarcode = "";
   // End of resetMatchingState
 };
