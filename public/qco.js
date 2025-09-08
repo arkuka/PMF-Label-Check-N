@@ -778,9 +778,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal2CloseIcon = document.getElementById("modal2CloseIcon"); // New close icon
 
   // Close icon event listener
-    modal2CloseIcon.addEventListener("click", () => {
+  modal2CloseIcon.addEventListener("click", () => {
     modal2.style.display = "none";
-    // resetModal2Inputs();
+    // resetModal2Inputs(); // do not reset inputs when closing with X, because user may just click X by mistake
     // End of modal2CloseIcon event listener
   });
 
