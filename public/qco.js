@@ -24,7 +24,6 @@ let g_currentVersion = null;
 let g_updateCheckFrequency = 60; // Default value in seconds
 let g_lastUpdateCheckTime = 0;
 let g_pendingUpdates = false;
-let g_showVersionUpdateNotification = false;
 
 // slow down the version checking frequency when page is inactive
 let g_lastUserActivityTime = Date.now();
@@ -94,26 +93,18 @@ const setupVersionCheckInterval = () => {
           if (document.getElementById("modal2").style.display !== "none") {
             document.getElementById("modal2").style.display = "none";
             resetModal2Inputs();
-            g_showVersionUpdateNotification = true;
           }
           
           if (document.getElementById("modal").style.display !== "none") {
-            document.getElementById("modal").style.display = "none";
-            g_showVersionUpdateNotification = true;
+            document.getElementById("modal").style.display = "none";            
           }
           
           // Reload Excel file
-          await loadExcelFile();
-          if (g_productName !== "") {
-            g_showVersionUpdateNotification = true;
-          }
+          // await loadExcelFile();     // test it and reopen it later !!!
           resetForm();
           
           // Show update notification
-          if (g_showVersionUpdateNotification) {
-            showModalWithButtons("New version updated <br> Please reload the page and redo the current check", false);
-            g_showVersionUpdateNotification = false;
-          }
+          showModalWithButtons("New version updated <br> Please reload the page and redo the current check", false);
           
           g_pendingUpdates = false;
         }
