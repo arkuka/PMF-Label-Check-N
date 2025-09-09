@@ -441,9 +441,9 @@ const handleInputChange = (field, value, event) => {
   
   if (event.key === "Enter") {   
     if (!g_productName && value.trim() !== "") {
+      const fieldIndex = g_headers.indexOf(field);
       // Find all products that match this barcode in the specified field
-      g_matchingProductList = g_productLibrary.filter((row) => {
-        const fieldIndex = g_headers.indexOf(field);
+      g_matchingProductList = g_productLibrary.filter((row) => {        
         return row[fieldIndex] === processedScannedCode;
       });
 
