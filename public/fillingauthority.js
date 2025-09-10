@@ -253,18 +253,19 @@ async function loadFillingStandards() {
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
         
-        // Process the data - we only want rows where column C (index 2) is "Fill"
+        // Process the data - we only want rows where column C (index 3) is "Fill"
         g_fillingStandards = data.slice(1) // Skip header row
-            .filter(row => row[2] === "Fill")
+            .filter(row => row[3] === "Fill")
             .map(row => ({
-                code: row[0],
-                name: row[1],
-                department: row[2],
-                headcount: row[4],
-                coverTime: row[5],
-                speed: row[7],
-                maxWeight: row[8],
-                reworkPercent: row[9]
+                code: row[1],
+                name: row[2],
+                department: row[3],
+                line: row[4],
+                headcount: row[5],
+                coverTime: row[6],
+                speed: row[8],
+                maxWeight: row[9],
+                reworkPercent: row[10]
             }));
             
         console.log("Filling standards loaded:", g_fillingStandards);
@@ -294,7 +295,7 @@ function updateProductionStandardDisplay() {
     
     // Find the product in our standards
     const productStandard = g_fillingStandards.find(standard => 
-        standard.code === selectedProductCode
+        standard.code === selectedProductCode && standard.line === g_productionLineSelect.value
     );
     
     if (!productStandard) {
