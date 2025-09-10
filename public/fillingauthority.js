@@ -294,6 +294,9 @@ function updateProductionStandardDisplay() {
     }
     
     // Find the product in our standards
+
+    console.log("Looking for product code:", selectedProductCode, "on line:", g_productionLineSelect.value);
+
     const productStandard = g_fillingStandards.find(standard => 
         standard.code === selectedProductCode && standard.line === g_productionLineSelect.value
     );
