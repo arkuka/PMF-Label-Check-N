@@ -650,10 +650,22 @@ document.addEventListener("DOMContentLoaded", () => {
   function checkFillingAuthoritySync(lineNumber) {
       // Convert line number to standardized format
       const lineMap = {
-        '1': 'L01', '2': 'L02', '3': 'L03', '4': 'L04',
-        '5A': 'L05', '5B': 'L05', '6': 'L06', '7': 'L07',
-        '8': 'L08', '9': 'L09', '10': 'L10', '11': 'L11',
-        '12': 'L12', '13': 'L13', '14': 'L14', '15': 'L15'
+        '1' : 'L01', 
+        '2' : 'L02', 
+        '3' : 'L03', 
+        '4' : 'L04',
+        '5A': 'L05', 
+        '5B': 'L05', 
+        '6' : 'L06', 
+        '7' : 'L07',
+        '8' : 'L08', 
+        '9' : 'L09', 
+        '10': 'L10', 
+        '11': 'L11',
+        '12': 'L12', 
+        '13': 'L13', 
+        '14': 'L14', 
+        '15': 'L15'
       };
       
       const standardizedLine = lineMap[lineNumber.toUpperCase()];
@@ -735,18 +747,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (lineRecords.length > 0) {
                   mostRecentRecord = lineRecords[0];
                 } else {
-                  console.debug('[19] No records found for this production line');
+                  console.debug('[19] No Filling Authority records found for this production line');
                 }
+
               } else {
-                console.debug('[20] File content is not in expected array format');
+                console.debug('[20] The Filling Authority file content is not in expected array format');
               }
             } else {
-              console.debug('[21] Failed to fetch file content, status:', fileRequest.status);
+              console.debug('[21] Failed to fetch Filling Authority file content, status:', fileRequest.status);
             }
         }
     
         if (!mostRecentRecord) {
-          console.debug('[22] No matching records found in the most recent file');
+          console.debug('[22] No matching records found in the most recent Filling Authority file');
           g_theAuthorizedProductName = "n/a";
           return false;
         }
