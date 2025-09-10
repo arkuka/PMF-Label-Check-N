@@ -260,7 +260,7 @@ async function loadFillingStandards() {
                 code: row[1],
                 name: row[2],
                 department: row[3],
-                line: row[4],
+                line: row[0],
                 headcount: row[5],
                 coverTime: row[6],
                 speed: row[8],
