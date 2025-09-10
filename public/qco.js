@@ -285,7 +285,7 @@ const getInputBackgroundColor = (field) => {
   const correctCode = productRow[fieldIndex];
   const processedScannedCode = processScannedCode(fieldValue, fieldIndex);
 
-  return processedScannedCode === correctCode ? "#d3f8d3" : "#F0B9B9";
+  return processedScannedCode === correctCode ? "#D3F8D3" : "#F0B9B9";
   // End of getInputBackgroundColor
 };
 
@@ -308,23 +308,28 @@ const getFieldIcon = (field) => {
 
 const renderInputFields = () => {
   const inputFieldsContainer = document.getElementById("inputFields");
-  inputFieldsContainer.innerHTML = g_headers.slice(1).map((header) => `
-    <div class="form-group">
-      <label>${header}: </label>
-      <div class="input-wrapper">
-        <input
-          type="text"
-          id="${header.toLowerCase()}"
-          value="${g_productLabelFields[header.toLowerCase()] || ""}"
-          oninput="handleInputChange('${header.toLowerCase()}', this.value, event)"
-          onkeydown="handleInputChange('${header.toLowerCase()}', this.value, event)"
-          ${isFieldDisabled(header) ? "disabled" : ""}
-          style="background-color: ${getInputBackgroundColor(header.toLowerCase())}"
-        />
-        ${getFieldIcon(header.toLowerCase())}
-      </div>
-    </div>
-  `).join("");
+  inputFieldsContainer.innerHTML = g_headers.slice(1).map((header) => {
+          const field = header.toLowerCase();
+          const disabledAttr = isFieldDisabled(field) ? "disabled" : "";
+          const bgColor = getInputBackgroundColor(field);
+          return `
+              <div class="form-group">
+                <label>${header}: </label>
+                <div class="input-wrapper">
+                  <input
+                    type="text"
+                    id="${field}"
+                    value="${g_productLabelFields[field] || ""}"
+                    oninput="handleInputChange('${field}', this.value, event)"
+                    onkeydown="handleInputChange('${field}', this.value, event)"
+                    ${disabledAttr}
+                    style="background-color: ${bgColor}"
+                  />
+                  ${getFieldIcon(field)}
+                </div>
+              </div>
+            `;
+    }).join("");
   // End of renderInputFields
 };
 
