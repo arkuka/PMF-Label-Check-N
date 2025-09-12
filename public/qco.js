@@ -852,9 +852,9 @@ document.addEventListener("DOMContentLoaded", () => {
                           }
 
                           // Validate Line Number
-                          const validLineNumbers = ["1", "2", "3", "4", "5A", "5B", "6", "7", "8", "9", "11", "12", "13", "14", "15"];
+                          const validLineNumbers = ["1", "2", "3", "4", "5A", "5B", "6", "7", "8", "9", "11", "12", "13", "14", "15","16"];
                           if (!validLineNumbers.includes(lineNumber)) {
-                            modal2Message.textContent = "Invalid Line Number. Please enter one of: 1,2,3,4,5A,5B,6,7,8,9,11,12,13,14,15";
+                            modal2Message.textContent = "Invalid Line Number. Please enter one of: 1,2,3,4,5A,5B,6,7,8,9,11,12,13,14,15,16";
                             modal2Message.style.display = "block";
 
                             modalSubmitButton.disabled = false;
