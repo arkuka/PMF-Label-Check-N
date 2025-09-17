@@ -1035,51 +1035,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const currentYear = new Date().getFullYear();
         return new Date(currentYear, month, day);
     // End of parseUBD
-  }
-
-  // Show confirmation modal
-  function showConfirmationModal(message) {
-    const modal = document.createElement("div");
-    modal.style.position = "fixed";
-    modal.style.top = "50%";
-    modal.style.left = "50%";
-    modal.style.transform = "translate(-50%, -50%)";
-    modal.style.backgroundColor = "#ffcccc"; // Light red background
-    modal.style.padding = "20px";
-    modal.style.borderRadius = "10px";
-    modal.style.cartonShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
-    modal.style.textAlign = "center";
-    modal.style.zIndex = "1000";
-    modal.innerHTML = `
-      <p>${message}</p>
-      <button id="confirmButton" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Confirm</button>
-      <button id="cancelButton" style="background-color: #f44336; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">Cancel</button>
-    `;
-
-    document.body.appendChild(modal);
-
-    // Add blinking effect
-    let isRed = true;
-    const interval = setInterval(() => {
-      modal.style.backgroundColor = isRed ? "#ffcccc" : "#ff9999";
-      isRed = !isRed;
-    }, 500);
-
-    // Confirm button click event
-    document.getElementById("confirmButton").addEventListener("click", () => {
-      clearInterval(interval);
-      document.body.removeChild(modal);
-      // End of confirmButton event listener
-    });
-
-    // Cancel button click event
-    document.getElementById("cancelButton").addEventListener("click", () => {
-      clearInterval(interval);
-      document.body.removeChild(modal);
-      // End of cancelButton event listener
-    });
-    // End of showConfirmationModal
-  }
+  } 
 
   // Initialize
   loadExcelFile();
