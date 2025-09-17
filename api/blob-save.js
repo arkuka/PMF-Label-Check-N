@@ -72,7 +72,7 @@ const getFormattedFileNameFromDate = (date, data) => {
     '1': 'L01', '2': 'L02', '3': 'L03', '4': 'L04',
     '5A': 'L5A', '5B': 'L5B', '6': 'L06', '7': 'L07',
     '8': 'L08', '9': 'L09', '10': 'L10', '11': 'L11',
-    '12': 'L12', '13': 'L13', '14': 'L14', '15': 'L15'
+    '12': 'L12', '13': 'L13', '14': 'L14', '15': 'L15', '16': 'L16',
   };
 
   const standardizedLine = lineMap[actualData.lineNumber.toUpperCase()];
