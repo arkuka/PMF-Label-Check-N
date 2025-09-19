@@ -274,8 +274,14 @@ const processScannedCode = (fieldValue, fieldOrIndex) => {
           g_productLabelFields.cartonCount = cartonCountValue.toString();
           const cartonCountInput = document.getElementById("cartonCount");
           if (cartonCountInput) {
-            cartonCountInput.value = cartonCountValue.toString();
-            console.log("Updated cartonCount =", cartonCountValue);
+            cartonCountInput.value = cartonCountValue.toString();            
+          }
+        }
+        else{
+          g_productLabelFields.cartonCount = "";
+          const cartonCountInput = document.getElementById("cartonCount");
+          if (cartonCountInput) {
+            cartonCountInput.value = ""            
           }
         }
 
