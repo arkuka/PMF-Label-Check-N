@@ -255,16 +255,54 @@ const processScannedCode = (fieldValue, fieldOrIndex) => {
     (typeof fieldOrIndex === "number" && fieldOrIndex == 5) ||
     (typeof fieldOrIndex === "string" && fieldOrIndex == "pallet label")
   ) {
-    // Check if it contains "---"
-    const [codePart, hCodePart] = processedScannedCode.split("---");
-    processedScannedCode = codePart.trim(); // Keep only the part before "---"
-    console.log("processedScannedCode =", processedScannedCode);
 
-    // Store the part after "---" in global variable g_scannedHCode
-    if (hCodePart !== undefined) {
-      window.g_scannedHCode = hCodePart.trim();
-      console.log("g_scannedHCode =", window.g_scannedHCode);
-    }
+      // Check for new format: PRODUCTID*CC@MM!HXXXX
+      const newFormatRegex = /^([A-Za-z0-9]+)\*(\d{1,3})@(\d{1,2})!([A-Za-z0-9]+)$/;
+      const match = processedScannedCode.match(newFormatRegex);
+
+      if (match) {
+        // Extract components
+        const [, productId, cartonCount, palletNumber, hCode] = match;
+
+        // Save PRODUCTID to processedScannedCode
+        processedScannedCode = productId.trim();
+        console.log("processedScannedCode =", processedScannedCode);
+
+        // Save cartonCount if not zero
+        const cartonCountValue = parseInt(cartonCount, 10);
+        if (cartonCountValue !== 0) {
+          g_productLabelFields.cartonCount = cartonCountValue.toString();
+          const cartonCountInput = document.getElementById("cartonCount");
+          if (cartonCountInput) {
+            cartonCountInput.value = cartonCountValue.toString();
+            console.log("Updated cartonCount =", cartonCountValue);
+          }
+        }
+
+        // Save palletNumber
+        g_productLabelFields.palletNumber = palletNumber.trim();
+        const palletNumberInput = document.getElementById("palletNumber");
+        if (palletNumberInput) {
+          palletNumberInput.value = palletNumber.trim();
+          console.log("Updated palletNumber =", palletNumber);
+        }
+
+        // Save HXXXX to g_scannedHCode
+        window.g_scannedHCode = hCode.trim();
+        console.log("g_scannedHCode =", window.g_scannedHCode);
+      }else{
+        // Check if it contains "---"
+        const [codePart, hCodePart] = processedScannedCode.split("---");
+        processedScannedCode = codePart.trim(); // Keep only the part before "---"
+        console.log("processedScannedCode =", processedScannedCode);
+
+        // Store the part after "---" in global variable g_scannedHCode
+        if (hCodePart !== undefined) {
+          window.g_scannedHCode = hCodePart.trim();
+          console.log("g_scannedHCode =", window.g_scannedHCode);
+        }
+      }
+    
   }
 
   return processedScannedCode;
