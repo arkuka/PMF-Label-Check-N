@@ -948,7 +948,7 @@ document.addEventListener("DOMContentLoaded", () => {
                           console.log("hcodeDate =", hcodeDate);
                           console.log("ubdDate =", ubdDate);
 
-                          let daysDifference = Math.round((ubdDate - hcodeDate) / (1000 * 60 * 60 * 24)); // Calculate difference in days
+                          let daysDifference = Math.flood((ubdDate - hcodeDate) / (1000 * 60 * 60 * 24)); // Calculate difference in days                           
                           console.log("daysDifference =", daysDifference);
                           
 
@@ -1088,7 +1088,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const month = new Date(Date.parse(`01 ${monthStr} 2000`)).getMonth();
         const currentYear = new Date().getFullYear();
         const date = new Date(Date.UTC(currentYear, month, day));
-        date.setHours(0, 0, 0, 0); // Normalize to midnight local time
+        date.setHours(12, 0, 0, 0); // Normalize to midnight local time
         return date;
     // End of parseUBD
   } 
