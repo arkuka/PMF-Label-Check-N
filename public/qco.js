@@ -948,7 +948,7 @@ document.addEventListener("DOMContentLoaded", () => {
                           console.log("hcodeDate =", hcodeDate);
                           console.log("ubdDate =", ubdDate);
 
-                          let daysDifference = Math.flood((ubdDate - hcodeDate) / (1000 * 60 * 60 * 24)); // Calculate difference in days                           
+                          let daysDifference = Math.floor((ubdDate - hcodeDate) / (1000 * 60 * 60 * 24)); // Calculate difference in days                           
                           console.log("daysDifference =", daysDifference);
                           
 
