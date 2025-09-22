@@ -1075,7 +1075,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const day = parseInt(hcode.slice(1, 3), 10); // Extract DD
         const month = parseInt(hcode.slice(3, 5), 10) - 1; // Extract MM (months are 0-based)
         const currentYear = new Date().getFullYear();
-        return new Date(Date.UTC(currentYear, month, day));
+        const date = new Date(Date.UTC(currentYear, month, day));
+        date.setHours(0, 0, 0, 0); // Normalize to midnight local time
+        return date;
     // End of parseHCODE
   }
 
@@ -1085,7 +1087,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const monthStr = ubd.slice(2, 5);
         const month = new Date(Date.parse(`01 ${monthStr} 2000`)).getMonth();
         const currentYear = new Date().getFullYear();
-        return new Date(Date.UTC(currentYear, month, day));
+        const date = new Date(Date.UTC(currentYear, month, day));
+        date.setHours(0, 0, 0, 0); // Normalize to midnight local time
+        return date;
     // End of parseUBD
   } 
 
