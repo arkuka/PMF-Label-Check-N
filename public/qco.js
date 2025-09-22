@@ -944,13 +944,21 @@ document.addEventListener("DOMContentLoaded", () => {
                           // Calculate days between HCODE and UBD
                           const hcodeDate = parseHCODE(hcode); // Parse HCODE to date
                           const ubdDate = parseUBD(ubd); // Parse UBD to date
+
+                          console.log("hcodeDate =", hcodeDate);
+                          console.log("ubdDate =", ubdDate);
+
                           let daysDifference = Math.floor((ubdDate - hcodeDate) / (1000 * 60 * 60 * 24)); // Calculate difference in days
+                          console.log("daysDifference =", daysDifference);
+                          
 
                           // If not an integer, convert to integer
                           if (!Number.isInteger(daysDifference)) {
                             daysDifference = parseInt(daysDifference, 10);
                             console.warn("daysDifference was not an integer, converted to:", daysDifference);
                           }
+
+                          
                           if (!Number.isInteger(g_shelfLifeDays)) {
                             g_shelfLifeDays = parseInt(g_shelfLifeDays, 10);
                             console.warn("g_shelfLifeDays was not an integer, converted to:", g_shelfLifeDays);
