@@ -1072,20 +1072,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Parse HCODE to date
   function parseHCODE(hcode) {
-    const day = parseInt(hcode.slice(1, 3), 10); // Extract DD
-    const month = parseInt(hcode.slice(3, 5), 10) - 1; // Extract MM (months are 0-based)
-    const currentYear = new Date().getFullYear();
-    return new Date(currentYear, month, day);
+        const day = parseInt(hcode.slice(1, 3), 10); // Extract DD
+        const month = parseInt(hcode.slice(3, 5), 10) - 1; // Extract MM (months are 0-based)
+        const currentYear = new Date().getFullYear();
+        return new Date(Date.UTC(currentYear, month, day));
     // End of parseHCODE
   }
 
   // Parse UBD "DDMMM"
   function parseUBD(ubd) {
-        const day = parseInt(ubd.slice(0, 2), 10); // First 2 digits
-        const monthStr = ubd.slice(2, 5); // Last 3 letters
+        const day = parseInt(ubd.slice(0, 2), 10);
+        const monthStr = ubd.slice(2, 5);
         const month = new Date(Date.parse(`01 ${monthStr} 2000`)).getMonth();
         const currentYear = new Date().getFullYear();
-        return new Date(currentYear, month, day);
+        return new Date(Date.UTC(currentYear, month, day));
     // End of parseUBD
   } 
 
