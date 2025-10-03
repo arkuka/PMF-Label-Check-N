@@ -117,43 +117,43 @@ const setupVersionCheckInterval = () => {
 
 const loadSettings = async () => {
   try {
-    const response = await fetch("/settings.json");
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const settings = await response.json();    
-    
-    console.log('Settings loaded:', settings);
-    
-    if(g_currentVersion !== null && g_currentVersion !== settings.ver) {
-      console.log("Version changed from", g_currentVersion, "to", settings.ver);  
-      g_pendingUpdates = true;
-    }
+              const response = await fetch("/settings.json");
+              
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              
+              const settings = await response.json();    
+              
+              console.log('Settings loaded:', settings);
+              
+              if(g_currentVersion !== null && g_currentVersion !== settings.ver) {
+                console.log("Version changed from", g_currentVersion, "to", settings.ver);  
+                g_pendingUpdates = true;
+              }
 
-    // Extract the values from settings.json
-    g_currentVersion = settings.ver;
-    g_updateCheckFrequency = parseInt(settings["update check frequency"]) || 60;
-    const checkFillingAuthority = settings["check filling authority"] === "yes";
+              // Extract the values from settings.json
+              g_currentVersion = settings.ver;
+              g_updateCheckFrequency = parseInt(settings["update check frequency"]) || 60;
+              const checkFillingAuthority = settings["check filling authority"] === "yes";
 
-    // Update UI with version information
-    const versionInfoElement = document.getElementById("versionInfo");
-    if (versionInfoElement) {
-      versionInfoElement.textContent = `ver: ${g_currentVersion}`;
-    }
+              // Update UI with version information
+              const versionInfoElement = document.getElementById("versionInfo");
+              if (versionInfoElement) {
+                versionInfoElement.textContent = `ver: ${g_currentVersion}`;
+              }
 
-    // Update the filling authority check status
-    g_isCheckingFillingAuthority = checkFillingAuthority;
-    console.log("isCheckingFillingAuthority is ", g_isCheckingFillingAuthority ? "true" : "false");
+              // Update the filling authority check status
+              g_isCheckingFillingAuthority = checkFillingAuthority;
+              console.log("isCheckingFillingAuthority is ", g_isCheckingFillingAuthority ? "true" : "false");
 
-    return {
-      success: true,
-      version: g_currentVersion,
-      checkFrequency: g_updateCheckFrequency,
-      checkFillingAuthority: g_isCheckingFillingAuthority
-    };
-  } catch (error) {
+              return {
+                success: true,
+                version: g_currentVersion,
+                checkFrequency: g_updateCheckFrequency,
+                checkFillingAuthority: g_isCheckingFillingAuthority
+              };
+    } catch (error) {
     console.error("Failed to load or parse the settings file:", error);
     
     // Fallback to default values
