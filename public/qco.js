@@ -296,7 +296,7 @@ const processScannedCode = (fieldValue, fieldOrIndex) => {
 
         // Save HXXXX to g_scannedHCode
         if(hCode[5]==='Z' || hCode[5]==='N' || hCode[5]==='T'){
-          window.g_scannedHCode = hCode.slice(0,5).trim();
+          window.g_scannedHCode = hCode.slice(0,4).trim();
         }
         else
           window.g_scannedHCode = hCode.trim();
