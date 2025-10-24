@@ -296,9 +296,11 @@ const processScannedCode = (fieldValue, fieldOrIndex) => {
 
         // Save HXXXX to g_scannedHCode
         if(hCode[5]==='Z' || hCode[5]==='N' || hCode[5]==='T'){
-          hCode = hCode.slice(0,5);
+          window.g_scannedHCode = hCode.slice(0,5).trim();
         }
-        window.g_scannedHCode = hCode.trim();
+        else
+          window.g_scannedHCode = hCode.trim();
+        }
         console.log("g_scannedHCode =", window.g_scannedHCode);
       }else{
         // Check if it contains "---"
