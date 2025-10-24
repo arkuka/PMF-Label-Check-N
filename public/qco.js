@@ -256,8 +256,8 @@ const processScannedCode = (fieldValue, fieldOrIndex) => {
     (typeof fieldOrIndex === "string" && fieldOrIndex == "pallet label")
   ) {
 
-      // Check for new format: PRODUCTID*CC@MM!HXXXX
-      const newFormatRegex = /^([A-Za-z0-9]+)\*(\d{1,3})@(\d{1,2})!([A-Za-z0-9]+)$/;
+      // Check for new format: PRODUCTID*CC@MM!HXXXXS
+      const newFormatRegex = /^([A-Za-z0-9]+)\*(\d{1,3})@(\d{1,2})!([A-Za-z0-9]+[Z0T])$/;
       const match = processedScannedCode.match(newFormatRegex);
 
       if (match) {
