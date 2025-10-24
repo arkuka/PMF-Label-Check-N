@@ -257,8 +257,8 @@ const processScannedCode = (fieldValue, fieldOrIndex) => {
   ) {
 
       // Check for new format: PRODUCTID*CC@MM!HXXXXS
-      //const newFormatRegex = /^([A-Za-z0-9]+)\*(\d{1,3})@(\d{1,2})!([A-Za-z0-9]+[ZNT])$/;
-      const newFormatRegex = /^([A-Za-z0-9]+)\*(\d{1,3})@(\d{1,2})!([A-Za-z0-9])$/;
+      const newFormatRegex = /^([A-Za-z0-9]+)\*(\d{1,3})@(\d{1,2})!([A-Za-z0-9]+[ZNT])$/;
+      // const newFormatRegex = /^([A-Za-z0-9]+)\*(\d{1,3})@(\d{1,2})!([A-Za-z0-9])$/;
       const match = processedScannedCode.match(newFormatRegex);
 
       if (match) {
