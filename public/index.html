@@ -9,28 +9,42 @@
 <body>
 
   <script>
-  (async function () {
-    const HASH = "a9b9f04336ce0181a08e774e01113b31...";
-  
-    const input = prompt("Enter password:");
-    if (!input) throw new Error("Denied");
-  
-    const buf = await crypto.subtle.digest(
-      "SHA-256",
-      new TextEncoder().encode(input)
-    );
-    const hash = Array.from(new Uint8Array(buf))
-      .map(b => b.toString(16).padStart(2, "0"))
-      .join("");
-  
-    if (hash !== HASH) {
-      alert("Access denied");
-      throw new Error("Denied");
+(function () {
+  const TARGET_PRODUCT = 1022117;
+
+  function isPrime(n) {
+    if (n < 2) return false;
+    for (let i = 2; i * i <= n; i++) {
+      if (n % i === 0) return false;
     }
-  
-    document.querySelector(".container").style.display = "block";
-  })();
-  </script>
+    return true;
+  }
+
+  const p1 = prompt("Enter first 4-digit prime:");
+  const p2 = prompt("Enter second 4-digit prime:");
+
+  const n1 = Number(p1);
+  const n2 = Number(p2);
+
+  if (
+    Number.isInteger(n1) &&
+    Number.isInteger(n2) &&
+    n1 >= 1000 && n1 <= 9999 &&
+    n2 >= 1000 && n2 <= 9999 &&
+    isPrime(n1) &&
+    isPrime(n2) &&
+    n1 * n2 === TARGET_PRODUCT
+  ) {
+    document.addEventListener("DOMContentLoaded", function () {
+      const container = document.querySelector(".container");
+      if (container) container.style.display = "block";
+    });
+  } else {
+    alert("Access denied.");
+    throw new Error("Access denied");
+  }
+})();
+</script>
   
   <div class="container" style="display:none;">
     <header class="header">
