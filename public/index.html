@@ -7,6 +7,18 @@
   <link rel="stylesheet" href="style.css"> <!-- 引入样式文件 -->
 </head>
 <body>
+
+  <script>
+  (function () {
+    const PASSWORD = "thebbiswatchingyou";
+    let input = prompt("Please enter access password:");
+
+    if (input !== PASSWORD) {
+      alert("Incorrect password. Access denied.");
+      document.body.innerHTML = "";
+    }
+  })();
+</script>
   
   <div class="container">
     <header class="header">
