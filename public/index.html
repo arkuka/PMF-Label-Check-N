@@ -11,16 +11,24 @@
   <script>
   (function () {
     const PASSWORD = "thebbiswatchingyou";
-    let input = prompt("Please enter access password:");
 
-    if (input !== PASSWORD) {
+    const input = prompt("Please enter access password:");
+
+    if (input === PASSWORD) {
+      // 密码正确，显示页面
+      document.addEventListener("DOMContentLoaded", function () {
+        const container = document.querySelector(".container");
+        if (container) container.style.display = "block";
+      });
+    } else {
       alert("Incorrect password. Access denied.");
-      document.body.innerHTML = "";
+      // 彻底阻止后续 JS
+      throw new Error("Access denied");
     }
   })();
-</script>
+  </script>
   
-  <div class="container">
+  <div class="container" style="display:none;">
     <header class="header">
       <img src="https://www.pmfresh.com.au/wp-content/themes/pmfresh/images/logo.png" alt="PMFresh Logo" class="logo">
       <h1>Production Line Label Check <span id="versionInfo" style="font-size: 14px; color: #666; margin-left: 10px;"></span></h1>
