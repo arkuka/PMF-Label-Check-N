@@ -9,22 +9,26 @@
 <body>
 
   <script>
-  (function () {
-    const PASSWORD = "ttt";
-
-    const input = prompt("Please enter access password:");
-
-    if (input === PASSWORD) {
-      // 密码正确，显示页面
-      document.addEventListener("DOMContentLoaded", function () {
-        const container = document.querySelector(".container");
-        if (container) container.style.display = "block";
-      });
-    } else {
-      alert("Incorrect password. Access denied.");
-      // 彻底阻止后续 JS
-      throw new Error("Access denied");
+  (async function () {
+    const HASH = "a9b9f04336ce0181a08e774e01113b31..."; // ttt 的 hash
+  
+    const input = prompt("Enter password:");
+    if (!input) throw new Error("Denied");
+  
+    const buf = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(input)
+    );
+    const hash = Array.from(new Uint8Array(buf))
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+  
+    if (hash !== HASH) {
+      alert("Access denied");
+      throw new Error("Denied");
     }
+  
+    document.querySelector(".container").style.display = "block";
   })();
   </script>
   
