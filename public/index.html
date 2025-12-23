@@ -20,17 +20,15 @@
     return true;
   }
 
-  const p1 = prompt("Enter first 4-digit prime:");
-  const p2 = prompt("Enter second 4-digit prime:");
+  const p1 = prompt("Enter first prime:");
+  const p2 = prompt("Enter second prime:");
 
   const n1 = Number(p1);
   const n2 = Number(p2);
 
   if (
     Number.isInteger(n1) &&
-    Number.isInteger(n2) &&
-    n1 >= 1000 && n1 <= 9999 &&
-    n2 >= 1000 && n2 <= 9999 &&
+    Number.isInteger(n2) &&    
     isPrime(n1) &&
     isPrime(n2) &&
     n1 * n2 === TARGET_PRODUCT
